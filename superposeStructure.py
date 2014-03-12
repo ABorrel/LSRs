@@ -3,45 +3,11 @@ BORREL Alexandre
 09-2012
 """
 
-import runOtherProg
-import pathDirectory
-from os import remove, system
-from re import search, sub
+from re import sub
 import parsePDB
 import writePDBfile
 
-def superposeApoHolo (dictionary_dataset, name_directory, pocket_retireve):
-    """
-    Superpose Apo and holo and run pocket detection on apo form
-    return: list with apo superposed and holo superposed files
-    """
-    
-    
-#     print dictionary_dataset
-    path_file_RMSD = pathDirectory.descriptor(name_directory) + "RMSD_apo_holo"
-    fileRMSD = open (path_file_RMSD, "w")
-    
-    list_PDB = dictionary_dataset.keys ()
-#    print list_PDB
-    for PDB_ID in list_PDB :
-        if dictionary_dataset[PDB_ID]['Type structure'] == "apo structure" : 
-            path_file_superpose = runOtherProg.runTMalign( pathDirectory.dataSet(name_directory + "/" + dictionary_dataset[PDB_ID]['PDB holo'][0] )  + "protein.pdb",pathDirectory.dataSet(name_directory + "/" + PDB_ID) + "protein.pdb", pathDirectory.descriptor(name_directory + "/" + pocket_retireve +"/" + PDB_ID))
-#            path_file_superpose = runOtherProg.runMMalign(pathDirectory.dataSet(name_directory + "/" + PDB_ID) + "protein.pdb", pathDirectory.dataSet(name_directory + "/" + dictionary_dataset[PDB_ID]['PDB holo'][0] )  + "protein.pdb", pathDirectory.descriptor(name_directory + "/" + PDB_ID))
 
-#            print path_file_superpose
-            RMSD = retrieveRMSDFileTMalign (path_file_superpose[-1])
-            fileRMSD.write (PDB_ID + "\t" + dictionary_dataset[PDB_ID]['PDB holo'][0] + "\t" + RMSD + "\n")
-            
-#             remove (path_file_superpose[0])
-#             remove (path_file_superpose[1])
-#             remove (path_file_superpose[2])
-#             remove (path_file_superpose[-1])
-    
-#             path_files_ApoHolo_superposed = diviseSuperposeFile (path_file_superpose[-2])# list of file holo and apo
-    
- 
- 
- 
  
 def retrieveRMSDFileTMalign (path_file_RMSD) : 
     """
@@ -61,33 +27,6 @@ def retrieveRMSDFileTMalign (path_file_RMSD) :
     
     return RMSD
     
-    
-    
-
-def diviseSuperposeFile (path_file_superpose) : 
-    """
-    Divise files with apo and holo structure
-    arg: - path file superpose all atoms
-    return: - path file apo
-            - path file holo
-    """
-    path_file_apo = path_file_superpose + "_apo"
-    path_file_holo = path_file_superpose + "_holo"
-    
-    filin = open (path_file_superpose, "r")
-    list_lines = filin.readlines ()
-    
-    filout = open (path_file_apo, "w")
-    
-    for lines in list_lines [:-1]: 
-        if search("^ATOM", lines) : 
-            filout.write (lines)
-        elif search("^TER", lines):
-            filout.close ()
-            filout = open (path_file_holo, "w")
-    
-    return [path_file_apo, path_file_holo]
-            
     
     
 def manageTMalign (path_protein ) : 

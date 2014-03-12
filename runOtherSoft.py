@@ -17,14 +17,11 @@ TMalign = "/home/borrel/softwares/TMalign/TMalign"
 
 def runTMalign(path_pr1, path_pr2, path_dir_out, debug = 1) : 
     
-    # delet chain in PDB
-    path_pr1 = tool.removeChain (path_pr1)
-    path_pr2 = tool.removeChain (path_pr2)
+    # delet chain in PDB + remove ligand
+    p_pr1 = tool.removeChain (path_pr1, path_dir_out)
+    p_pr2 = tool.removeChain (path_pr2, path_dir_out)
     
-    path_pr1 = superposeStructure.manageTMalign (path_pr1)
-    path_pr2 = superposeStructure.manageTMalign (path_pr2)
-    
-    cmd_run = TMalign + " " + str (path_pr1) + " " + str (path_pr2) + " -o " + path_dir_out + "align.out -m " + path_dir_out + "matrix.out" +" > " + path_dir_out + "RMSD"
+    cmd_run = TMalign + " " + str (p_pr1) + " " + str (p_pr2) + " -o " + path_dir_out + "align.out -m " + path_dir_out + "matrix.out" +" > " + path_dir_out + "RMSD"
     if debug : 
         print cmd_run
     os.system(cmd_run)

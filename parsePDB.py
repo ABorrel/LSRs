@@ -224,10 +224,10 @@ def separateByLigand (l_atom_ligand, debug = 0) :
     
     else : 
         # control number of atom but eg DEX case where same ligand without number of atoms
-        if len (l_atom_ligand) % len (l_code_ligand) != 0 : 
-            print "- ligand several ligand without same number of atoms"
-            print "l229 parsePDB"
-            print "----------------"
+#         if len (l_atom_ligand) % len (l_code_ligand) != 0 : 
+#             print "- ligand several ligand without same number of atoms"
+#             print "l229 parsePDB"
+#             print "----------------"
         
         l_out = []
         # separe by ligand, list of list
