@@ -1,6 +1,7 @@
 from re import search
+import parsePDB
 
-def coordinateSection (path_filout, listAtom, recorder, header = "", connect_matrix = 0):
+def coordinateSection (f_write, listAtom, recorder, header = "", connect_matrix = 0):
     """
     Write list atom in PDB file
     in: list atoms, name of file out
@@ -9,19 +10,42 @@ def coordinateSection (path_filout, listAtom, recorder, header = "", connect_mat
     arg -> header = 0 not header in file
     """
     
-    filout = open(path_filout, "w")
+    
+    if type (f_write) == str : 
+        filout = open(f_write, "w")
+    elif  type (f_write) == file  : 
+        filout = f_write
+    else : 
+        print "======ERROR========"
+        print "flux writing ERROR"
+        print "l17 - write PDB file"
+        print "==================="
+        return 0
+        
     if header != 0 : 
         filout.write ("HEADER " + str (header) + "\n")
     for atom in listAtom : 
         coordinateStructure(atom, recorder, filout)
     
-    if connect_matrix : 
+    if connect_matrix :
+        if  listAtom [0]["connect"] == [] : 
+            parsePDB.buildMatrixConnect (listAtom)
         for atom in listAtom : 
             connect(atom, filout)
     filout.write("END\n")
-    filout.close ()
     
-    return path_filout
+    if type (f_write) == str : 
+        filout.close ()
+    else : 
+        pass
+    
+    return f_write
+
+
+
+
+
+
 
 
 def coordinateStructure(atom, recorder, fileWrite):
@@ -82,6 +106,7 @@ def connect(atom, fileWrite) :
     """write in file the connect section for one atom
     in: atom, flux write
     out: write in flux write"""
+    
     
     line = "CONECT"
     for serial in atom["connect"] : 

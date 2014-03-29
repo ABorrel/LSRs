@@ -5,6 +5,7 @@ import writePDBfile
 
 
 
+
 def removeChain (path_protein_PDB, p_dir_out) : 
     
     name_file = path.split(path_protein_PDB)[-1]
@@ -32,3 +33,7 @@ def transformAA (aa):
         for aa_one in dico_code.keys ():
             if dico_code[aa_one] == aa : 
                 return  aa_one
+            
+
+            
+

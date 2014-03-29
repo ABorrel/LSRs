@@ -83,10 +83,11 @@ def formatMatrix(path_file_matrix):
     return dico_matrix
 
 
-def applyMatrixProt (path_file_PDB, matrix_transloc) :
+def applyMatrixProt (l_atom, p_matrix) :
+    
+    matrix_transloc = formatMatrix(p_matrix)
 
-    list_atom = parsePDB.loadCoordSectionPDB(path_file_PDB, section = "ATOM")
-    for atom in list_atom : 
+    for atom in l_atom : 
         atomx = matrix_transloc["t1"] + matrix_transloc["u11"] * atom["x"] + matrix_transloc["u12"] * atom["y"] + matrix_transloc["u13"] * atom["z"]
         atomy = matrix_transloc["t2"] + matrix_transloc["u21"] * atom["x"] + matrix_transloc["u22"] * atom["y"] + matrix_transloc["u23"] * atom["z"]
         atomz = matrix_transloc["t3"] + matrix_transloc["u31"] * atom["x"] + matrix_transloc["u32"] * atom["y"] + matrix_transloc["u33"] * atom["z"]
@@ -94,10 +95,10 @@ def applyMatrixProt (path_file_PDB, matrix_transloc) :
         atom["y"] = atomy
         atom["z"] = atomz
 
-    return list_atom
         
-def applyMatrixLigand (l_atoms, matrix_transloc) :
-
+def applyMatrixLigand (l_atoms, p_matrix ) :
+    
+    matrix_transloc = formatMatrix(p_matrix)
     for atom in l_atoms : 
         atomx = matrix_transloc["t1"] + matrix_transloc["u11"] * float(atom["x"]) + matrix_transloc["u12"] * float(atom["y"]) + matrix_transloc["u13"] *float( atom["z"])
         atomy = matrix_transloc["t2"] + matrix_transloc["u21"] * atom["x"] + matrix_transloc["u22"] * atom["y"] + matrix_transloc["u23"] * atom["z"]

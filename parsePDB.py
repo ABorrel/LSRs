@@ -5,7 +5,7 @@ Analysis PDB file
 """
 # global module
 from re import search
-from math import sqrt
+from math import sqrt, acos, asin, cos, sin, degrees
 from copy import deepcopy
 
 # personal
@@ -102,31 +102,6 @@ def loadCoordSectionPDB (path_PDB_file, section = "", debug = 1):
     return list_atom
     
 
-
-
-def distanceTwoatoms(atom1, atom2):##############to review
-    '''calculate distance of 2 atoms
-    in : - atom1 structure
-         - atom2 structure
-    out : distance -> float
-          100 if impossible calcul'''
-
-    try:
-        x1 = float(atom1['x'])
-        x2 = float(atom2['x'])
-        xd = x2 - x1
-
-        y1 = float(atom1['y'])
-        y2 = float(atom2['y'])
-        yd = y2 - y1
-
-        z1 = float(atom1['z'])
-        z2 = float(atom2['z'])
-        zd = z2 - z1
-
-        return sqrt(xd * xd + yd * yd + zd * zd)
-    except:
-        return 100
 
 
 
@@ -380,13 +355,119 @@ def retrieveSeq (p_PDB) :
             
     return s_out
  
+def buildMatrixConnect (l_atom_parsed):
+
+    for atomLigand in l_atom_parsed:
+        atomLigand["connect"].append(atomLigand["serial"])
+        for atomPDB in l_atom_parsed:
+            distance = distanceTwoatoms(atomLigand, atomPDB)
+            if distance < 1.7 and distance != 0:
+                if not atomPDB["serial"] in atomLigand["connect"]:
+                    atomLigand["connect"].append(atomPDB["serial"])
+
+def getResidues(l_atom_binding, l_atom_complex_parsed) : 
+    """
+    """
+    
+    # -> retrieve residue
+    memory_res = []
+    l_res = []
+    
+    for atom_bs in l_atom_binding : 
+        for atom_complex in l_atom_complex_parsed : 
+            if atom_bs["x"] == atom_complex["x"] and atom_bs["y"] == atom_complex["y"] and atom_bs ["z"] == atom_complex["z"] : 
+                chain_id = atom_complex["chainID"]
+                res_num = atom_complex["resSeq"]
+                res_code = str(chain_id) + "_" + str(res_num)
+                if not res_code in memory_res : 
+                    memory_res.append (res_code)
+                    for atom_complex2 in l_atom_complex_parsed : 
+                        if atom_complex2["chainID"] == chain_id and atom_complex2["resSeq"] == res_num : 
+                            l_res.append (atom_complex2)
+    
+    return l_res  
  
  
+ 
+############## 
+## calcul   ##
+##############
+ 
+
+def distanceTwoatoms(atom1, atom2):  ##############to review
+    '''calculate distance of 2 atoms
+    in : - atom1 structure
+         - atom2 structure
+    out : distance -> float
+          100 if impossible calcul'''
+
+    try:
+        x1 = float(atom1['x'])
+        x2 = float(atom2['x'])
+        xd = x2 - x1
+
+        y1 = float(atom1['y'])
+        y2 = float(atom2['y'])
+        yd = y2 - y1
+
+        z1 = float(atom1['z'])
+        z2 = float(atom2['z'])
+        zd = z2 - z1
+
+        return sqrt(xd * xd + yd * yd + zd * zd)
+    except:
+        return "ERROR"
+
  
     
-#pdb_parsed = loadCoordSectionPDB ("1B8O.pdb") 
-#print pdb_parsed
-#list_ligand = retrieveLigand  (pdb_parsed, "IMH")
-#print "----------"
-#print list_ligand
-#writePDBfile.coordinateSection ("test", list_ligand,"HETATM")
+def scalar(vector1, vector2):
+    
+    x = vector1[0] * vector2[0]
+    y = vector1[1] * vector2[1]
+    z = vector1[2] * vector2[2]
+
+    return x + y + z
+
+
+def angleVector(pointD, pointCentral, pointG):
+    
+    vectorNC1 = vectoriel(pointCentral, pointD)
+    vectorNC2 = vectoriel(pointCentral, pointG)
+    normeNC1 = normeVector(pointCentral, pointD)
+    normeNC2 = normeVector(pointCentral, pointG)
+
+    scalarNC1NC2 = scalar(vectorNC1, vectorNC2) 
+
+    try :
+        alpha = degrees(acos(scalarNC1NC2 / (normeNC1 * normeNC2)))
+        return alpha
+    except :
+        return 0
+
+def normeVectoriel (listVectoriel1, listVectoriel2):
+    
+    terme1 = pow(listVectoriel1[1] * listVectoriel2[2] - listVectoriel1[2] * listVectoriel2[1], 2)
+    terme2 = pow(listVectoriel1[2] * listVectoriel2[0] - listVectoriel1[0] * listVectoriel2[2], 2)
+    terme3 = pow(listVectoriel1[0] * listVectoriel2[1] - listVectoriel1[1] * listVectoriel2[0], 2)
+    
+    return sqrt (terme1 + terme2 + terme3)
+
+def vectoriel (N, C1):
+    
+    
+    NC1x = C1["x"] - N["x"]
+    NC1y = C1["y"] - N["y"]
+    NC1z = C1["z"] - N["z"]
+    
+    return [NC1x, NC1y, NC1z]
+
+
+def normeVector (point1, point2):
+    
+    terme1 = pow(point1["x"] - point2["x"], 2)
+    terme2 = pow(point1["y"] - point2["y"], 2)
+    terme3 = pow(point1["z"] - point2["z"], 2)
+    
+    return sqrt(terme1 + terme2 + terme3)
+
+
