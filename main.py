@@ -8,10 +8,15 @@ import ionSearch
 import substructTools
 import analysis
 import parseTMalign
+import buildData
 
 from os import listdir, path
 from re import search
 
+
+
+
+# dataset constuction
 
 
 
@@ -47,6 +52,7 @@ def datasetPreparation (substruct):
                     
         
         # substruct write for shaep
+        print p_dir_dataset + ref_folder + "/"
         p_lig_ref = pathManage.findligandRef(p_dir_dataset + ref_folder + "/", substruct)
         lig_ref_parsed = parsePDB.loadCoordSectionPDB(p_lig_ref)
         l_atom_substruct = substructTools.retrieveSubstruct(lig_ref_parsed, substruct)
@@ -328,6 +334,11 @@ def manageResult ():
 ### AMP ###
 ###########
 
+
+
+buildData.builtDatasetGlobal("/home/borrel/Yue_project/resultLigandInPDB", "AMP")
+
+
 # datasetPreparation ("AMP")
 # applyTMAlign ("AMP")
 # retrieveSubstructSuperimposed ("AMP")
@@ -335,7 +346,7 @@ def manageResult ():
 # applyShaep ("AMP")
 # analysisShaep ("AMP")
 # analysisSameBS ("AMP")
-
+# analysisSmile ("AMP")
 
 
 
@@ -349,6 +360,7 @@ def manageResult ():
 # applyShaep ("ADP")
 # analysisShaep ("ADP")
 # analysisSameBS ("ADP")
+# analysisSmile ("ADP")
 
 
 
@@ -356,11 +368,12 @@ def manageResult ():
 ###########
 
  
-datasetPreparation ("POP")
-applyTMAlign ("POP")
-retrieveSubstructSuperimposed ("POP")
-ionIdentification ("POP")
-applyShaep ("POP")
-analysisShaep ("POP")
-analysisSameBS ("POP")
+# datasetPreparation ("POP")
+# applyTMAlign ("POP")
+# retrieveSubstructSuperimposed ("POP")
+# ionIdentification ("POP")
+# applyShaep ("POP")
+# analysisShaep ("POP")
+# analysisSameBS ("POP")
+# analysisSmile ("POP")
 

@@ -36,4 +36,36 @@ def transformAA (aa):
             
 
             
+def parseLigandPDBList (p_filin):
+    """Load file result, PDB associated at ligand
+    in: Name of file
+    out: list ligand with PDB associated"""
 
+
+    fileOpen = open(p_filin, "r")
+
+    lineFile = fileOpen.readlines()
+    outFile = {}
+
+    for line in lineFile:
+        line = line.split("\t")
+        PDB = line[0]
+
+        listLigand = line[1]
+        listLigand = listLigand.split("\n")[0]
+        listLigand = listLigand.split(" ")
+        if listLigand == []:
+            continue
+
+        for ligand in listLigand:
+            if ligand != "":
+                try:
+                    outFile[ligand].append(PDB)
+                except:
+                    outFile[ligand] = []
+                    outFile[ligand].append(PDB)
+
+    return outFile
+    
+    
+    

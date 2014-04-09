@@ -48,7 +48,7 @@ def coordinateSection (f_write, listAtom, recorder, header = "", connect_matrix 
 
 
 
-def coordinateStructure(atom, recorder, fileWrite):
+def coordinateStructure(atom, fileWrite, recorder = ""):
     """Write coordinate lines and format structure
     in: atom with coordinate, type of recorder, file write
     out: write line in file"""
@@ -58,7 +58,9 @@ def coordinateStructure(atom, recorder, fileWrite):
         try : atom[key_PDB] = atom[key_PDB].replace ("\n", "")
         except : pass
     
-    
+    if recorder == "" : 
+        try : recorder = atom["type"]
+        except :recorder = ""
     try : atomSerial = atom["serial"]
     except :atomSerial = ""
     try : nameAtom = atom["name"]

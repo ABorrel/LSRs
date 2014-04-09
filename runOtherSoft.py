@@ -61,7 +61,29 @@ def runShaep (p_struct1, p_struct2, p_out):
     
     
     return p_out
+
+
+def Rhistogram (p_filin, name_main, brk = 10) : 
     
+    cmd_run = "./histograms.R " + p_filin + " " + name_main + " " + str (brk) + " 0"
+    print cmd_run
+    os.system (cmd_run)
     
+
     
+def water(path_file_fasta1, path_file_fasta2, path_filout, gapopen = 10, gapextend = 0.5, debug = 1):
+    """
+    Run water from emboss with 2 fasta files and gap open option and gap extend
+    args: -> file fasta 1
+          -> file fasta 2
+          -> gap open value
+          -> gap extend value
+     return: -> water file
+     """
     
+    cmd = "water -asequence " + path_file_fasta1 + " -bsequence " + path_file_fasta2 + " -outfile " + path_filout + " -gapopen " + str(gapopen) + " -gapextend " + str(gapextend)
+    
+    if debug : 
+        print cmd
+    os.system (cmd)   
+    return path_filout    

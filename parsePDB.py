@@ -4,7 +4,7 @@ BORREL Alexandre
 Analysis PDB file
 """
 # global module
-from re import search
+from re import search, sub
 from math import sqrt, acos, asin, cos, sin, degrees
 from copy import deepcopy
 
@@ -43,6 +43,7 @@ def lineCoords (line):
     out: dictionnary atom"""
 
     atom = {}
+    atom["type"] = line[0:6].replace (" ", "")
     try :atom["serial"] = int(line[6:11].replace (" ", ""))
     except :line[6:11].replace (" ", "")
     atom["name"] = line[12:16].replace (" ", "")
@@ -471,3 +472,21 @@ def normeVector (point1, point2):
     return sqrt(terme1 + terme2 + terme3)
 
 
+def resolution(p_PDB):
+    """Retrieve by PDB file the resolution if X-ray methods
+    in : name of pdb file
+    out : resolution -> format string"""
+
+    filin = open (p_PDB, "r")
+    fileLines =filin.readlines()
+    filin.close () 
+
+    for line in fileLines:
+        if search("^REMARK   2 RESOLUTION", line):
+            line = sub('[ ]{2,}', ' ', line)
+            try:
+                resolution = line.split(" ")[3].replace (" ", "")
+            except:
+                resolution = "NA"
+            return resolution
+    return "NA"
