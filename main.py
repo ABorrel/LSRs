@@ -40,8 +40,10 @@ def datasetPreparation (substruct):
             p_file_pdb = p_dir_dataset + ref_folder + "/" + pdbfile
             
             # extract ligand in PDB
+            if not search (".pdb", pdbfile ) or len (pdbfile.split ("_")[0])==3: 
+                continue
             l_ligand = parsePDB.retrieveListLigand(p_file_pdb)
-            if l_ligand == [] or len(pdbfile.split("_")[0]) != 4 : 
+            if l_ligand == []  : 
                 continue
             else : 
                 l_atom_pdb_parsed = parsePDB.loadCoordSectionPDB(p_file_pdb)
@@ -54,8 +56,12 @@ def datasetPreparation (substruct):
         # substruct write for shaep
         print p_dir_dataset + ref_folder + "/"
         p_lig_ref = pathManage.findligandRef(p_dir_dataset + ref_folder + "/", substruct)
+        print p_lig_ref
         lig_ref_parsed = parsePDB.loadCoordSectionPDB(p_lig_ref)
         l_atom_substruct = substructTools.retrieveSubstruct(lig_ref_parsed, substruct)
+        # case with AMP without phosphate
+        if l_atom_substruct == [] : 
+            continue
         # write substruct
         p_filout_substruct = p_dir_dataset + ref_folder + "/subref_" + ref_folder + ".pdb"
         writePDBfile.coordinateSection(p_filout_substruct , l_atom_substruct, "HETATM", name_ligand + "_" + p_file_pdb , connect_matrix = 1)
@@ -82,13 +88,13 @@ def applyTMAlign (substruct):
         
         for pdbfile in l_pdbfile : 
             # try if PDB not ligand
-            if len(pdbfile.split ("_")[0]) != 4 : 
+            if len(pdbfile.split ("_")[0]) != 4 or not search (".pdb", pdbfile): 
                 continue
             elif p_dir_dataset + ref_folder + "/" + pdbfile == p_pdb_ref : 
                 continue
             else : 
                 p_file_pdb = p_dir_dataset + ref_folder + "/" + pdbfile
-                p_dir_align = pathManage.alignmentOutput(p_pdb_ref.split ("/")[-1][:-4] + "__" + p_file_pdb.split ("/")[-1][:-4])
+                p_dir_align = pathManage.alignmentOutput(substruct + "/" + p_pdb_ref.split ("/")[-1][:-4] + "__" + p_file_pdb.split ("/")[-1][:-4])
                 
                 # superimpose 
                 runOtherSoft.runTMalign(p_file_pdb, p_pdb_ref, p_dir_align)
@@ -117,7 +123,7 @@ def retrieveSubstructSuperimposed (substruct):
     
     for ref_folder in l_folder_ref  :
         l_pdbfile = listdir(p_dir_dataset + ref_folder + "/")
-        print ref_folder
+#         print ref_folder
         
         # reference
         p_lig_ref = pathManage.findligandRef(p_dir_dataset + ref_folder + "/", substruct)
@@ -132,16 +138,17 @@ def retrieveSubstructSuperimposed (substruct):
         # write lig ref
         writePDBfile.coordinateSection(filout_lig, lig_ref_parsed, "HETATM", p_lig_align, connect_matrix = 1)
         
+#         print p_lig_ref
+        
         for pdbfile in l_pdbfile : 
 #             print pdbfile[4:10], "****"
-            if len(pdbfile.split ("_")[0]) == 3 and pdbfile[4:10] != ref_folder:
+            if len(pdbfile.split ("_")[0]) == 3  and len(pdbfile.split ("_")[1]) == 4 and pdbfile.split ("_")[1] != ref_folder:
                 p_lig = p_dir_dataset + ref_folder + "/" + pdbfile
                 if p_lig_ref != p_lig : 
-                    print  p_lig, p_lig_ref
                     lig_parsed = parsePDB.loadCoordSectionPDB(p_lig, "HETATM")
-                    
+
                     # find matrix of rotation
-                    p_matrix = pathManage.findMatrix(p_lig_ref, p_lig)
+                    p_matrix = pathManage.findMatrix(p_lig_ref, p_lig, substruct)
                     
                     # find the path of complex used
                     p_complex = p_dir_dataset + ref_folder + "/" + p_lig.split ("/")[-1][4:]
@@ -284,11 +291,11 @@ def analysisSameBS (substruct):
         
         for file_ref in l_reffile : 
 #             print file_ref, p_pdb_ref.split ("/")[-1]
-            if len(file_ref.split("_")[0]) != 4 or file_ref == p_pdb_ref.split ("/")[-1]: 
+            if len(file_ref.split("_")[0]) != 4 or file_ref == p_pdb_ref.split ("/")[-1] or search(".fasta", file_ref): 
 #                 print file_ref, p_pdb_ref.split ("/")[-1], "*************"
                 continue
             else : 
-                p_TMalign =  pathManage.alignmentOutput() + p_pdb_ref.split ("/")[-1][0:-4] + "__" + file_ref[0:-4] + "/RMSD"
+                p_TMalign =  pathManage.alignmentOutput(substruct) + p_pdb_ref.split ("/")[-1][0:-4] + "__" + file_ref[0:-4] + "/RMSD"
                 score_align = parseTMalign.parseOutputTMalign(p_TMalign)
 #                 print score_align
 #                 print p_TMalign
@@ -335,18 +342,15 @@ def manageResult ():
 ###########
 
 
-
-buildData.builtDatasetGlobal("/home/borrel/Yue_project/resultLigandInPDB", "AMP")
-
-
+# buildData.builtDatasetGlobal("/home/borrel/Yue_project/resultLigandInPDB", "AMP")
 # datasetPreparation ("AMP")
 # applyTMAlign ("AMP")
 # retrieveSubstructSuperimposed ("AMP")
 # ionIdentification ("AMP")
 # applyShaep ("AMP")
 # analysisShaep ("AMP")
-# analysisSameBS ("AMP")
-# analysisSmile ("AMP")
+analysisSameBS ("AMP")
+analysisSmile ("AMP")
 
 
 

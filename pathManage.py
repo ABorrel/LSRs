@@ -86,7 +86,7 @@ def findPDBRef(p_dataset_folder) :
     name_ref = path.dirname(p_dataset_folder).split ("/")[-1]
     
     for filein in l_filesin : 
-        if search("^" + name_ref, filein) : 
+        if search("^" + name_ref, filein) and search(".pdb" , filein): 
             
             return p_dataset_folder + filein
     
@@ -98,7 +98,7 @@ def findligandRef(p_dataset_folder, substruct) :
     l_filesin = listdir(p_dataset_folder)
     name_ref = path.dirname(p_dataset_folder).split ("/")[-1]
     for filein in l_filesin : 
-        if search( name_ref, filein) and  search( substruct, filein): 
+        if search( name_ref, filein) and  search( substruct, filein) and not search("subref", filein): 
             return p_dataset_folder + filein
     return 0
     
@@ -116,14 +116,14 @@ def findSubstructRef (p_dataset_folder, substruct):
     
     
     
-def findMatrix(p_lig_ref, p_lig) : 
+def findMatrix(p_lig_ref, p_lig, substruct) : 
     
     begin_name = p_lig_ref.split ("/")[-1][4:-4]
 #     print begin_name
     end_name = p_lig.split ("/")[-1][4:-4]
 #     print end_name
     
-    return alignmentOutput( begin_name + "__" + end_name) + "matrix.out"
+    return alignmentOutput( substruct + "/" + begin_name + "__" + end_name) + "matrix.out"
     
     
 def findListSmileFile(substruct) : 

@@ -49,7 +49,7 @@ def  babelConvertPDBtoSMILE (p_file_pdb) :
 
 def runShaep (p_struct1, p_struct2, p_out):
     
-    cmd = shaep + " --output-file "  + p_out + " " + p_struct1 + " " + p_struct2 
+    cmd = shaep + " --output-file "  + p_out + " " + p_struct1 + " " + p_struct2  + " --noOptimization" 
     
     print cmd
     os.system (cmd)

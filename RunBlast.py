@@ -1,44 +1,33 @@
 
 from Bio.Blast import NCBIWWW, NCBIXML
 from Bio.Blast.Applications import NcbiblastpCommandline
-
-
-#result_handle = NCBIWWW.qblast("blastp", "pdb", "/home/borrel/Yue_project/dataset/AMP/4EPM/4EPM.fasta")
+from os import path
 
 
 
-blastp_cline = NcbiblastpCommandline(query="/home/borrel/Yue_project/dataset/AMP/4EPM/4EPM.fasta", db="pdbaa", outfmt=5, out="tt.xml")
+def globalRun (d_dataset, p_dir_blast, debug = 0) : 
+    
+    for PDB_ID in d_dataset.keys () : 
+        if d_dataset[PDB_ID]["conserve"] == 1 : 
+            p_fasta = d_dataset[PDB_ID]["best"]["fasta"]
+            p_out_blast = p_dir_blast + PDB_ID + ".xml"
+            blastp_cline = NcbiblastpCommandline(query=p_fasta, db="pdbaa", outfmt=5, out=p_out_blast)
+            if debug : print blastp_cline
+            if not path.exists(p_out_blast) : 
+                stdout, stderr = blastp_cline()
+            d_dataset[PDB_ID]["xml"] = p_out_blast
+            d_dataset[PDB_ID]["align"] = {}
+            # parse blast out
+            result_handle = open(p_out_blast)
+            blast_records = NCBIXML.read(result_handle)
+            for alignment in blast_records.alignments:
+                for hsp in alignment.hsps:
+                    PDB_find = alignment.title.split ("|")[3] + "_" + alignment.title.split ("|")[4][0]
+                    d_dataset[PDB_ID]["align"][PDB_find] = hsp.expect
+            
+            result_handle.close ()
 
 
-print(blastp_cline)
-
-stdout, stderr = blastp_cline()
-
-result_handle = open("tt.xml")
 
 
-blast_records = NCBIXML.read(result_handle)
-# blast_records = list(blast_records)
-print vars (blast_records)
-print vars(blast_records.alignments[0])
-print vars(blast_records.alignments[0].hsps[0])
-#print result_handle
 
-# save_file = open("my_blast.xml", "w")
-# save_file.write(result_handle.read())
-# save_file.close()
-# blast_records = NCBIXML.parse(result_handle)
-# blast_record = NCBIXML.read(result_handle)
-# 
-# E_VALUE_THRESH = 0.04
-# 
-# for alignment in blast_record.alignments:
-#     for hsp in alignment.hsps:
-# #         if hsp.expect < E_VALUE_THRESH:
-#             print('****Alignment****')
-#             print('sequence:', alignment.title)
-#             print('length:', alignment.length)
-#             print('e value:', hsp.expect)
-#             print(hsp.query[0:75] + '...')
-#             print(hsp.match[0:75] + '...')
-#             print(hsp.sbjct[0:75] + '...')

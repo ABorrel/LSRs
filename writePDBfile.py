@@ -25,7 +25,7 @@ def coordinateSection (f_write, listAtom, recorder, header = "", connect_matrix 
     if header != 0 : 
         filout.write ("HEADER " + str (header) + "\n")
     for atom in listAtom : 
-        coordinateStructure(atom, recorder, filout)
+        coordinateStructure(atom, filout, recorder)
     
     if connect_matrix :
         if  listAtom [0]["connect"] == [] : 

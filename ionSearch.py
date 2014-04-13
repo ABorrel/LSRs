@@ -48,12 +48,15 @@ def analyseIons (p_data_ref, substruct, filout) :
     p_lig_ref = pathManage.findligandRef(p_data_ref, substruct)
     p_complex = pathManage.findPDBRef(p_data_ref)
     
+    
     # parsing
     lig_ref_parsed = parsePDB.loadCoordSectionPDB(p_lig_ref, "HETATM")
     l_het_parsed = parsePDB.loadCoordSectionPDB(p_complex, "HETATM")
     
     # retrieve phosphate
     l_pi = retrieveTwoAtomForAngle (lig_ref_parsed, substruct)
+    if l_pi == [] : # case ligand without phosphate 
+        return 
     
     for het_parsed in l_het_parsed : 
         if het_parsed["resName"] in l_ions : 

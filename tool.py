@@ -1,4 +1,5 @@
 from os import path
+from re import search
 import parsePDB
 import writePDBfile
 
@@ -68,4 +69,22 @@ def parseLigandPDBList (p_filin):
     return outFile
     
     
+def fusionchainfasta(p_fasta) : 
     
+    filin = open (p_fasta, "r")
+    l_line_fasta = filin.readlines ()
+    filin.close ()
+    seq = ""
+    comment = l_line_fasta [0][0:5]
+    for line_fasta in l_line_fasta : 
+        if not search("^>", line_fasta) :
+            seq = seq + line_fasta.strip ()
+    
+    # format 80
+    width= 80
+    seq_write = "\n".join( [seq[i:i+width] for i in xrange(0,len(seq),width)] )
+    
+    filout = open (p_fasta, "w")
+    filout.write (comment + "\n" + seq_write)
+    filout.close ()
+            

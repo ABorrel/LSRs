@@ -5,7 +5,10 @@ import runOtherSoft
 import parsePDB
 import writePDBfile
 import parseWater
-from os import path
+import RunBlast
+import downloadFile
+from os import path, removedirs, remove, listdir
+from shutil import rmtree
 
 
 
@@ -26,7 +29,7 @@ def builtDatasetGlobal (p_list_ligand, substruct, thresold_RX = 2.5, thresold_ID
     # select reference
     # remove RX and same chain
     p_dir_align = pathManage.result(substruct + "/datasetBuilding/aligmentRef")
-    filterReferenceByOne (d_dataset, p_dir_align, thresold_RX = 2.5)
+    filterReferenceByOne (d_dataset, p_dir_align, substruct, thresold_RX = 2.5)
     
     if verbose : toolViewStructDataset (d_dataset)
     
@@ -35,7 +38,16 @@ def builtDatasetGlobal (p_list_ligand, substruct, thresold_RX = 2.5, thresold_ID
     
     if verbose : toolViewStructDataset (d_dataset)
 
+    # run blast by sequence conserved 
+    p_dir_blast = pathManage.result(substruct + "/datasetBuilding/blast")
+    RunBlast.globalRun (d_dataset, p_dir_blast)
     
+    # filter by e-value and RX
+    filterBlastResult (d_dataset, p_dir_dataset,substruct, thresold_RX = 2.5, thresold_blast = 1e-4)
+    
+    # clean folder dataset
+    cleanFolderDataset (d_dataset, p_dir_dataset)
+
     
 
 def extractReference (p_list_ligand, p_dir_dataset, p_dir_result, substruct):    
@@ -49,7 +61,7 @@ def extractReference (p_list_ligand, p_dir_dataset, p_dir_result, substruct):
     # download PDB and fasta associated
     l_p_PDB = []
     l_p_fasta = []
-    for PDB_ID in d_ligand[substruct][0:50] :
+    for PDB_ID in d_ligand[substruct] :
         PDB_ID = PDB_ID.upper() 
         p_pdb = downloadFile.importPDB(PDB_ID, p_dir_dataset, dir_by_PDB = 1, debug = 1)
         p_fasta = downloadFile.importFasta(PDB_ID, p_dir_dataset, dir_by_PDB = 1, debug = 1)
@@ -77,7 +89,7 @@ def extractReference (p_list_ligand, p_dir_dataset, p_dir_result, substruct):
     return d_dataset
     
 
-def filterReferenceByOne (d_dataset, pr_aligmenent_water, thresold_RX = 2.5):
+def filterReferenceByOne (d_dataset, pr_aligmenent_water, substruct, thresold_RX = 2.5):
     
     for PDB_ref in d_dataset.keys () : 
         if float(d_dataset[PDB_ref]["RX"]) >= thresold_RX : 
@@ -86,7 +98,7 @@ def filterReferenceByOne (d_dataset, pr_aligmenent_water, thresold_RX = 2.5):
             # filter redundency by PDB // run PDB
             result_align = calculIdenticWaterCross(d_dataset[PDB_ref]["p_fasta_chain"], pr_aligmenent_water)
             # select best by PDB ID -> remove chain if 100% sequence identity
-            selectBestFilePDBFasta (d_dataset[PDB_ref], result_align)
+            selectBestFilePDBFasta (d_dataset[PDB_ref], result_align, substruct)
             
             
 
@@ -175,7 +187,8 @@ def calculIdenticWaterCross(l_p_fasta, pr_alignement) :
             while j < nb_fasta : 
                 if not path.exists( pr_alignement + first_key + "_" + l_p_fasta[j].split("/")[-1][0:-6] + ".water") :
                     path_file_water = runOtherSoft.water(l_p_fasta[i], l_p_fasta[j], pr_alignement + first_key + "_" + l_p_fasta[j].split("/")[-1][0:-6] + ".water")
-                dico_out[first_key] [l_p_fasta[j].split("/")[-1][0:-6]] = parseWater.waterFile(pr_alignement + first_key + "_" + l_p_fasta[j].split("/")[-1][0:-6] + ".water")[3]
+                if path.exists( pr_alignement + first_key + "_" + l_p_fasta[j].split("/")[-1][0:-6] + ".water") : # case DNA sequence in fasta
+                    dico_out[first_key] [l_p_fasta[j].split("/")[-1][0:-6]] = parseWater.waterFile(pr_alignement + first_key + "_" + l_p_fasta[j].split("/")[-1][0:-6] + ".water")[3]
                 j = j + 1
             i = i + 1
     
@@ -183,7 +196,7 @@ def calculIdenticWaterCross(l_p_fasta, pr_alignement) :
 
 
 
-def selectBestFilePDBFasta (d_PDB, result_align) : 
+def selectBestFilePDBFasta (d_PDB, result_align, substruct) : 
     
     # case with only one PDB
     d_PDB["best"] = {}
@@ -197,10 +210,21 @@ def selectBestFilePDBFasta (d_PDB, result_align) :
                 if result_align[primary_key][secondary_key] != "100.0%" : 
                     d_PDB["best"]["PDB"] = d_PDB["p_pdb"]
                     d_PDB["best"]["fasta"] = d_PDB["p_fasta"]
+                    # fusion fasta for blast remove header
+                    tool.fusionchainfasta(d_PDB["p_fasta"])
                     return 
         
-        d_PDB["best"]["PDB"] = d_PDB["p_pdb_chain"][0]
-        d_PDB["best"]["fasta"] = d_PDB["p_fasta_chain"][0]
+        # control substructure presented // case identity 100%
+        nb_chain = len (d_PDB["p_pdb_chain"])
+        i = 0
+        while i < nb_chain : 
+            l_ligand = parsePDB.retrieveListLigand(d_PDB["p_pdb_chain"][i])
+            if substruct in l_ligand : 
+                d_PDB["best"]["PDB"] = d_PDB["p_pdb_chain"][i]
+                d_PDB["best"]["fasta"] = d_PDB["p_fasta_chain"][i]
+                return
+            else : 
+                i = i + 1
         
     
     
@@ -228,6 +252,60 @@ def filterGlobalDataset (d_dataset, p_dir_align) :
                         else : 
                             d_dataset[primary_key[0:4]]["conserve"] = 0
                         
+
+
+def filterBlastResult (d_dataset, p_dir_dataset, sustruct, thresold_RX = 2.5, thresold_blast = 1e-4) : 
+    
+    """
+    Filter resolution PDB
+    Filter evalue
+    """
+    
+    for pdb_ref in d_dataset.keys () : 
+        if d_dataset[pdb_ref]["conserve"] == 0 : continue
+        for pdb_blast_chain in d_dataset[pdb_ref]["align"].keys () : 
+            # filter e.value
+#             print d_dataset[pdb_ref]["align"][pdb_blast_chain], thresold_blast
+            # remove thresold and reference cleanner
+            if d_dataset[pdb_ref]["align"][pdb_blast_chain] <= thresold_blast and not pdb_blast_chain[0:4] in d_dataset.keys (): 
+                # dowload PDB files
+                pdb_blast = pdb_blast_chain[0:4]
+                p_pdb = downloadFile.importPDB(pdb_blast, p_dir_dataset + pdb_ref + "/", dir_by_PDB=0)
+                separeByChain(p_pdb)
+                RX = parsePDB.resolution(p_pdb)
+                l_ligand = parsePDB.retrieveListLigand(p_pdb)
+                # remove apo forms and remove not substiuant
+                if l_ligand == [] or sustruct in l_ligand: 
+                    continue
+                # case RMN structure
+                try : RX = float(RX)
+                except: continue
+                if float(RX) <= thresold_RX : 
+                    if not "blast" in d_dataset[pdb_ref].keys () : 
+                        d_dataset[pdb_ref]["blast"] = [pdb_blast_chain]
+                    else : 
+                        d_dataset[pdb_ref]["blast"].append (pdb_blast_chain)
+            
+            
+def cleanFolderDataset (d_dataset, p_dir_dataset) : 
+    print d_dataset.keys ()
+    
+    for PDB_ref in  d_dataset.keys () : 
+        if d_dataset[PDB_ref]["conserve"] == 0 or not "blast" in d_dataset[PDB_ref].keys (): 
+            rmtree(p_dir_dataset + PDB_ref + "/")
+            continue
+        else : 
+            pr_ref = p_dir_dataset + PDB_ref + "/"
+            l_file_dir_ref = listdir(p_dir_dataset + PDB_ref)
+            for filein_rep in l_file_dir_ref : 
+
+                if pr_ref +  filein_rep in [d_dataset[PDB_ref]["best"]["PDB"], d_dataset[PDB_ref]["best"]["fasta"]] : 
+                    continue
+                elif filein_rep[0:-4] in d_dataset[PDB_ref]["blast"] : 
+                    continue
+                else : 
+                    remove(pr_ref + filein_rep)
+                
     
     
 def toolViewStructDataset (d_dataset):    
