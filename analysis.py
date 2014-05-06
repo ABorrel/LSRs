@@ -7,6 +7,7 @@ import pathManage
 import parseShaep
 import parsePDB
 import writePDBfile
+import runOtherSoft
 
 
 def selectSmileCode (p_file_smile, minimal_length_smile = 3):
@@ -15,8 +16,10 @@ def selectSmileCode (p_file_smile, minimal_length_smile = 3):
                -> separated by .
     """
     p_filout = p_file_smile[0:-4] + ".filter"
+    p_filout_by_ligand = p_file_smile[0:-4] + "_by_ligand.filter"
     filout = open (p_filout, "w")
-    
+    filout_by_ligand = open (p_filout_by_ligand, "w")    
+
     d_smile = {}
     
     filin = open (p_file_smile, "r")
@@ -66,7 +69,22 @@ def selectSmileCode (p_file_smile, minimal_length_smile = 3):
         filout.write (str (smile_code) + "\t" + str (len (d_smile[smile_code]["PDB"])) + "\t" + " ".join (d_smile[smile_code]["PDB"]) + "\t" + " ".join(d_smile[smile_code]["ligand"]) + "\n")
             
     filout.close ()
-        
+    
+    # classe by ligand
+    d_l = {}
+    for smile_code in d_smile.keys () : 
+        #print smile_code
+        #print d_smile[smile_code]["ligand"]
+        for lig in d_smile[smile_code]["ligand"] : 
+            if not lig in d_l.keys () : 
+                d_l[lig] = [str (smile_code)]
+            else : 	
+                d_l[lig].append (str(smile_code))
+    
+    for ligand in d_l.keys () : 
+        filout_by_ligand.write (ligand + "\t" + " ---  ".join(d_l[ligand]) + "\n")
+    filout_by_ligand.close ()
+  
     return p_filout
     
 
@@ -90,40 +108,70 @@ def globalShaepStat (substruct):
                 if d_shaep_parsed != {} : 
                     filout.write (ref_folder + "_" + file_result[10:-4] + "\t" + str(d_shaep_parsed["best_similarity"]) + "\t" + str(d_shaep_parsed["shape_similarity"]) + "\t" + str(d_shaep_parsed["ESP_similarity"]) + "\n")
     filout.close ()
+    runOtherSoft.RhistogramMultiple (p_filout, "Shaep_score")
                 
         
         
-def computeRMSDBS (p_ref, p_BS, pr_result) :
+def computeRMSDBS (p_ref, p_query, p_substruct, pr_result, thresold_BS = 6) :
     
-    p_filout_pdb = pr_result + p_BS.split ("/")[-1][0:-4] + "_" + p_ref.split ("/")[-1]
-    filout_pdb = open (p_filout_pdb, "w")
     
-    l_atomBS_parsed = parsePDB.loadCoordSectionPDB(p_BS, "ATOM")
-    l_pdb_parsed = parsePDB.loadCoordSectionPDB(p_ref)
+    print p_ref, p_query
+    print p_substruct
     
-    writePDBfile.coordinateSection(filout_pdb, l_pdb_parsed, recorder = "ATOM")
-    writePDBfile.coordinateSection(filout_pdb, l_atomBS_parsed, recorder = "ATOM")
+    l_atom_query_parsed = parsePDB.loadCoordSectionPDB(p_query, "ATOM")
+    l_atom_ref_parsed = parsePDB.loadCoordSectionPDB(p_ref, "ATOM")
+    
+    l_atom_substruct = parsePDB.loadCoordSectionPDB(p_substruct)
+    
+    
     
     l_BS_ref = []
-    for atomBS_parsed in l_atomBS_parsed :
+    
+    for atom_substruct in l_atom_substruct : 
+        for atom_ref in l_atom_ref_parsed : 
+            d_atom = parsePDB.distanceTwoatoms(atom_substruct, atom_ref)
+            if d_atom <= thresold_BS : 
+                l_BS_ref.append (atom_ref)
+    # retrieve residue full
+    l_BS_ref = parsePDB.getResidues(l_BS_ref, l_atom_ref_parsed)
+    
+#     print len (l_BS_ref)
+#     print len (l_atom_query_parsed)
+    
+    
+    l_BS_query = []
+    flag_identic_crystal = 1
+    for atomBS_ref in l_BS_ref :
 #         print  atomBS_parsed 
         d_max = 100.0 
-        for atom_ref in l_pdb_parsed :
-            if atomBS_parsed["resName"] ==  atom_ref["resName"] and atomBS_parsed["name"] ==  atom_ref["name"] : 
-#                 print "@@@@@@@@@@@"
-                d = parsePDB.distanceTwoatoms(atomBS_parsed, atom_ref)
-#                 print d
+        for atom_query in l_atom_query_parsed :
+            if atom_query["resName"] ==  atomBS_ref["resName"] and atom_query["name"] ==  atomBS_ref["name"] : 
+                d = parsePDB.distanceTwoatoms(atom_query, atomBS_ref)
                 if d < d_max : 
                     d_max = d
-                    res_temp = atom_ref
+                    res_temp = atom_query
+                
         
-        if d_max != 100.0 : 
-            l_BS_ref.append (deepcopy(res_temp))
+        if d_max < 10.0 : 
+            l_BS_query.append (deepcopy(res_temp))
+            # identic check number
+            if res_temp["resSeq"] != atomBS_ref["resSeq"] : 
+                flag_identic_crystal = 0
         else : 
+            # case structure not found
             return []
     
+    
+#     print len (l_BS_query), len (l_BS_ref)
+    l_RMSD = RMSDTwoList (l_BS_query, l_BS_ref)
+    
+    # write PDB
+    p_filout_pdb = pr_result + p_query.split ("/")[-1][0:-4] + "_" + str (flag_identic_crystal) + "_" + p_ref.split ("/")[-1]
+    filout_pdb = open (p_filout_pdb, "w")
+    writePDBfile.coordinateSection(filout_pdb, l_BS_ref, recorder = "ATOM")
+    writePDBfile.coordinateSection(filout_pdb, l_BS_query, recorder = "ATOM", header = 0 )
     filout_pdb.close ()
-    l_RMSD = RMSDTwoList (l_atomBS_parsed, l_BS_ref, )
+    
     return l_RMSD
     
     
@@ -131,6 +179,7 @@ def computeRMSDBS (p_ref, p_BS, pr_result) :
 def RMSDTwoList (l_atom1, l_atom2) : 
     
     nb_ca = 0.0
+    d_max = {"value": 0.0}
     diff_position_all = 0.0
     diff_position_ca = 0.0
     
@@ -140,19 +189,25 @@ def RMSDTwoList (l_atom1, l_atom2) :
     else : 
         i = 0
         while i < len (l_atom1): 
-            if l_atom1[i]["name"] != l_atom2[i]["name"] : 
+            if l_atom1[i]["name"] != l_atom2[i]["name"] and l_atom1[i]["resName"] != l_atom2[i]["resName"]: 
                 print l_atom1[i]["name"] , l_atom2[i]["name"]
                 print "ERROR"
                 return []
             else : 
-                diff_position_all = diff_position_all + (l_atom1[i]["x"] - l_atom2[i]["x"]) * (l_atom1[i]["x"] - l_atom2[i]["x"]) + (l_atom1[i]["y"] - l_atom2[i]["y"]) * (l_atom1[i]["y"] - l_atom2[i]["y"]) + (l_atom1[i]["z"] - l_atom2[i]["z"]) * (l_atom1[i]["z"] - l_atom2[i]["z"])
+                d_atom = parsePDB.distanceTwoatoms(l_atom1[i], l_atom2[i])
+                diff_position_all = diff_position_all + d_atom
                 
                 if l_atom1[i]["name"] == "CA" : 
-                    diff_position_ca = diff_position_ca + (l_atom1[i]["x"] - l_atom2[i]["x"]) * (l_atom1[i]["x"] - l_atom2[i]["x"]) + (l_atom1[i]["y"] - l_atom2[i]["y"]) * (l_atom1[i]["y"] - l_atom2[i]["y"]) + (l_atom1[i]["z"] - l_atom2[i]["z"]) * (l_atom1[i]["z"] - l_atom2[i]["z"])
+                    diff_position_ca = diff_position_ca + d_atom
                     nb_ca = nb_ca + 1
+                
+                if d_atom > d_max["value"] : 
+                    d_max["value"] = d_atom
+                    d_max["atom"] = l_atom1[i]["name"] + "-" +  l_atom2[i]["name"] + "_" + l_atom1[i]["resName"] + "-" +  l_atom2[i]["resName"]
+                    
             i = i + 1
-    
-    return [sqrt(diff_position_all / len (l_atom1)), sqrt (diff_position_ca / nb_ca), len (l_atom1)]
+#     print d_max
+    return [sqrt(diff_position_all / len (l_atom1)), sqrt (diff_position_ca / nb_ca), d_max["value"], len (l_atom1)]
                 
             
             

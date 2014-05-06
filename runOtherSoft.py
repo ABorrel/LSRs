@@ -21,10 +21,14 @@ def runTMalign(path_pr1, path_pr2, path_dir_out, debug = 1) :
     p_pr1 = tool.removeChain (path_pr1, path_dir_out)
     p_pr2 = tool.removeChain (path_pr2, path_dir_out)
     
+    # if exist doesnt run again
+    
+    
     cmd_run = TMalign + " " + str (p_pr1) + " " + str (p_pr2) + " -o " + path_dir_out + "align.out -m " + path_dir_out + "matrix.out" +" > " + path_dir_out + "RMSD"
     if debug : 
         print cmd_run
-    os.system(cmd_run)
+    if not os.path.exists(path_dir_out + "align.out") and not  os.path.exists( path_dir_out + "matrix.out")  : 
+        os.system(cmd_run)
     
     return [path_dir_out + "align.out", path_dir_out + "align.out_all", path_dir_out + "align.out_atm",path_dir_out + "align.out_all_atm", path_dir_out + "RMSD" ]
 
@@ -41,35 +45,47 @@ def  babelConvertPDBtoSMILE (p_file_pdb) :
     filin = open (path_filout, "r")
     l_Fline = filin.readlines ()
     filin.close ()
-    smile = l_Fline[0].split ("\t")[0]
+    try : smile = l_Fline[0].split ("\t")[0]
+    except : return "0"
     
     return smile
 
 
 
-def runShaep (p_struct1, p_struct2, p_out):
+def runShaep (p_struct1, p_struct2, p_out, clean = 1):
+    if clean == 1 : 
+        if os.path.exists(p_out) : 
+            os.remove(p_out)
+        else : 
+            pass
+    elif os.path.exists(p_out) :
+        return p_out
     
+    
+    # run
     cmd = shaep + " --output-file "  + p_out + " " + p_struct1 + " " + p_struct2  + " --noOptimization" 
-    
+            
     print cmd
     os.system (cmd)
-    
+            
     # supp others files
     cmd_rm = "rm " + p_out[0:-4] + "_hits.txt"
-    
     os.system (cmd_rm)
-    
     
     return p_out
 
 
-def Rhistogram (p_filin, name_main, brk = 10) : 
+def RhistogramMultiple (p_filin, name_main, brk = 20) : 
     
-    cmd_run = "./histograms.R " + p_filin + " " + name_main + " " + str (brk) + " 0"
+    cmd_run = "./histograms.R " + p_filin + " " + name_main + " " + str (brk) 
     print cmd_run
     os.system (cmd_run)
     
-
+def Rhistogram (p_filin, name_main, brk = 100) : 
+    
+    cmd_run = "./histogram.R " + p_filin + " " + name_main + " " + str (brk) 
+    print cmd_run
+    os.system (cmd_run)
     
 def water(path_file_fasta1, path_file_fasta2, path_filout, gapopen = 10, gapextend = 0.5, debug = 1):
     """
@@ -87,3 +103,15 @@ def water(path_file_fasta1, path_file_fasta2, path_filout, gapopen = 10, gapexte
         print cmd
     os.system (cmd)   
     return path_filout    
+
+
+def babelPDBtoMOL2 (path_file_pdb) : 
+    
+    path_filout = path_file_pdb[0:-4] + ".mol2"
+    cmd_convert = "babel  " + path_file_pdb + " "+ path_filout
+    print cmd_convert
+    os.system (cmd_convert + " 2> /dev/null")
+    return path_filout
+
+
+

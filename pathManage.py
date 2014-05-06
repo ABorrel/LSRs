@@ -91,6 +91,37 @@ def findPDBRef(p_dataset_folder) :
             return p_dataset_folder + filein
     
     return 0
+
+def findPDBQueryDataset (p_dataset_folder):
+    
+    l_filesin = listdir(p_dataset_folder)
+    
+    name_ref = path.dirname(p_dataset_folder).split ("/")[-1]
+    
+    l_out = []
+    for filein in l_filesin : 
+        if search("^" + name_ref, filein) : 
+            continue
+        elif search(".pdb" , filein) and len(filein.split ("_")[0]) == 4: 
+            l_out.append (p_dataset_folder + filein)
+            
+    
+    return l_out    
+ 
+ 
+    
+def findPDBQueryTransloc (p_result):
+    
+    l_filesin = listdir(p_result)
+    
+    
+    l_out = []
+    for filein in l_filesin : 
+        if search("CX_", filein) : 
+            l_out.append (p_result + filein)
+            
+    
+    return l_out     
     
     
 def findligandRef(p_dataset_folder, substruct) :     
@@ -108,7 +139,7 @@ def findSubstructRef (p_dataset_folder, substruct):
     l_filesin = listdir(p_dataset_folder)
     name_ref = path.dirname(p_dataset_folder).split ("/")[-1]
     for filein in l_filesin : 
-        if search(name_ref, filein) and search("^subref_", filein): 
+        if search(name_ref, filein) and search("^subref_", filein) and search(".pdb", filein): 
             return p_dataset_folder + filein
         
     return 0
@@ -134,7 +165,7 @@ def findListSmileFile(substruct) :
     l_file = listdir(pr_result)
     
     for name_file in l_file : 
-        if search("smile.txt", name_file) : 
+        if search("smile", name_file) : 
             l_out.append (pr_result + name_file)
     
             
@@ -156,16 +187,3 @@ def findFileBS(pr_result, PDB_query) :
             
             
             
-            
-    
-    
-    
-    
-    
-    print    file_ref[0:-4]   
-        
-    
-    
-    
-
-

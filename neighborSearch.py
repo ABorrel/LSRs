@@ -34,7 +34,7 @@ def searchNeighborAtom (lig_ref, lig_superimposed, p_complex, substruct, p_lig, 
     
     if l_atom_substruct == [] : 
         print "Not substruct find"
-        return 0
+        return 0,0
 #     else : 
 #         print len (l_atom_substruct), "*******"
     
@@ -73,6 +73,6 @@ def searchNeighborAtom (lig_ref, lig_superimposed, p_complex, substruct, p_lig, 
     writePDBfile.coordinateSection(p_binding, l_atom_res, "ATOM", p_binding, connect_matrix = 0)
     
     
-    return smile_code
+    return smile_code, p_file_substruct
 
 

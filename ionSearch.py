@@ -26,6 +26,8 @@ def retrieveTwoAtomForAngle (lig_parsed, substruct):
     if substruct == "ADP" or substruct == "POP" : 
         if len (l_phosphate) == 2 : 
             return l_phosphate
+        else : 
+            return []
     elif substruct == "AMP" : 
         if len (l_phosphate) > 1 : 
             print "ERROR ION l29 ionSearch.py"
@@ -33,8 +35,7 @@ def retrieveTwoAtomForAngle (lig_parsed, substruct):
             if atom_lig["name"] == "O5'" : 
                 l_phosphate.append (atom_lig)
     
-    
-    return l_phosphate 
+    return l_phosphate
 
 
 
