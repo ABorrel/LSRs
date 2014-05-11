@@ -9,6 +9,7 @@ import RunBlast
 import downloadFile
 from os import path, removedirs, remove, listdir
 from shutil import rmtree
+import analysis
 
 
 
@@ -23,6 +24,9 @@ def builtDatasetGlobal (p_list_ligand, substruct, thresold_RX = 2.5, thresold_ID
     
     # first extract reference
     d_dataset = extractReference (p_list_ligand, p_dir_dataset, p_dir_result, substruct)
+    
+    # file with name and family
+    analysis.familyPDBRef (d_dataset, p_dir_dataset + "family_PDB.txt")
     
     if verbose : toolViewStructDataset (d_dataset)
     
@@ -51,7 +55,7 @@ def builtDatasetGlobal (p_list_ligand, substruct, thresold_RX = 2.5, thresold_ID
     
     # clean folder dataset
     cleanFolderDataset (d_dataset, p_dir_dataset)
-
+    
     
 
 def extractReference (p_list_ligand, p_dir_dataset, p_dir_result, substruct):    

@@ -115,9 +115,6 @@ def globalShaepStat (substruct):
 def computeRMSDBS (p_ref, p_query, p_substruct, pr_result, thresold_BS = 6) :
     
     
-    print p_ref, p_query
-    print p_substruct
-    
     l_atom_query_parsed = parsePDB.loadCoordSectionPDB(p_query, "ATOM")
     l_atom_ref_parsed = parsePDB.loadCoordSectionPDB(p_ref, "ATOM")
     
@@ -166,13 +163,16 @@ def computeRMSDBS (p_ref, p_query, p_substruct, pr_result, thresold_BS = 6) :
     l_RMSD = RMSDTwoList (l_BS_query, l_BS_ref)
     
     # write PDB
-    p_filout_pdb = pr_result + p_query.split ("/")[-1][0:-4] + "_" + str (flag_identic_crystal) + "_" + p_ref.split ("/")[-1]
+    p_filout_pdb = pr_result + p_query.split ("/")[-1][0:-4] + "_" + str (flag_identic_crystal) + "_" + p_substruct.split ("_")[-2] + "_" + p_ref.split ("/")[-1]
     filout_pdb = open (p_filout_pdb, "w")
     writePDBfile.coordinateSection(filout_pdb, l_BS_ref, recorder = "ATOM")
     writePDBfile.coordinateSection(filout_pdb, l_BS_query, recorder = "ATOM", header = 0 )
     filout_pdb.close ()
     
-    return l_RMSD
+    if l_RMSD == [] : 
+        return []
+    else : 
+        return l_RMSD + [flag_identic_crystal]
     
     
     
@@ -208,23 +208,48 @@ def RMSDTwoList (l_atom1, l_atom2) :
             i = i + 1
 #     print d_max
     return [sqrt(diff_position_all / len (l_atom1)), sqrt (diff_position_ca / nb_ca), d_max["value"], len (l_atom1)]
-                
+ 
+ 
+ 
+def familyPDBRef (d_dataset, p_filout) : 
+    
+    print d_dataset
+    filout = open (p_filout, "w")
+    filout.write ("PDBID\tUniprot\tName protein\tkwords\n")
+    
+    for PDB in d_dataset.keys () : 
+        p_pdb = d_dataset[PDB]['p_pdb']
+        name_prot = parsePDB.nameProtein(p_pdb)
+        uniprot_id = parsePDB.UniProtID(p_pdb)
+        kwords = parsePDB.keywords(p_pdb)
+        filout.write (PDB + "\t" + uniprot_id + "\t" + name_prot + "\t" + kwords + "\n")
+        
+    filout.close ()
+    
+    
+        
+def findFamily (PDB_ID, p_file_family):
+    
+    filin = open (p_file_family, "r")
+    l_line_flin = filin.readlines ()
+    filin.close ()
+    
+    for line_filin in l_line_flin [1:]: 
+        name_pr = line_filin.strip ().split ("\t")[-2]
+        kwords = line_filin.strip ().split ("\t")[-1]
+        PDB = line_filin.strip ().split ("\t")[0]
+        if PDB == PDB_ID : 
+            # kinase
+            if search("KINASE", name_pr.upper ()) or search("KINASE", kwords.upper ()) : 
+                return "kinase"
             
-            
-            
-            
-            
-                
+            elif search("HEAT SHOCK PROTEIN", name_pr.upper ()) or search("HEAT SHOCK PROTEIN", kwords.upper ()) or search("CHAPERONE", name_pr.upper ()) or search("CHAPERONE", kwords.upper ()) or         search("CHAPERONIN", name_pr.upper ()) or search("CHAPERONIN", kwords.upper ()) or search("HSP", name_pr.upper ()) or search("HSP", kwords.upper ()) : 
+                return "HSP"
+            else : 
+                return "others"
     
-    
-    
-    
-    
-    
+    return "others"
     
     
 
-
-
-
-
+            

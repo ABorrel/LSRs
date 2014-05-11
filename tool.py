@@ -88,3 +88,21 @@ def fusionchainfasta(p_fasta) :
     filout.write (comment + "\n" + seq_write)
     filout.close ()
             
+
+def closeDicoFile (d_filout_lig) : 
+    
+    for k in d_filout_lig.keys () : 
+        d_filout_lig[k].close ()
+        
+        
+
+    
+    
+    
+    
+    
+    
+    
+    
+    
+

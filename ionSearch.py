@@ -35,6 +35,7 @@ def retrieveTwoAtomForAngle (lig_parsed, substruct):
             if atom_lig["name"] == "O5'" : 
                 l_phosphate.append (atom_lig)
     
+    
     return l_phosphate
 
 

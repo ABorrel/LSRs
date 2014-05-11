@@ -490,3 +490,47 @@ def resolution(p_PDB):
                 resolution = "NA"
             return resolution
     return "NA"
+
+
+
+def nameProtein (p_filin) : 
+    
+    filin = open (p_filin, "r")
+    fileLines =filin.readlines()
+    filin.close () 
+
+    for line in fileLines:
+        if search('^COMPND   2', line):
+            
+            protein_name = line.strip().split(': ')[1].strip(';')
+            return protein_name 
+            
+    return "NA"    
+    
+    
+def UniProtID (p_filin):   
+    
+    filin = open (p_filin, "r")
+    fileLines =filin.readlines()
+    filin.close () 
+
+    for line in fileLines:
+        if search('^DBREF', line):
+            try : uniprot_id = line.split()[7]
+            except : uniprot_id = "NA"
+            return uniprot_id 
+    return "NA"
+    
+def keywords (p_filin): 
+    filin = open (p_filin, "r")
+    fileLines =filin.readlines()
+    filin.close () 
+
+    for line in fileLines:
+        if search('^KEYWDS', line):
+            try : kwords = line.strip()
+            except : kwords = "NA"
+            
+            return kwords 
+        
+    return "NA"

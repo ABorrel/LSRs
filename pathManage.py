@@ -114,6 +114,8 @@ def findPDBQueryTransloc (p_result):
     
     l_filesin = listdir(p_result)
     
+    print p_result, "****"
+    
     
     l_out = []
     for filein in l_filesin : 
@@ -136,13 +138,14 @@ def findligandRef(p_dataset_folder, substruct) :
  
 def findSubstructRef (p_dataset_folder, substruct): 
     
+    l_out = []
     l_filesin = listdir(p_dataset_folder)
     name_ref = path.dirname(p_dataset_folder).split ("/")[-1]
     for filein in l_filesin : 
         if search(name_ref, filein) and search("^subref_", filein) and search(".pdb", filein): 
-            return p_dataset_folder + filein
+            l_out.append (p_dataset_folder + filein)
         
-    return 0
+    return l_out
     
     
     
@@ -184,6 +187,33 @@ def findFileBS(pr_result, PDB_query) :
     
     return l_out 
             
-            
-            
+    
+def findligandQuery(pr_dataset, name_ligand, PDB_query) : 
+    
+    l_filin = listdir(pr_dataset)
+    
+    for filin in l_filin : 
+        if search (name_ligand, filin) and search (PDB_query, filin) and search (".pdb", filin) : 
+            return pr_dataset + filin
+    
+    
+
+def findSubstructFind(pr_result, name_ligand, PDB_query) : 
+    
+    l_filin = listdir(pr_result )
+    
+    for filin in l_filin : 
+        if search (name_ligand, filin) and search ("^substruct", filin) and search (".pdb", filin) and search (PDB_query, filin) : 
+            return pr_result + filin    
+    
+    
+    
+    
+def findFamilyFile (name_lig): 
+    
+    pr_dataset = dataset (name_lig)
+    return pr_dataset + "family_PDB.txt"
+    
+     
+                
             
