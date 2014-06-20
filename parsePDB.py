@@ -72,9 +72,9 @@ def lineCoords (line):
     return atom
 
 
-def loadCoordSectionPDB (path_PDB_file, section = "", debug = 1):
+def loadCoordSectionPDB (path_PDB_file, section = "", debug = 0):
     """
-    Retrieve every atom in cordiante section. If it is NMR complex
+    Retrieve every atom in cordinate section. If it is NMR complex
     retrieve only first model
     
     """
@@ -83,6 +83,7 @@ def loadCoordSectionPDB (path_PDB_file, section = "", debug = 1):
     filin = open (path_PDB_file, "r")
     list_line_PDB = filin.readlines()
     filin.close ()
+    
     
     for line_PDB in list_line_PDB :
         #End model
@@ -357,12 +358,15 @@ def retrieveSeq (p_PDB) :
     return s_out
  
 def buildMatrixConnect (l_atom_parsed):
+    
+    for atomLigand in l_atom_parsed:
+        atomLigand["connect"] = []
 
     for atomLigand in l_atom_parsed:
         atomLigand["connect"].append(atomLigand["serial"])
         for atomPDB in l_atom_parsed:
             distance = distanceTwoatoms(atomLigand, atomPDB)
-            if distance < 1.7 and distance != 0:
+            if distance < 1.8 and distance != 0.1 and distance != "ERROR":
                 if not atomPDB["serial"] in atomLigand["connect"]:
                     atomLigand["connect"].append(atomPDB["serial"])
 
@@ -502,7 +506,8 @@ def nameProtein (p_filin) :
     for line in fileLines:
         if search('^COMPND   2', line):
             
-            protein_name = line.strip().split(': ')[1].strip(';')
+            try: protein_name = line.strip().split(': ')[1].strip(';')
+            except : return "NA"
             return protein_name 
             
     return "NA"    
@@ -534,3 +539,24 @@ def keywords (p_filin):
             return kwords 
         
     return "NA"
+
+
+def retrieveListIon(l_atom_parsed) : 
+    
+    l_metal = ["B", "F", "I", "K", "V", "W", "Y","AG", "AL", "AR" ,"AU", "BA", "BE", "BR", "CA","CD","CE","CF","CL","CO","CR","CS","CU","EU","FE","GA","GD","HE","HF","HG","IN","IR","KR","LA","LI","LU" ,"MG","MN" ,"MO" ,"NA","ND","NE","NI","OS","PB","PD","PR","PT","RB","RE","RU","SB","SE","SI","SM","SR","TA","TB","TE","TL","XE","YB","ZN","ZR"]
+    l_out = []
+    
+    for atom_parsed in l_atom_parsed : 
+        if atom_parsed["resName"] in l_metal and not atom_parsed["resName"] in l_out: 
+            l_out.append (atom_parsed["resName"])
+    
+    return l_out
+        
+        
+        
+        
+    
+    
+    
+    
+

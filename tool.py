@@ -92,8 +92,8 @@ def fusionchainfasta(p_fasta) :
 def closeDicoFile (d_filout_lig) : 
     
     for k in d_filout_lig.keys () : 
-        d_filout_lig[k].close ()
-        
+        try : d_filout_lig[k].close ()
+        except : pass
         
 
     

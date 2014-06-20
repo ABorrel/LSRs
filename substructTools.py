@@ -26,7 +26,29 @@ def retrieveSubstruct (l_lig_parsed, name_ligand):
             lig_parsed["name"] == "O6" or \
             lig_parsed["name"] == "O": 
                 l_pi2.append (deepcopy(lig_parsed))
-    
+                
+    elif name_ligand == "AMP" : 
+        for lig_parsed in l_lig_parsed : 
+            if lig_parsed["name"] == "P" or \
+                lig_parsed["name"] == "O1P" or \
+                lig_parsed["name"] == "O2P" or \
+                lig_parsed["name"] == "O5'" or \
+                lig_parsed["name"] == "O3P" : 
+                    l_pi1.append (deepcopy(lig_parsed))
+                    
+            if lig_parsed["name"] == "O5'" or \
+            lig_parsed["name"] == "C5'" or \
+            lig_parsed["name"] == "C4'" or \
+            lig_parsed["name"] == "O4'"or \
+            lig_parsed["name"] == "C3'" or \
+            lig_parsed["name"] == "O3'" or \
+            lig_parsed["name"] == "C2'"or \
+            lig_parsed["name"] == "O2'"or \
+            lig_parsed["name"] == "C1'": 
+                l_ribose.append (deepcopy(lig_parsed))
+            
+            
+            
     else : 
         for lig_parsed in l_lig_parsed : 
             
@@ -45,7 +67,7 @@ def retrieveSubstruct (l_lig_parsed, name_ligand):
             lig_parsed["name"] == "O1A" or \
             lig_parsed["name"] == "O2A" or \
             lig_parsed["name"] == "O3A" : 
-                print lig_parsed["name"]
+#                 print lig_parsed["name"]
                 l_pi1.append (deepcopy(lig_parsed))
             
             elif  lig_parsed["name"] == "PB" or \

@@ -30,7 +30,7 @@ def selectSmileCode (p_file_smile, minimal_length_smile = 3):
         
         l_element = line_smile.strip ().split ("\t")
         l_pdb = l_element [2].split (" ")
-        l_ligand = l_element[3].split (" ")
+        l_ligand = l_element[4].split (" ")
         smile = l_element[0]
         
         # length 
@@ -149,7 +149,7 @@ def computeRMSDBS (p_ref, p_query, p_substruct, pr_result, thresold_BS = 6) :
                     res_temp = atom_query
                 
         
-        if d_max < 10.0 : 
+        if d_max < thresold_BS : 
             l_BS_query.append (deepcopy(res_temp))
             # identic check number
             if res_temp["resSeq"] != atomBS_ref["resSeq"] : 

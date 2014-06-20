@@ -4,10 +4,9 @@ import downloadFile
 import runOtherSoft
 import parsePDB
 import writePDBfile
-import parseWater
+import parseEMBOSS
 import RunBlast
-import downloadFile
-from os import path, removedirs, remove, listdir
+from os import path, remove, listdir
 from shutil import rmtree
 import analysis
 
@@ -15,15 +14,15 @@ import analysis
 
 
 # rebuild the dataset
-def builtDatasetGlobal (p_list_ligand, substruct, thresold_RX = 2.5, thresold_IDseq = 90, thresold_blast = 1e-4, verbose = 1 ):
+def builtDatasetGlobal (p_list_ligand, ligand_ID, thresold_RX = 2.5, thresold_blast = 1e-4, verbose = 0 ):
     
     # directory with dataset
-    p_dir_dataset = pathManage.dataset(substruct)
+    p_dir_dataset = pathManage.dataset(ligand_ID)
     # directory with result
-    p_dir_result = pathManage.result(substruct + "/datasetBuilding")
+    p_dir_result = pathManage.result(ligand_ID + "/datasetBuilding")
     
     # first extract reference
-    d_dataset = extractReference (p_list_ligand, p_dir_dataset, p_dir_result, substruct)
+    d_dataset = extractReference (p_list_ligand, p_dir_dataset, p_dir_result, ligand_ID)
     
     # file with name and family
     analysis.familyPDBRef (d_dataset, p_dir_dataset + "family_PDB.txt")
@@ -32,8 +31,8 @@ def builtDatasetGlobal (p_list_ligand, substruct, thresold_RX = 2.5, thresold_ID
     
     # select reference
     # remove RX and same chain
-    p_dir_align = pathManage.result(substruct + "/datasetBuilding/aligmentRef")
-    filterReferenceByOne (d_dataset, p_dir_align, substruct, thresold_RX = 2.5)
+    p_dir_align = pathManage.result(ligand_ID + "/datasetBuilding/aligmentRef")
+    filterReferenceByOne (d_dataset, p_dir_align, ligand_ID, thresold_RX = thresold_RX)
     
     if verbose : toolViewStructDataset (d_dataset)
     
@@ -43,18 +42,18 @@ def builtDatasetGlobal (p_list_ligand, substruct, thresold_RX = 2.5, thresold_ID
     if verbose : toolViewStructDataset (d_dataset)
 
     # run blast by sequence conserved 
-    p_dir_blast = pathManage.result(substruct + "/datasetBuilding/blast")
+    p_dir_blast = pathManage.result(ligand_ID + "/datasetBuilding/blast")
     RunBlast.globalRun (d_dataset, p_dir_blast)
     
     if verbose : toolViewStructDataset (d_dataset)
     
     # filter by e-value and RX
-    filterBlastResult (d_dataset, p_dir_dataset,substruct, thresold_RX = 2.5, thresold_blast = 1e-4)
+    filterBlastResult (d_dataset, p_dir_dataset,ligand_ID, thresold_RX = thresold_RX, thresold_blast = thresold_blast)
     
     if verbose : toolViewStructDataset (d_dataset)
     
     # clean folder dataset
-    cleanFolderDataset (d_dataset, p_dir_dataset)
+#     cleanFolderDataset (d_dataset, p_dir_dataset)
     
     
 
@@ -71,8 +70,8 @@ def extractReference (p_list_ligand, p_dir_dataset, p_dir_result, substruct):
     l_p_fasta = []
     for PDB_ID in d_ligand[substruct] :
         PDB_ID = PDB_ID.upper() 
-        p_pdb = downloadFile.importPDB(PDB_ID, p_dir_dataset, dir_by_PDB = 1, debug = 1)
-        p_fasta = downloadFile.importFasta(PDB_ID, p_dir_dataset, dir_by_PDB = 1, debug = 1)
+        p_pdb = downloadFile.importPDB(PDB_ID, p_dir_dataset, dir_by_PDB = 1, debug = 1, dbPDB = "/home/borrel/saltBridgesProject/PDB/" )
+        p_fasta = downloadFile.importFasta(PDB_ID, p_dir_dataset, dir_by_PDB = 1, debug = 1, fastaGlobal = "/home/borrel/Yue_project/pdb_seqres.txt")
         
         if p_pdb != 0 and p_fasta != 0 : 
             l_p_pdb_chain = separeByChain (p_pdb)
@@ -98,14 +97,14 @@ def extractReference (p_list_ligand, p_dir_dataset, p_dir_result, substruct):
     return d_dataset
     
 
-def filterReferenceByOne (d_dataset, pr_aligmenent_water, substruct, thresold_RX = 2.5):
+def filterReferenceByOne (d_dataset, pr_aligmenent_needle, substruct, thresold_RX = 2.5):
     
     for PDB_ref in d_dataset.keys () : 
         if float(d_dataset[PDB_ref]["RX"]) >= thresold_RX : 
             d_dataset[PDB_ref] ["conserve"] = 0
         else : 
             # filter redundency by PDB // run PDB
-            result_align = calculIdenticWaterCross(d_dataset[PDB_ref]["p_fasta_chain"], pr_aligmenent_water)
+            result_align = calculIdenticNeedleCross(d_dataset[PDB_ref]["p_fasta_chain"], pr_aligmenent_needle)
             # select best by PDB ID -> remove chain if 100% sequence identity
             selectBestFilePDBFasta (d_dataset[PDB_ref], result_align, substruct)
             
@@ -166,7 +165,7 @@ def separeChainFasta (p_fasta, debug = 0) :
 
 
 
-def calculIdenticWaterCross(l_p_fasta, pr_alignement) : 
+def calculIdenticNeedleCross(l_p_fasta, pr_alignement) : 
     """
     Calcul identity structure
     args: -> list of fasta files
@@ -182,10 +181,10 @@ def calculIdenticWaterCross(l_p_fasta, pr_alignement) :
         first_key = l_p_fasta[0].split("/")[-1][0:-6] 
         dico_out[first_key] = {}
         if not path.exists( pr_alignement + first_key + "_" + l_p_fasta[1].split("/")[-1][0:-6] + ".water") : 
-            path_file_water = runOtherSoft.water(l_p_fasta[0],  l_p_fasta[1], pr_alignement + first_key + "_" + l_p_fasta[1].split("/")[-1][0:-6] + ".water")
+            path_file_needle = runOtherSoft.needle(l_p_fasta[0],  l_p_fasta[1], pr_alignement + first_key + "_" + l_p_fasta[1].split("/")[-1][0:-6] + ".water")
         else : 
-            path_file_water = pr_alignement + first_key + "_" + l_p_fasta[1].split("/")[-1][0:-6] + ".water"
-        dico_out[first_key] [l_p_fasta[1].split("/")[-1][0:-6]] = parseWater.waterFile(path_file_water)[3]
+            path_file_needle = pr_alignement + first_key + "_" + l_p_fasta[1].split("/")[-1][0:-6] + ".needle"
+        dico_out[first_key] [l_p_fasta[1].split("/")[-1][0:-6]] = parseEMBOSS.embossFile(path_file_needle)[3]
     else :
         nb_fasta = len (l_p_fasta)
         i = 0
@@ -194,12 +193,16 @@ def calculIdenticWaterCross(l_p_fasta, pr_alignement) :
             dico_out[first_key] = {}
             j = i + 1
             while j < nb_fasta : 
-                if not path.exists( pr_alignement + first_key + "_" + l_p_fasta[j].split("/")[-1][0:-6] + ".water") :
-                    path_file_water = runOtherSoft.water(l_p_fasta[i], l_p_fasta[j], pr_alignement + first_key + "_" + l_p_fasta[j].split("/")[-1][0:-6] + ".water")
+                if not path.exists( pr_alignement + first_key + "_" + l_p_fasta[j].split("/")[-1][0:-6] + ".needle") :
+                    path_file_needle = runOtherSoft.needle(l_p_fasta[i], l_p_fasta[j], pr_alignement + first_key + "_" + l_p_fasta[j].split("/")[-1][0:-6] + ".needle")
                 if path.exists( pr_alignement + first_key + "_" + l_p_fasta[j].split("/")[-1][0:-6] + ".water") : # case DNA sequence in fasta
-                    dico_out[first_key] [l_p_fasta[j].split("/")[-1][0:-6]] = parseWater.waterFile(pr_alignement + first_key + "_" + l_p_fasta[j].split("/")[-1][0:-6] + ".water")[3]
+                    dico_out[first_key] [l_p_fasta[j].split("/")[-1][0:-6]] = parseEMBOSS.embossFile(pr_alignement + first_key + "_" + l_p_fasta[j].split("/")[-1][0:-6] + ".needle")[3]
                 j = j + 1
             i = i + 1
+    
+    
+#     for i in dico_out.keys () : 
+#         print dico_out[i]
     
     return dico_out    
 
@@ -243,15 +246,17 @@ def filterGlobalDataset (d_dataset, p_dir_align) :
     l_all_fasta = []
     
     for PDB in d_dataset.keys () : 
+        d_dataset[PDB]["keep"] = PDB
         if d_dataset[PDB]["conserve"] == 1 : 
             if not "fasta" in d_dataset[PDB]["best"] : 
                 d_dataset[PDB]["conserve"] = 0
+                d_dataset[PDB]["keep"] = PDB
                 continue
             else : 
                 l_all_fasta.append (d_dataset[PDB]["best"]["fasta"])
              
     # alignmenet
-    result_align = calculIdenticWaterCross(l_all_fasta, p_dir_align)
+    result_align = calculIdenticNeedleCross(l_all_fasta, p_dir_align)
     
     # remove same protein
     for primary_key in result_align.keys () : 
@@ -262,8 +267,25 @@ def filterGlobalDataset (d_dataset, p_dir_align) :
                     else : 
                         if d_dataset[primary_key[0:4]]["RX"] < d_dataset[secondary_key[0:4]]["RX"] : 
                             d_dataset[secondary_key[0:4]]["conserve"] = 0
+                            d_dataset[secondary_key[0:4]]["keep"] = primary_key[0:4]
+                            d_dataset[primary_key[0:4]]["keep"] = primary_key[0:4]
                         else : 
                             d_dataset[primary_key[0:4]]["conserve"] = 0
+                            d_dataset[secondary_key[0:4]]["keep"] = secondary_key[0:4]
+                            d_dataset[primary_key[0:4]]["keep"] = secondary_key[0:4]
+    
+    filout_bilan = open (p_dir_align + "global_align_selected.txt", "w")
+    
+    for pdb_ref in d_dataset.keys () : 
+        print pdb_ref
+        print d_dataset[pdb_ref].keys ()
+        
+        try : filout_bilan.write (pdb_ref + "\t" + str(d_dataset[pdb_ref]["best"]["PDB"] ) + "\t" + str(d_dataset[pdb_ref]["keep"] ) + "\t" + str(d_dataset[pdb_ref]["conserve"]) + "\n")
+        except : filout_bilan.write( pdb_ref + "\t" + str("------") + "\t" + str(d_dataset[pdb_ref]["keep"]) + "\t" + str(d_dataset[pdb_ref]["conserve"]) + "\n")
+            
+    filout_bilan.close ()
+    
+    
                         
 
 
@@ -283,7 +305,11 @@ def filterBlastResult (d_dataset, p_dir_dataset, sustruct, thresold_RX = 2.5, th
             if d_dataset[pdb_ref]["align"][pdb_blast_chain] <= thresold_blast and not pdb_blast_chain[0:4] in d_dataset.keys (): 
                 # dowload PDB files
                 pdb_blast = pdb_blast_chain[0:4]
-                p_pdb_blast = downloadFile.importPDB(pdb_blast, p_dir_dataset + pdb_ref + "/", dir_by_PDB=0)
+                p_pdb_blast = downloadFile.importPDB(pdb_blast, p_dir_dataset + pdb_ref + "/", dir_by_PDB=0, dbPDB = "/home/borrel/saltBridgesProject/PDB/")
+                if p_pdb_blast == 0 : 
+                    continue
+                
+#                 print p_pdb_blast, pdb_blast, "************"
                 separeByChain(p_pdb_blast)
                 try : RX = parsePDB.resolution(p_pdb_blast)
                 except : RX = 100.0
@@ -292,8 +318,6 @@ def filterBlastResult (d_dataset, p_dir_dataset, sustruct, thresold_RX = 2.5, th
                 # remove apo forms and remove not substiuant
                 if l_ligand == [] or sustruct in l_ligand: 
                     continue
-                
-                print 
                 
                 # case RMN structure
                 try : RX = float(RX)

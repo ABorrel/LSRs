@@ -1,7 +1,7 @@
 from re import search
 import parsePDB
 
-def coordinateSection (f_write, listAtom, recorder, header = "", connect_matrix = 0):
+def coordinateSection (f_write, listAtom, recorder = "ATOM", header = "", connect_matrix = 0):
     """
     Write list atom in PDB file
     in: list atoms, name of file out
@@ -27,11 +27,12 @@ def coordinateSection (f_write, listAtom, recorder, header = "", connect_matrix 
     for atom in listAtom : 
         coordinateStructure(atom, filout, recorder)
     
-    if connect_matrix :
-        if  listAtom [0]["connect"] == [] : 
-            parsePDB.buildMatrixConnect (listAtom)
+    if connect_matrix == 1 :
+        parsePDB.buildMatrixConnect (listAtom)
         for atom in listAtom : 
             connect(atom, filout)
+            
+            
     filout.write("END\n")
     
     if type (f_write) == str : 
@@ -40,9 +41,6 @@ def coordinateSection (f_write, listAtom, recorder, header = "", connect_matrix 
         pass
     
     return f_write
-
-
-
 
 
 
@@ -109,7 +107,6 @@ def connect(atom, fileWrite) :
     in: atom, flux write
     out: write in flux write"""
     
-    
     line = "CONECT"
     for serial in atom["connect"] : 
         line = line + formate(serial, 5)
@@ -152,3 +149,18 @@ def formatCoord(float):
     out: string formated"""
     
     return str("%.3f" % float)    
+
+
+
+
+# 
+# p_filin = "/home/borrel/Yue_project/result/AMP/2F3D/substituate_AMP_4H46_ribose.pdb"
+# l_at = parsePDB.loadCoordSectionPDB(p_filin, section = "HETATM", debug = 1)
+# print l_at
+# 
+# p_filout = "/home/borrel/Yue_project/result/AMP/2F3D/substituate_AMP_4H46_ribose.pdb"
+# 
+# coordinateSection (p_filout, l_at, recorder = "HETATM", header = "", connect_matrix = 1)
+
+
+

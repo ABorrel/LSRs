@@ -20,12 +20,10 @@ def parseOutputShaep (p_filin):
     
     i = 0
     nb_desc = 3
-    
     while i < nb_desc : 
-        
         d_out[l_desc[i]] = l_val[i]
         i = i + 1
-
+        
     return d_out
 
 

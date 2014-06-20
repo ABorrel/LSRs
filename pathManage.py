@@ -114,9 +114,6 @@ def findPDBQueryTransloc (p_result):
     
     l_filesin = listdir(p_result)
     
-    print p_result, "****"
-    
-    
     l_out = []
     for filein in l_filesin : 
         if search("CX_", filein) : 
@@ -168,7 +165,7 @@ def findListSmileFile(substruct) :
     l_file = listdir(pr_result)
     
     for name_file in l_file : 
-        if search("smile", name_file) : 
+        if search("smile", name_file) and search(".txt$", name_file): 
             l_out.append (pr_result + name_file)
     
             
@@ -198,12 +195,12 @@ def findligandQuery(pr_dataset, name_ligand, PDB_query) :
     
     
 
-def findSubstructFind(pr_result, name_ligand, PDB_query) : 
+def findSubstructFind(pr_result, name_ligand, PDB_query, substruct) : 
     
     l_filin = listdir(pr_result )
     
     for filin in l_filin : 
-        if search (name_ligand, filin) and search ("^substruct", filin) and search (".pdb", filin) and search (PDB_query, filin) : 
+        if search (name_ligand, filin) and search ("^substituate", filin) and search (".pdb", filin) and search (PDB_query, filin) and search (substruct, filin) : 
             return pr_result + filin    
     
     

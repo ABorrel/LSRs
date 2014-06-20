@@ -4,7 +4,8 @@ RunOtherSoft 10-03-2014
 import tool
 import superposeStructure
 import os
-
+import subprocess
+import time
 
 
 
@@ -13,6 +14,30 @@ TMalign = "/home/borrel/softwares/TMalign/TMalign"
 shaep = "/home/borrel/softwares/shaep/shaep"
 
 
+def subprocessTimeControl(command, time_out=60):
+    """executing the command with a watchdog"""
+
+    # launching the command
+    c = subprocess.Popen(command, shell=True)
+
+    # now waiting for the command to complete
+    t = 0
+    while t < time_out and c.poll() is None:
+        time.sleep(1)  # (comment 1)
+        t += 1
+
+    # there are two possibilities for the while to have stopped:
+    if c.poll() is None:
+        # in the case the process did not complete, we kill it
+        c.terminate()
+        # and fill the return code with some error value
+        returncode = -1  # (comment 2)
+
+    else:                 
+        # in the case the process completed normally
+        returncode = c.poll()
+
+    return returncode 
 
 
 def runTMalign(path_pr1, path_pr2, path_dir_out, debug = 1) : 
@@ -40,9 +65,10 @@ def  babelConvertPDBtoSMILE (p_file_pdb) :
     if not os.path.exists(path_filout) : 
         cmd_convert = "babel " + p_file_pdb + " " + path_filout
         print cmd_convert
-        os.system (cmd_convert)
+        subprocessTimeControl(cmd_convert, time_out=10)
     
-    filin = open (path_filout, "r")
+    try : filin = open (path_filout, "r")
+    except : return "0"
     l_Fline = filin.readlines ()
     filin.close ()
     try : smile = l_Fline[0].split ("\t")[0]
@@ -52,7 +78,7 @@ def  babelConvertPDBtoSMILE (p_file_pdb) :
 
 
 
-def runShaep (p_struct1, p_struct2, p_out, clean = 1):
+def runShaep (p_struct1, p_struct2, p_out, clean = 0):
     if clean == 1 : 
         if os.path.exists(p_out) : 
             os.remove(p_out)
@@ -64,20 +90,22 @@ def runShaep (p_struct1, p_struct2, p_out, clean = 1):
     
     # run
     cmd = shaep + " --output-file "  + p_out + " " + p_struct1 + " " + p_struct2  + " --noOptimization" 
-            
+    subprocessTimeControl(cmd, time_out=30) 
     print cmd
-    os.system (cmd)
             
     # supp others files
     cmd_rm = "rm " + p_out[0:-4] + "_hits.txt"
-    os.system (cmd_rm)
+    
+   
+    try : os.system (cmd_rm)
+    except : pass
     
     return p_out
 
 
-def RhistogramMultiple (p_filin, name_main, brk = 20) : 
+def RhistogramMultiple (p_filin, brk = 20) : 
     
-    cmd_run = "./histograms.R " + p_filin + " " + name_main + " " + str (brk) 
+    cmd_run = "./histograms.R " + p_filin + " " + str (brk) 
     print cmd_run
     os.system (cmd_run)
     
@@ -105,12 +133,32 @@ def water(path_file_fasta1, path_file_fasta2, path_filout, gapopen = 10, gapexte
     return path_filout    
 
 
+
+def needle (path_file_fasta1, path_file_fasta2, path_filout, gapopen = 10, gapextend = 0.5, debug = 1):
+    """
+    Run water from emboss with 2 fasta files and gap open option and gap extend
+    args: -> file fasta 1
+          -> file fasta 2
+          -> gap open value
+          -> gap extend value
+     return: -> water file
+     """
+    
+    cmd = "needle -asequence " + path_file_fasta1 + " -bsequence " + path_file_fasta2 + " -outfile " + path_filout + " -gapopen " + str(gapopen) + " -gapextend " + str(gapextend)
+    
+    if debug : 
+        print cmd
+    os.system (cmd)   
+    return path_filout
+
+
+
 def babelPDBtoMOL2 (path_file_pdb) : 
     
     path_filout = path_file_pdb[0:-4] + ".mol2"
-    cmd_convert = "babel  " + path_file_pdb + " "+ path_filout
-    print cmd_convert
-    os.system (cmd_convert + " 2> /dev/null")
+    if not os.path.exists(path_filout) : 
+        cmd_convert = "babel " + path_file_pdb + " "+ path_filout 
+        subprocessTimeControl(cmd_convert, time_out=5)
     return path_filout
 
 

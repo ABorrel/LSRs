@@ -4,8 +4,8 @@ BORREL Alexandre
 """
 from re import search, sub
 
-def waterFile (path_file_water):
-    """Parse water file, retrieve only first alignement
+def embossFile (path_file_water):
+    """Parse water or needle file, retrieve only first alignement
     arg: path of water file
     return: sequences aligned, similariry, identity"""
     

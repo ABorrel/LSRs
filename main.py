@@ -13,8 +13,9 @@ import parseShaep
 import tool
 import arrangeResult
 
-from os import listdir, path
+from os import listdir, path, remove, rename
 from re import search
+from copy import deepcopy, copy
 
 
 
@@ -28,24 +29,35 @@ from re import search
 # - extract the ligand
 
 
-def datasetPreparation (substruct):
+def datasetPreparation (ligand_ID, clean = 1):
     
-    p_dir_dataset = pathManage.dataset(substruct)
+    
+    p_dir_dataset = pathManage.dataset(ligand_ID)
     
     l_folder = listdir(p_dir_dataset)
     
-    
     for ref_folder in l_folder  :
+        # file include in dataset folder
+        if len (ref_folder) != 4 : 
+            continue
         l_pdbfile = listdir(p_dir_dataset + ref_folder + "/")
+        print ref_folder
         
         
+        # clean repertory
+        l_pdbfile = listdir(p_dir_dataset + ref_folder + "/")
+        if clean == 1 : 
+            for pdbfile in l_pdbfile : 
+                p_file_pdb = p_dir_dataset + ref_folder + "/" + pdbfile
+                if not search (".pdb", pdbfile ) or search ("subref", pdbfile) or len (pdbfile.split("_")[0]) == 3: 
+                    remove (p_file_pdb)
+        
+        l_pdbfile = listdir(p_dir_dataset + ref_folder + "/")
         for pdbfile in l_pdbfile : 
             p_file_pdb = p_dir_dataset + ref_folder + "/" + pdbfile
-            
             # extract ligand in PDB
-            if not search (".pdb", pdbfile ) or len (pdbfile.split ("_")[0])==3: 
-                continue
             l_ligand = parsePDB.retrieveListLigand(p_file_pdb)
+#             print l_ligand
             if l_ligand == []  : 
                 continue
             else : 
@@ -53,22 +65,24 @@ def datasetPreparation (substruct):
                 for name_ligand in l_ligand : 
                     l_lig_parsed = parsePDB.retrieveLigand(l_atom_pdb_parsed, name_ligand)
                     p_filout_ligand = p_dir_dataset + ref_folder + "/" + name_ligand + "_" + path.split(p_file_pdb)[1]
-                    writePDBfile.coordinateSection(p_filout_ligand , l_lig_parsed[0], "HETATM", name_ligand + "_" + p_file_pdb , connect_matrix = 1)
+                    writePDBfile.coordinateSection(p_filout_ligand , l_lig_parsed[0], "HETATM", header=0 , connect_matrix = 1)
                     
         
-        # substruct write for shaep
-        print p_dir_dataset + ref_folder + "/"
-        p_lig_ref = pathManage.findligandRef(p_dir_dataset + ref_folder + "/", substruct)
-        print p_lig_ref
+        # ligand_ID write for shaep
+#         print p_dir_dataset + ref_folder + "/"
+        p_lig_ref = pathManage.findligandRef(p_dir_dataset + ref_folder + "/", ligand_ID)
+        if p_lig_ref == 0 : 
+            continue
+#         print p_lig_ref
         lig_ref_parsed = parsePDB.loadCoordSectionPDB(p_lig_ref)
-        d_l_atom_substruct = substructTools.retrieveSubstruct(lig_ref_parsed, substruct)
+        d_l_atom_substruct = substructTools.retrieveSubstruct(lig_ref_parsed, ligand_ID)
         # case with AMP without phosphate
         if d_l_atom_substruct == {}: 
             continue
-        # write substruct
+        # write ligand_ID
         for subs in d_l_atom_substruct.keys (): 
             p_filout_substruct = p_dir_dataset + ref_folder + "/subref_" +  subs + "_" + ref_folder + ".pdb"
-            writePDBfile.coordinateSection(p_filout_substruct , d_l_atom_substruct [subs], "HETATM", name_ligand + "_" + p_file_pdb , connect_matrix = 1)
+            writePDBfile.coordinateSection(p_filout_substruct , d_l_atom_substruct [subs], "HETATM", header=0 , connect_matrix = 1)
         
     return 1
 
@@ -86,6 +100,8 @@ def applyTMAlign (substruct):
     
     
     for ref_folder in l_folder  :
+        if len (ref_folder) != 4 : 
+            continue
         l_pdbfile = listdir(p_dir_dataset + ref_folder + "/")
         p_pdb_ref = pathManage.findPDBRef(p_dir_dataset + ref_folder + "/")
         
@@ -114,49 +130,67 @@ def applyTMAlign (substruct):
 # - generated a list of SMART by global phosphate
 
 
-def retrieveSubstructSuperimposed (name_lig, thresold_shaep  = 0.0, thresold_substruct = 3.5, thresold_binding = 3.5):
+def retrieveSubstructSuperimposed (name_lig, thresold_BS = 4.5, thresold_superimposed_ribose = 2.5, thresold_superimposed_pi = 3, thresold_shaep = 0.4):
     
     # append thresold in name file ???
     
     # ouput
     p_dir_dataset = pathManage.dataset(name_lig)
+    p_dir_result = pathManage.result(name_lig )
     l_folder_ref = listdir(p_dir_dataset)
     d_smile = {}
     
+    d_filout_sheap = {}
+    d_filout_sheap ["list"] = [p_dir_result + "shaep_global.txt"]
+    d_filout_sheap["global"] = open (p_dir_result + "shaep_global.txt", "w") 
+    d_filout_sheap["global"].write ("name\tbest_similarity\tshape_similarity\tESP_similarity\n")
     
-    
-    
-    for ref_folder in l_folder_ref  :
-        l_pdbfile = listdir(p_dir_dataset + ref_folder + "/")
-#         print ref_folder
+    for ref_folder in l_folder_ref :
+        # control folder reference name
+        if len (ref_folder) != 4 : 
+            continue
         
         # reference
         p_lig_ref = pathManage.findligandRef(p_dir_dataset + ref_folder + "/", name_lig)
-        try : lig_ref_parsed = parsePDB.loadCoordSectionPDB(p_lig_ref, "HETATM")
-        except : continue
+        print p_lig_ref
+        try : 
+            lig_ref_parsed = parsePDB.loadCoordSectionPDB(p_lig_ref, "HETATM")
+            print len (lig_ref_parsed)
+        except : 
+            continue
         
         # outup by reference
-        p_dir_result = pathManage.result(name_lig + "/" + ref_folder)
-        d_filout_lig = {}
-        d_filout_lig["global"] = open (p_dir_result + "all_ligand_aligned_" + str (thresold_shaep) + ".pdb", "w")
+        p_dir_result_ref = pathManage.result(name_lig + "/" + ref_folder)
+        d_filout_superimposed = {}
+        d_filout_superimposed["global"] = open (p_dir_result_ref + "all_ligand_aligned.pdb", "w")
+        d_filout_superimposed["sheap"] = open (p_dir_result_ref + "all_ligand_aligned_" + str (thresold_shaep)  + ".pdb", "w")
         
         
         
         # write lig ref
-        writePDBfile.coordinateSection(d_filout_lig["global"], lig_ref_parsed, "HETATM", connect_matrix = 1)
+        writePDBfile.coordinateSection(d_filout_superimposed["global"], lig_ref_parsed, "HETATM", connect_matrix = 1)
         
-#         print p_lig_ref
-        
+        # inspect folder dataset
+        l_pdbfile = listdir(p_dir_dataset + ref_folder + "/")
         for pdbfile in l_pdbfile : 
 #             print pdbfile[4:10], "****"
+            if len (pdbfile.split ("_")) == 1 : 
+                continue
+            pdbfile = pdbfile[:-4]
+            
             if len(pdbfile.split ("_")[0]) == 3  and len(pdbfile.split ("_")[1]) == 4 and pdbfile.split ("_")[1] != ref_folder:
-                p_lig = p_dir_dataset + ref_folder + "/" + pdbfile
+                p_lig = p_dir_dataset + ref_folder + "/" + pdbfile  + ".pdb"
+                print p_lig, "*****"
                 if p_lig_ref != p_lig : 
+                    # pass case where ligand replace same ligand -> does not need run
+                    if pdbfile.split ("_")[0] == name_lig : 
+                        continue
+                    
                     lig_parsed = parsePDB.loadCoordSectionPDB(p_lig, "HETATM")
 
                     # find matrix of rotation
                     p_matrix = pathManage.findMatrix(p_lig_ref, p_lig, name_lig)
-                    # control filce exist
+                    # control file matrix exist
                     if not path.exists(p_matrix) : 
                         continue
                     
@@ -167,89 +201,109 @@ def retrieveSubstructSuperimposed (name_lig, thresold_shaep  = 0.0, thresold_sub
                     superposeStructure.applyMatrixLigand(lig_parsed, p_matrix)
                     
                     
-                    
-                    
-                    # retrieve lig substructure
-                    smile_find, p_file_substruct = neighborSearch.searchNeighborAtom(lig_ref_parsed, lig_parsed, p_complex, name_lig, p_lig, p_matrix, p_dir_result, thresold_substruct = 3.5, thresold_binding = 3.5)    
-                    if smile_find == 0 and p_file_substruct == 0 : 
-                        continue
-                    
-                    # control sheap // run sheap
-                    # run sheap
-                    # search ref in dataset
+                    # use substruct
                     l_p_substruct_ref = pathManage.findSubstructRef (pathManage.dataset(name_lig) + ref_folder + "/" , name_lig)
-# # # # # # # # # # #                     print l_p_substruct_ref, "?????"
-                    
-                    
                     for p_substruct_ref in l_p_substruct_ref : 
-                        struct_substitued = p_substruct_ref.split ("_")[-2]
+                        struct_type = p_substruct_ref.split ("_")[-2]
+                        substruct_parsed = parsePDB.loadCoordSectionPDB(p_substruct_ref, "HETATM")
                         
-                        # need convert in mol2
-                        p_substruct_ref = runOtherSoft.babelPDBtoMOL2 (p_substruct_ref)
-                        p_subs_file = runOtherSoft.babelPDBtoMOL2 (p_file_substruct)
-                        
-                        # run shaep
-                        p_sheap = runOtherSoft.runShaep (p_substruct_ref, p_subs_file, p_subs_file[0:-5] + ".hit", clean = 1)
-                        val_sheap = parseShaep.valueShapeSimilarity (p_sheap)
-                        if val_sheap < thresold_shaep  : 
+                        l_atom_substituate = neighborSearch.searchNeighborAtom(substruct_parsed, lig_parsed, struct_type, thresold_superimposed_ribose = thresold_superimposed_ribose, thresold_superimposed_pi = thresold_superimposed_pi)    
+                        # control find 
+                        if len (l_atom_substituate) == 0 :  
                             continue
-                        
-                        # Count the smile found + remove not sheap
-                        writePDBfile.coordinateSection(d_filout_lig["global"], lig_parsed, "HETATM", p_lig, connect_matrix = 1)
-                        
-                        if not struct_substitued in d_smile.keys (): 
-                            
-                            # control superimpostion -> write global alignement
-                            d_filout_lig[struct_substitued] = open (p_dir_result + "all_ligand_aligned_" + str (thresold_shaep) + "_" + struct_substitued + ".pdb","w")
-                            writePDBfile.coordinateSection(d_filout_lig[struct_substitued], lig_parsed, "HETATM", connect_matrix = 1)
-                            
-                            # append smile structure
-                            
-                            d_smile[struct_substitued] = {}
-                            d_smile[struct_substitued][smile_find] = {}
-                            d_smile[struct_substitued][smile_find]["count"] = 1
-                            d_smile[struct_substitued][smile_find]["PDB"] = [pdbfile.split ("_")[1]]
-                            d_smile[struct_substitued][smile_find]["ligand"] = [pdbfile.split ("_")[0]]
-                            d_smile[struct_substitued][smile_find]["ref"] = [ref_folder]
                         else : 
-                            if not struct_substitued in d_filout_lig.keys () : 
-                                d_filout_lig[struct_substitued] = open (p_dir_result + "all_ligand_aligned_" + str (thresold_shaep) + "_" + struct_substitued + ".pdb","w")
-                            writePDBfile.coordinateSection(d_filout_lig[struct_substitued], lig_parsed, "HETATM", connect_matrix = 1)
-                            if not smile_find in d_smile[struct_substitued].keys () : 
-                                d_smile[struct_substitued][smile_find] = {}
-                                d_smile[struct_substitued][smile_find]["count"] = 1
-                                d_smile[struct_substitued][smile_find]["PDB"] = [pdbfile.split ("_")[1]]
-                                d_smile[struct_substitued][smile_find]["ligand"] = [pdbfile.split ("_")[0]] 
-                                d_smile[struct_substitued][smile_find]["ref"] = [ref_folder]
-                            else : 
-                                d_smile[struct_substitued][smile_find]["count"] = d_smile[struct_substitued][smile_find]["count"] + 1
-                                d_smile[struct_substitued][smile_find]["PDB"].append (pdbfile.split ("_")[1])
-                                d_smile[struct_substitued][smile_find]["ligand"].append (pdbfile.split ("_")[0])
-                                d_smile[struct_substitued][smile_find]["ref"].append (ref_folder)
+                            # write PDB file, convert smile
+                            p_substituate_pdb = p_dir_result_ref + "substituate_" + pdbfile.split ("_")[0] + "_" + pdbfile.split ("_")[1] + "_" + struct_type + ".pdb"
+                            writePDBfile.coordinateSection(p_substituate_pdb, l_atom_substituate, recorder="HETATM", header=0, connect_matrix = 1)
+    
+                            # Step2 -> convert to smile -> review to smart if a find a good software
+                            smile_find = runOtherSoft.babelConvertPDBtoSMILE(p_substituate_pdb)
+                    
+                            # step3 apply sheap---> try without mol2 --- convertion ---
+#                             p_substruct_ref_mol2 = runOtherSoft.babelPDBtoMOL2 (p_substruct_ref)
+#                             p_subs_query_mol2 = runOtherSoft.babelPDBtoMOL2 (p_substituate_pdb)
+                    
+                            p_sheap = runOtherSoft.runShaep (p_substruct_ref, p_substituate_pdb, p_substituate_pdb[0:-4] + ".hit", clean = 1)
+                            val_sheap = parseShaep.parseOutputShaep (p_sheap)
+                            if val_sheap == {} : 
+                                continue
+                            # control thresold sheap
+                            if not struct_type in d_filout_sheap.keys () : 
+                                d_filout_sheap[struct_type] = {}
+                                d_filout_sheap[struct_type] = open (p_dir_result + "shaep_global_" + struct_type + ".txt", "w")
+                                d_filout_sheap[struct_type].write ("name\tbest_similarity\tshape_similarity\tESP_similarity\n")
+                                d_filout_sheap["list"].append (p_dir_result + "shaep_global_" + struct_type + ".txt")
                             
-        tool.closeDicoFile (d_filout_lig)
+                            d_filout_sheap[struct_type].write (ref_folder + "_" +  str(pdbfile.split ("_")[1]) + "_" + struct_type + "_" + str (pdbfile.split ("_")[0]) + "\t" + str(val_sheap["best_similarity"]) + "\t" + str(val_sheap["shape_similarity"]) + "\t" + str(val_sheap["ESP_similarity"]) + "\n")
+                            d_filout_sheap["global"].write (ref_folder + "_" +  str(pdbfile.split ("_")[1]) + "_" + struct_type + "_" + str (pdbfile.split ("_")[0]) + "\t" + str(val_sheap["best_similarity"]) + "\t" + str(val_sheap["shape_similarity"]) + "\t" + str(val_sheap["ESP_similarity"]) + "\n")
+                            
+                            
+                            if val_sheap["best_similarity"] < thresold_shaep  : 
+                                # rename file with thresold
+                                rename(p_substituate_pdb, p_substituate_pdb[:-4] + "_" + str (val_sheap["best_similarity"]) + ".pdb")
+                            else : 
+                                # write structure superimposed selected
+                                writePDBfile.coordinateSection(d_filout_superimposed["sheap"], lig_parsed, recorder= "HETATM", header = str(p_lig.split ("/")[-1]) + "_" + str (val_sheap["best_similarity"]) ,  connect_matrix = 1)
+                                
+                                ############
+                                # write BS #
+                                ############
+                                l_atom_complex = parsePDB.loadCoordSectionPDB(p_complex, "ATOM")
+                                superposeStructure.applyMatrixProt(l_atom_complex, p_matrix)
+                                p_file_cx = p_dir_result_ref +  "CX_" + p_lig.split ("/")[-1]
+                                writePDBfile.coordinateSection(p_file_cx, l_atom_complex, recorder="ATOM", header= p_lig.split ("/")[-1], connect_matrix = 0)
+    
+    
+                                l_atom_binding_site = []
+                                for atom_substruct in lig_parsed : 
+                                    for atom_complex in l_atom_complex : 
+                                        if parsePDB.distanceTwoatoms (atom_substruct, atom_complex) <= thresold_BS :
+                                            l_atom_binding_site.append (deepcopy(atom_complex)) 
+                                            # 3. retrieve complet residue
+                                            l_atom_res = parsePDB.getResidues(l_atom_binding_site, l_atom_complex)
+                                            # 4. write binding site
+                                            p_binding = p_dir_result_ref +  "BS_" + p_lig.split ("/")[-1]
+                                            writePDBfile.coordinateSection(p_binding, l_atom_res, "ATOM", p_binding, connect_matrix = 0)
+                                
+                            # smile code substituate analysis                    
+                            if not struct_type in d_smile.keys ()  :
+                                d_smile[struct_type] = {}
+                                d_smile[struct_type][smile_find] = {}
+                                d_smile[struct_type][smile_find]["count"] = 1
+                                d_smile[struct_type][smile_find]["PDB"] = [pdbfile.split ("_")[1]]
+                                d_smile[struct_type][smile_find]["ligand"] = [pdbfile.split ("_")[0]]
+                                d_smile[struct_type][smile_find]["ref"] = [ref_folder]
+                            else : 
+                                if not smile_find in d_smile[struct_type].keys () : 
+                                    d_smile[struct_type][smile_find] = {}
+                                    d_smile[struct_type][smile_find]["count"] = 1
+                                    d_smile[struct_type][smile_find]["PDB"] = [pdbfile.split ("_")[1]]
+                                    d_smile[struct_type][smile_find]["ligand"] = [pdbfile.split ("_")[0]] 
+                                    d_smile[struct_type][smile_find]["ref"] = [ref_folder]
+                                else : 
+                                    d_smile[struct_type][smile_find]["count"] = d_smile[struct_type][smile_find]["count"] + 1
+                                    d_smile[struct_type][smile_find]["PDB"].append (pdbfile.split ("_")[1])
+                                    d_smile[struct_type][smile_find]["ligand"].append (pdbfile.split ("_")[0])
+                                    d_smile[struct_type][smile_find]["ref"].append (ref_folder)
+        
+        tool.closeDicoFile (d_filout_superimposed)
+    
+    # sheap control    
+    tool.closeDicoFile (d_filout_sheap)
+    for p_file_sheap in d_filout_sheap["list"] : 
+        runOtherSoft.RhistogramMultiple (p_file_sheap)    
+        
             
     # write list of smile
     for substruct in d_smile.keys () : 
-        
         p_list_smile = pathManage.result(name_lig) + "list_" + substruct + "_" + str (thresold_shaep) + "_smile.txt"
-        p_list_smile_P = pathManage.result(name_lig) + "list_" + substruct + "_" + str (thresold_shaep) + "_smileP.txt"
-        
         filout_smile = open (p_list_smile, "w")
-        filout_smile_P = open (p_list_smile_P, "w")
         for smile_code in d_smile[substruct].keys () : 
             l_lig = d_smile[substruct][smile_code]["ligand"]
             l_PDB = d_smile[substruct][smile_code]["PDB"]
             l_ref = d_smile[substruct][smile_code]["ref"]
-            print smile_code
-            if search ("P", str(smile_code)) : 
-                filout_smile_P.write (str (smile_code) + "\t" + str (d_smile[substruct][smile_code]["count"]) + "\t" + " ".join (l_PDB) + "\t" + " ".join (l_ref) + "\t" + " ".join(l_lig) + "\n")
-            else : 
-                filout_smile.write (str (smile_code) + "\t" + str (d_smile[substruct][smile_code]["count"]) + "\t" + " ".join (l_PDB) + "\t" + " ".join (l_ref) + "\t" + " ".join(l_lig) + "\n")
-        
+            filout_smile.write (str (smile_code) + "\t" + str (d_smile[substruct][smile_code]["count"]) + "\t" + " ".join (l_PDB) + "\t" + " ".join (l_ref) + "\t" + " ".join(l_lig) + "\n")
         filout_smile.close ()
-        filout_smile_P.close ()
-    
     return 1
 
 # step 4 
@@ -267,6 +321,8 @@ def ionIdentification (substruct):
     filout.write ("PDB\tIon\tD1\tD2\tAngle\tAt1\tAt2\n")
     
     for ref_folder in l_folder_ref  :
+        if len (ref_folder) != 4 : 
+            continue
         p_complex = pathManage.findPDBRef(p_dir_dataset + ref_folder + "/")
 
         ionSearch.analyseIons (p_dir_dataset + ref_folder + "/", substruct, filout)
@@ -309,6 +365,8 @@ def analysisSameBS (substruct, ID_seq = '1.000'):
     l_folder_ref = listdir(pr_dataset)
     
     for ref_folder in l_folder_ref  :
+        if len (ref_folder) != 4 : 
+            continue
         l_reffile = listdir(pr_dataset + ref_folder + "/")
         
         p_pdb_ref = pathManage.findPDBRef(pr_dataset + ref_folder + "/")
@@ -369,10 +427,7 @@ def manageResult (l_ligand):
     for name_lig in l_ligand : 
         l_p_smile = pathManage.findListSmileFile(name_lig)
         p_file_famile = pathManage.findFamilyFile (name_lig)
-        
         for p_smile in l_p_smile : 
-        
-        
             if search("ribose", p_smile) and  search("txt", p_smile) and search("smile", p_smile): 
                 arrangeResult.globalArrangement(pr_ribose, p_smile, p_file_famile, name_lig) 
             elif search("smile", p_smile) and search(".txt", p_smile) : 
@@ -390,60 +445,64 @@ def manageResult (l_ligand):
 # RUN MAIN !!!! #
 #################
 
+# constante
+thresold_RX = 2.7
+thresold_BS = 4.5
+thresold_blast = 1e-100
+thresold_superimposed_ribose = 2.5
+thresold_superimposed_pi = 3
+thresold_IDseq = 100
+thresold_shaep = 0.2
+
 ### AMP ###
 ###########
 
 
-buildData.builtDatasetGlobal("/home/borrel/Yue_project/resultLigandInPDB", "AMP")
-datasetPreparation ("AMP")
-applyTMAlign ("AMP")
-ionIdentification ("AMP")
-retrieveSubstructSuperimposed ("AMP", thresold_shaep = 0.4)
-analysisShaep ("AMP")
-analysisSmile ("AMP")
-analysisSameBS ("AMP")
+# buildData.builtDatasetGlobal(p_list_ligand = "/home/borrel/Yue_project/resultLigandInPDB" , ligand_ID = "AMP", thresold_RX = thresold_RX, thresold_blast = thresold_blast, verbose = 1)
+# datasetPreparation ("AMP")
+# applyTMAlign ("AMP")
+# ionIdentification ("AMP")
+# retrieveSubstructSuperimposed ("AMP", thresold_BS = thresold_BS, thresold_superimposed_ribose = thresold_superimposed_ribose, thresold_superimposed_pi = thresold_superimposed_pi, thresold_shaep = thresold_shaep)
+# analysisSmile ("AMP")
+# analysisSameBS ("AMP")
 
 
 ### ADP ###
 ###########
 
-buildData.builtDatasetGlobal("/home/borrel/Yue_project/resultLigandInPDB", "ADP")
-datasetPreparation ("ADP")
-applyTMAlign ("ADP")
-ionIdentification ("ADP")
-retrieveSubstructSuperimposed ("ADP", thresold_shaep = 0.4)
-analysisShaep ("ADP")
-analysisSameBS ("ADP")
-analysisSmile ("ADP")
-
-
-### POP ###
-###########
-# # 
-buildData.builtDatasetGlobal("/home/borrel/Yue_project/resultLigandInPDB", "POP")
-datasetPreparation ("POP")
-applyTMAlign ("POP")
-ionIdentification ("POP")
-retrieveSubstructSuperimposed ("POP", thresold_shaep = 0.4)
-analysisShaep ("POP")
-analysisSameBS ("POP")
-analysisSmile ("POP")
-
-
-### ATP ###
-###########
-
-buildData.builtDatasetGlobal("/home/borrel/Yue_project/resultLigandInPDB", "ATP")
+# buildData.builtDatasetGlobal(p_list_ligand = "/home/borrel/Yue_project/resultLigandInPDB" , ligand_ID = "ADP", thresold_RX = thresold_RX, thresold_blast = thresold_blast, verbose = 1)
+# datasetPreparation ("ADP")
+# applyTMAlign ("ADP")
+# ionIdentification ("ADP")
+# retrieveSubstructSuperimposed ("ADP", thresold_BS = thresold_BS, thresold_superimposed_ribose = thresold_superimposed_ribose, thresold_superimposed_pi = thresold_superimposed_pi, thresold_shaep = thresold_shaep)
+# analysisSameBS ("ADP")
+# analysisSmile ("ADP")
+# 
+# 
+# ### POP ###
+# ###########
+# # # 
+# buildData.builtDatasetGlobal(p_list_ligand = "/home/borrel/Yue_project/resultLigandInPDB" , ligand_ID = "POP", thresold_RX = thresold_RX, thresold_blast = thresold_blast, verbose = 1)
+# datasetPreparation ("POP")
+# applyTMAlign ("POP")
+# ionIdentification ("POP")
+# retrieveSubstructSuperimposed ("POP", thresold_BS = thresold_BS, thresold_superimposed_ribose = thresold_superimposed_ribose, thresold_superimposed_pi = thresold_superimposed_pi, thresold_shaep = thresold_shaep)
+# analysisSameBS ("POP")
+# analysisSmile ("POP")
+# 
+# 
+# ### ATP ###
+# ###########
+# 
+# buildData.builtDatasetGlobal(p_list_ligand = "/home/borrel/Yue_project/resultLigandInPDB" , ligand_ID = "ATP", thresold_RX = thresold_RX, thresold_blast = thresold_blast, verbose = 1)
 datasetPreparation ("ATP")
 applyTMAlign ("ATP")
-# ionIdentification ("ATP") ----> to do
-retrieveSubstructSuperimposed ("ATP", thresold_shaep = 0.4)
-analysisShaep ("ATP")
+retrieveSubstructSuperimposed ("ATP", thresold_BS = thresold_BS, thresold_superimposed_ribose = thresold_superimposed_ribose, thresold_superimposed_pi = thresold_superimposed_pi, thresold_shaep = thresold_shaep)
 analysisSameBS ("ATP")
 analysisSmile ("ATP")
+# 
+# 
+# 
+# manageResult (["POP", "ATP", "AMP", "ADP"])
 
-
-
-manageResult (["POP", "ATP", "AMP", "ADP"])
-
-
+# arrangeResult.controlResult (["POP", "ATP", "AMP", "ADP"])
