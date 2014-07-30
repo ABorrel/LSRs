@@ -69,7 +69,7 @@ def extractReference (p_list_ligand, p_dir_dataset, p_dir_result, substruct):
     # download PDB and fasta associated
     l_p_PDB = []
     l_p_fasta = []
-    for PDB_ID in d_ligand[substruct][0:10] :
+    for PDB_ID in d_ligand[substruct] :
         PDB_ID = PDB_ID.upper() 
         p_pdb = downloadFile.importPDB(PDB_ID, p_dir_dataset, dir_by_PDB = 1, debug = 1, dbPDB = "/home/borrel/PDB/" )
         p_fasta = downloadFile.importFasta(PDB_ID, p_dir_dataset, dir_by_PDB = 1, debug = 1, fastaGlobal = "/home/borrel/Yue_project/pdb_seqres.txt")
