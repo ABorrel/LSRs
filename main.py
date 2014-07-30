@@ -35,16 +35,18 @@ def datasetPreparation (ligand_ID, clean = 1):
     p_dir_dataset = pathManage.dataset(ligand_ID)
     
     l_folder = listdir(p_dir_dataset)
+    indent = 0
     
     for ref_folder in l_folder  :
         # file include in dataset folder
         if len (ref_folder) != 4 : 
             continue
         l_pdbfile = listdir(p_dir_dataset + ref_folder + "/")
-        print ref_folder
+        indent = indent + 1
+        print ref_folder, indent
         
         
-        # clean repertory
+        # clean repertory -> only PDB ref and PDB 
         l_pdbfile = listdir(p_dir_dataset + ref_folder + "/")
         if clean == 1 : 
             for pdbfile in l_pdbfile : 
@@ -64,6 +66,8 @@ def datasetPreparation (ligand_ID, clean = 1):
                 l_atom_pdb_parsed = parsePDB.loadCoordSectionPDB(p_file_pdb)
                 for name_ligand in l_ligand : 
                     l_lig_parsed = parsePDB.retrieveLigand(l_atom_pdb_parsed, name_ligand)
+                    if l_lig_parsed == [] : 
+                        continue
                     p_filout_ligand = p_dir_dataset + ref_folder + "/" + name_ligand + "_" + path.split(p_file_pdb)[1]
                     writePDBfile.coordinateSection(p_filout_ligand , l_lig_parsed[0], "HETATM", header=0 , connect_matrix = 1)
                     
@@ -72,6 +76,7 @@ def datasetPreparation (ligand_ID, clean = 1):
 #         print p_dir_dataset + ref_folder + "/"
         p_lig_ref = pathManage.findligandRef(p_dir_dataset + ref_folder + "/", ligand_ID)
         if p_lig_ref == 0 : 
+            
             continue
 #         print p_lig_ref
         lig_ref_parsed = parsePDB.loadCoordSectionPDB(p_lig_ref)
@@ -110,6 +115,7 @@ def applyTMAlign (substruct):
             # try if PDB not ligand
             if len(pdbfile.split ("_")[0]) != 4 or not search (".pdb", pdbfile): 
                 continue
+            # same alignment
             elif p_dir_dataset + ref_folder + "/" + pdbfile == p_pdb_ref : 
                 continue
             else : 
@@ -138,6 +144,11 @@ def retrieveSubstructSuperimposed (name_lig, thresold_BS = 4.5, thresold_superim
     p_dir_dataset = pathManage.dataset(name_lig)
     p_dir_result = pathManage.result(name_lig )
     l_folder_ref = listdir(p_dir_dataset)
+    
+    # log control
+    p_log = open(p_dir_result + "log_superimposed.txt", "w")
+    
+    
     d_smile = {}
     
     d_filout_sheap = {}
@@ -148,6 +159,7 @@ def retrieveSubstructSuperimposed (name_lig, thresold_BS = 4.5, thresold_superim
     for ref_folder in l_folder_ref :
         # control folder reference name
         if len (ref_folder) != 4 : 
+            p_log.write ("[ERROR folder] -> " + ref_folder + "\n")
             continue
         
         # reference
@@ -157,6 +169,7 @@ def retrieveSubstructSuperimposed (name_lig, thresold_BS = 4.5, thresold_superim
             lig_ref_parsed = parsePDB.loadCoordSectionPDB(p_lig_ref, "HETATM")
             print len (lig_ref_parsed)
         except : 
+            p_log.write ("[ERROR ligand ref] -> " + p_lig_ref + "\n")
             continue
         
         # outup by reference
@@ -167,23 +180,23 @@ def retrieveSubstructSuperimposed (name_lig, thresold_BS = 4.5, thresold_superim
         
         
         
-        # write lig ref
+        # write lig ref -> connect matrix corrrect
         writePDBfile.coordinateSection(d_filout_superimposed["global"], lig_ref_parsed, "HETATM", connect_matrix = 1)
         
         # inspect folder dataset
         l_pdbfile = listdir(p_dir_dataset + ref_folder + "/")
         for pdbfile in l_pdbfile : 
-#             print pdbfile[4:10], "****"
+            # no ligand file
             if len (pdbfile.split ("_")) == 1 : 
                 continue
-            pdbfile = pdbfile[:-4]
+            pdbfile = pdbfile[:-4] # remove extention
             
             if len(pdbfile.split ("_")[0]) == 3  and len(pdbfile.split ("_")[1]) == 4 and pdbfile.split ("_")[1] != ref_folder:
                 p_lig = p_dir_dataset + ref_folder + "/" + pdbfile  + ".pdb"
-                print p_lig, "*****"
                 if p_lig_ref != p_lig : 
                     # pass case where ligand replace same ligand -> does not need run
                     if pdbfile.split ("_")[0] == name_lig : 
+                        p_log.write ("[REMOVE] -> same ligand substituate")
                         continue
                     
                     lig_parsed = parsePDB.loadCoordSectionPDB(p_lig, "HETATM")
@@ -192,6 +205,7 @@ def retrieveSubstructSuperimposed (name_lig, thresold_BS = 4.5, thresold_superim
                     p_matrix = pathManage.findMatrix(p_lig_ref, p_lig, name_lig)
                     # control file matrix exist
                     if not path.exists(p_matrix) : 
+                        p_log.write ("[ERROR] -> Matrix transloc " + p_lig_ref + " " + p_lig + " " + name_lig + "\n")
                         continue
                     
                     # find the path of complex used
@@ -204,16 +218,17 @@ def retrieveSubstructSuperimposed (name_lig, thresold_BS = 4.5, thresold_superim
                     # use substruct
                     l_p_substruct_ref = pathManage.findSubstructRef (pathManage.dataset(name_lig) + ref_folder + "/" , name_lig)
                     for p_substruct_ref in l_p_substruct_ref : 
+                        # ribose or phosphate
                         struct_type = p_substruct_ref.split ("_")[-2]
                         substruct_parsed = parsePDB.loadCoordSectionPDB(p_substruct_ref, "HETATM")
                         
-                        l_atom_substituate = neighborSearch.searchNeighborAtom(substruct_parsed, lig_parsed, struct_type, thresold_superimposed_ribose = thresold_superimposed_ribose, thresold_superimposed_pi = thresold_superimposed_pi)    
+                        l_atom_substituate = neighborSearch.searchNeighborAtom(substruct_parsed, lig_parsed, struct_type, p_log, thresold_superimposed_ribose = thresold_superimposed_ribose, thresold_superimposed_pi = thresold_superimposed_pi)    
                         # control find 
                         if len (l_atom_substituate) == 0 :  
                             continue
                         else : 
                             # write PDB file, convert smile
-                            p_substituate_pdb = p_dir_result_ref + "substituate_" + pdbfile.split ("_")[0] + "_" + pdbfile.split ("_")[1] + "_" + struct_type + ".pdb"
+                            p_substituate_pdb = p_dir_result_ref + "substituent_" + pdbfile.split ("_")[0] + "_" + pdbfile.split ("_")[1] + "_" + struct_type + ".pdb"
                             writePDBfile.coordinateSection(p_substituate_pdb, l_atom_substituate, recorder="HETATM", header=0, connect_matrix = 1)
     
                             # Step2 -> convert to smile -> review to smart if a find a good software
@@ -226,6 +241,7 @@ def retrieveSubstructSuperimposed (name_lig, thresold_BS = 4.5, thresold_superim
                             p_sheap = runOtherSoft.runShaep (p_substruct_ref, p_substituate_pdb, p_substituate_pdb[0:-4] + ".hit", clean = 1)
                             val_sheap = parseShaep.parseOutputShaep (p_sheap)
                             if val_sheap == {} : 
+                                p_log.write ("[ERROR] -> ShaEP " + p_substituate_pdb + " " + p_substruct_ref + "\n")
                                 continue
                             # control thresold sheap
                             if not struct_type in d_filout_sheap.keys () : 
@@ -234,26 +250,27 @@ def retrieveSubstructSuperimposed (name_lig, thresold_BS = 4.5, thresold_superim
                                 d_filout_sheap[struct_type].write ("name\tbest_similarity\tshape_similarity\tESP_similarity\n")
                                 d_filout_sheap["list"].append (p_dir_result + "shaep_global_" + struct_type + ".txt")
                             
+                            # write value in ShaEP control
                             d_filout_sheap[struct_type].write (ref_folder + "_" +  str(pdbfile.split ("_")[1]) + "_" + struct_type + "_" + str (pdbfile.split ("_")[0]) + "\t" + str(val_sheap["best_similarity"]) + "\t" + str(val_sheap["shape_similarity"]) + "\t" + str(val_sheap["ESP_similarity"]) + "\n")
                             d_filout_sheap["global"].write (ref_folder + "_" +  str(pdbfile.split ("_")[1]) + "_" + struct_type + "_" + str (pdbfile.split ("_")[0]) + "\t" + str(val_sheap["best_similarity"]) + "\t" + str(val_sheap["shape_similarity"]) + "\t" + str(val_sheap["ESP_similarity"]) + "\n")
                             
+                            # rename file substituent with shaEP value
+                            rename(p_substituate_pdb, p_substituate_pdb[:-4] + "_" + str (val_sheap["best_similarity"]) + ".pdb")
                             
-                            if val_sheap["best_similarity"] < thresold_shaep  : 
-                                # rename file with thresold
-                                rename(p_substituate_pdb, p_substituate_pdb[:-4] + "_" + str (val_sheap["best_similarity"]) + ".pdb")
-                            else : 
-                                # write structure superimposed selected
+                            if val_sheap["best_similarity"] >= thresold_shaep  : 
+                                # write subligand superimposed selected in global files
                                 writePDBfile.coordinateSection(d_filout_superimposed["sheap"], lig_parsed, recorder= "HETATM", header = str(p_lig.split ("/")[-1]) + "_" + str (val_sheap["best_similarity"]) ,  connect_matrix = 1)
                                 
                                 ############
                                 # write BS #
                                 ############
-                                l_atom_complex = parsePDB.loadCoordSectionPDB(p_complex, "ATOM")
+                                # not only protein superimposed -> also ion and water
+                                l_atom_complex = parsePDB.loadCoordSectionPDB(p_complex)
                                 superposeStructure.applyMatrixProt(l_atom_complex, p_matrix)
                                 p_file_cx = p_dir_result_ref +  "CX_" + p_lig.split ("/")[-1]
                                 writePDBfile.coordinateSection(p_file_cx, l_atom_complex, recorder="ATOM", header= p_lig.split ("/")[-1], connect_matrix = 0)
     
-    
+                                # search atom in BS
                                 l_atom_binding_site = []
                                 for atom_substruct in lig_parsed : 
                                     for atom_complex in l_atom_complex : 
@@ -304,6 +321,7 @@ def retrieveSubstructSuperimposed (name_lig, thresold_BS = 4.5, thresold_superim
             l_ref = d_smile[substruct][smile_code]["ref"]
             filout_smile.write (str (smile_code) + "\t" + str (d_smile[substruct][smile_code]["count"]) + "\t" + " ".join (l_PDB) + "\t" + " ".join (l_ref) + "\t" + " ".join(l_lig) + "\n")
         filout_smile.close ()
+    p_log.close ()
     return 1
 
 # step 4 
@@ -495,14 +513,14 @@ thresold_shaep = 0.2
 # ###########
 # 
 # buildData.builtDatasetGlobal(p_list_ligand = "/home/borrel/Yue_project/resultLigandInPDB" , ligand_ID = "ATP", thresold_RX = thresold_RX, thresold_blast = thresold_blast, verbose = 1)
-datasetPreparation ("ATP")
-applyTMAlign ("ATP")
-retrieveSubstructSuperimposed ("ATP", thresold_BS = thresold_BS, thresold_superimposed_ribose = thresold_superimposed_ribose, thresold_superimposed_pi = thresold_superimposed_pi, thresold_shaep = thresold_shaep)
-analysisSameBS ("ATP")
-analysisSmile ("ATP")
+# datasetPreparation ("ATP")
+# applyTMAlign ("ATP")
+# retrieveSubstructSuperimposed ("ATP", thresold_BS = thresold_BS, thresold_superimposed_ribose = thresold_superimposed_ribose, thresold_superimposed_pi = thresold_superimposed_pi, thresold_shaep = thresold_shaep)
+# analysisSameBS ("ATP")
+# analysisSmile ("ATP")
 # 
 # 
 # 
-# manageResult (["POP", "ATP", "AMP", "ADP"])
+# manageResult (["AMP"])
 
-# arrangeResult.controlResult (["POP", "ATP", "AMP", "ADP"])
+# arrangeResult.controlResult (["AMP"])

@@ -7,6 +7,7 @@ import writePDBfile
 import parseEMBOSS
 import RunBlast
 from os import path, remove, listdir
+from re import search
 from shutil import rmtree
 import analysis
 
@@ -14,7 +15,7 @@ import analysis
 
 
 # rebuild the dataset
-def builtDatasetGlobal (p_list_ligand, ligand_ID, thresold_RX = 2.5, thresold_blast = 1e-4, verbose = 0 ):
+def builtDatasetGlobal (p_list_ligand, ligand_ID, thresold_RX = 2.5, thresold_blast = 1e-4, verbose = 1 ):
     
     # directory with dataset
     p_dir_dataset = pathManage.dataset(ligand_ID)
@@ -53,7 +54,7 @@ def builtDatasetGlobal (p_list_ligand, ligand_ID, thresold_RX = 2.5, thresold_bl
     if verbose : toolViewStructDataset (d_dataset)
     
     # clean folder dataset
-#     cleanFolderDataset (d_dataset, p_dir_dataset)
+    cleanFolderDataset (d_dataset, p_dir_dataset)
     
     
 
@@ -68,9 +69,9 @@ def extractReference (p_list_ligand, p_dir_dataset, p_dir_result, substruct):
     # download PDB and fasta associated
     l_p_PDB = []
     l_p_fasta = []
-    for PDB_ID in d_ligand[substruct] :
+    for PDB_ID in d_ligand[substruct][0:10] :
         PDB_ID = PDB_ID.upper() 
-        p_pdb = downloadFile.importPDB(PDB_ID, p_dir_dataset, dir_by_PDB = 1, debug = 1, dbPDB = "/home/borrel/saltBridgesProject/PDB/" )
+        p_pdb = downloadFile.importPDB(PDB_ID, p_dir_dataset, dir_by_PDB = 1, debug = 1, dbPDB = "/home/borrel/PDB/" )
         p_fasta = downloadFile.importFasta(PDB_ID, p_dir_dataset, dir_by_PDB = 1, debug = 1, fastaGlobal = "/home/borrel/Yue_project/pdb_seqres.txt")
         
         if p_pdb != 0 and p_fasta != 0 : 
@@ -180,8 +181,8 @@ def calculIdenticNeedleCross(l_p_fasta, pr_alignement) :
     if len (l_p_fasta) == 2 : 
         first_key = l_p_fasta[0].split("/")[-1][0:-6] 
         dico_out[first_key] = {}
-        if not path.exists( pr_alignement + first_key + "_" + l_p_fasta[1].split("/")[-1][0:-6] + ".water") : 
-            path_file_needle = runOtherSoft.needle(l_p_fasta[0],  l_p_fasta[1], pr_alignement + first_key + "_" + l_p_fasta[1].split("/")[-1][0:-6] + ".water")
+        if not path.exists( pr_alignement + first_key + "_" + l_p_fasta[1].split("/")[-1][0:-6] + ".needle") : 
+            path_file_needle = runOtherSoft.needle(l_p_fasta[0],  l_p_fasta[1], pr_alignement + first_key + "_" + l_p_fasta[1].split("/")[-1][0:-6] + ".needle")
         else : 
             path_file_needle = pr_alignement + first_key + "_" + l_p_fasta[1].split("/")[-1][0:-6] + ".needle"
         dico_out[first_key] [l_p_fasta[1].split("/")[-1][0:-6]] = parseEMBOSS.embossFile(path_file_needle)[3]
@@ -195,7 +196,7 @@ def calculIdenticNeedleCross(l_p_fasta, pr_alignement) :
             while j < nb_fasta : 
                 if not path.exists( pr_alignement + first_key + "_" + l_p_fasta[j].split("/")[-1][0:-6] + ".needle") :
                     path_file_needle = runOtherSoft.needle(l_p_fasta[i], l_p_fasta[j], pr_alignement + first_key + "_" + l_p_fasta[j].split("/")[-1][0:-6] + ".needle")
-                if path.exists( pr_alignement + first_key + "_" + l_p_fasta[j].split("/")[-1][0:-6] + ".water") : # case DNA sequence in fasta
+                if path.exists( pr_alignement + first_key + "_" + l_p_fasta[j].split("/")[-1][0:-6] + ".needle") : # case DNA sequence in fasta
                     dico_out[first_key] [l_p_fasta[j].split("/")[-1][0:-6]] = parseEMBOSS.embossFile(pr_alignement + first_key + "_" + l_p_fasta[j].split("/")[-1][0:-6] + ".needle")[3]
                 j = j + 1
             i = i + 1
@@ -289,7 +290,7 @@ def filterGlobalDataset (d_dataset, p_dir_align) :
                         
 
 
-def filterBlastResult (d_dataset, p_dir_dataset, sustruct, thresold_RX = 2.5, thresold_blast = 1e-4, debug = 0) : 
+def filterBlastResult (d_dataset, p_dir_dataset, substruct, thresold_RX = 2.5, thresold_blast = 1e-4, debug = 0) : 
     
     """
     Filter resolution PDB
@@ -301,22 +302,23 @@ def filterBlastResult (d_dataset, p_dir_dataset, sustruct, thresold_RX = 2.5, th
         for pdb_blast_chain in d_dataset[pdb_ref]["align"].keys () : 
             # filter e.value
             if debug == 1 : print d_dataset[pdb_ref]["align"][pdb_blast_chain], pdb_ref, thresold_blast
-            # remove thresold and reference cleanner
-            if d_dataset[pdb_ref]["align"][pdb_blast_chain] <= thresold_blast and not pdb_blast_chain[0:4] in d_dataset.keys (): 
+            # remove thresold and reference cleanner, remove if alignement on same protein
+            if d_dataset[pdb_ref]["align"][pdb_blast_chain] <= thresold_blast and pdb_blast_chain [0:4].upper() != pdb_ref: 
+                if debug == 1 :print "CONTROL", pdb_blast_chain, d_dataset[pdb_ref]["align"][pdb_blast_chain]
                 # dowload PDB files
                 pdb_blast = pdb_blast_chain[0:4]
-                p_pdb_blast = downloadFile.importPDB(pdb_blast, p_dir_dataset + pdb_ref + "/", dir_by_PDB=0, dbPDB = "/home/borrel/saltBridgesProject/PDB/")
+                p_pdb_blast = downloadFile.importPDB(pdb_blast, p_dir_dataset + pdb_ref + "/", dir_by_PDB=0, dbPDB = "/home/borrel/PDB/")
                 if p_pdb_blast == 0 : 
                     continue
                 
 #                 print p_pdb_blast, pdb_blast, "************"
-                separeByChain(p_pdb_blast)
+                separeByChain(p_pdb_blast) # divise chain in reference folder
                 try : RX = parsePDB.resolution(p_pdb_blast)
                 except : RX = 100.0
                 l_ligand = parsePDB.retrieveListLigand(p_pdb_blast)
-                if debug == 1 : print p_pdb_blast, l_ligand, RX
+                if debug == 1 : print p_pdb_blast, l_ligand, RX, "control blast"
                 # remove apo forms and remove not substiuant
-                if l_ligand == [] or sustruct in l_ligand: 
+                if l_ligand == [] or substruct in l_ligand: 
                     continue
                 
                 # case RMN structure
@@ -326,36 +328,48 @@ def filterBlastResult (d_dataset, p_dir_dataset, sustruct, thresold_RX = 2.5, th
                 if debug == 1 :print "----", RX, thresold_RX, "----"
                 if float(RX) <= thresold_RX : 
                     if not "blast" in d_dataset[pdb_ref].keys () : 
-                        d_dataset[pdb_ref]["blast"] = [pdb_blast_chain]
+                        d_dataset[pdb_ref]["blast"] = [pdb_blast_chain.upper ()]
                     else : 
-                        d_dataset[pdb_ref]["blast"].append (pdb_blast_chain)
+                        # control if other chain in list
+                        flag_in = 0
+                        for PDB_in in d_dataset[pdb_ref]["blast"] : 
+                            if PDB_in.split ("_")[0] == pdb_blast_chain.upper ().split ("_")[0] :
+                                flag_in = 1
+                        if flag_in == 0 : 
+                            d_dataset[pdb_ref]["blast"].append (pdb_blast_chain.upper ())
+                            
                     if debug == 1 :print d_dataset[pdb_ref]["blast"], pdb_ref
+        
+                    
+                    
             
-def cleanFolderDataset (d_dataset, p_dir_dataset) : 
-    print d_dataset.keys ()
+def cleanFolderDataset (d_dataset, p_dir_dataset, debug = 1) : 
     
     for PDB_ref in  d_dataset.keys () : 
+        if debug : 
+            print "*******"
+            print  p_dir_dataset + PDB_ref 
+            try : print d_dataset[PDB_ref]["best"]["PDB"], d_dataset[PDB_ref]["best"]["fasta"]
+            except : pass
+            try: print d_dataset[PDB_ref]["blast"]
+            except: pass
+            print "*********"
+        
         if d_dataset[PDB_ref]["conserve"] == 0 or not "blast" in d_dataset[PDB_ref].keys (): 
             rmtree(p_dir_dataset + PDB_ref + "/")
             print "RM1", d_dataset[PDB_ref]["conserve"]
             continue
         else : 
             pr_ref = p_dir_dataset + PDB_ref + "/"
-            l_file_dir_ref = listdir(p_dir_dataset + PDB_ref)
+            l_file_dir_ref = listdir(pr_ref)
             for filein_rep in l_file_dir_ref : 
-                
-                print "*******"
-                print pr_ref +  filein_rep 
-                print d_dataset[PDB_ref]["best"]["PDB"], d_dataset[PDB_ref]["best"]["fasta"], d_dataset[PDB_ref]["blast"]
-                print "*********"
-
-
                 if pr_ref +  filein_rep in [d_dataset[PDB_ref]["best"]["PDB"], d_dataset[PDB_ref]["best"]["fasta"]] : 
                     continue
                 elif filein_rep[0:-4] in d_dataset[PDB_ref]["blast"] : 
                     continue
                 else : 
                     remove(pr_ref + filein_rep)
+    
                 
     
     
@@ -367,10 +381,10 @@ def toolViewStructDataset (d_dataset):
         
         if "best" in d_dataset[k] : 
             print "@@@@@@@@@@"
-            print d_dataset[k]["best"]
+            print "BEST", d_dataset[k]["best"]
             if "blast" in d_dataset[k]:
                 print "****"
-                print d_dataset[k]["blast"]
+                print "BLAST", d_dataset[k]["blast"]
                 print "****"
     print "--------------------------------------"    
     

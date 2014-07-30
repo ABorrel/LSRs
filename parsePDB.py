@@ -189,6 +189,9 @@ def separateByLigand (l_atom_ligand, debug = 0) :
     ####################################
     # ligand separed by ID and num res #
     ####################################
+    if l_atom_ligand == [] :
+        return []
+    
     
     l_code_ligand = []
     for atom_ligand in l_atom_ligand : 

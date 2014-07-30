@@ -82,22 +82,26 @@ def importFasta ( PDB_ID ,directory, dir_by_PDB = 1, debug=0, fastaGlobal = "" )
         directory_out = directory
         
     if fastaGlobal != "" : 
-        filout = open (directory_out + name_PDB, "w")
-        filin = open (fastaGlobal, "r")
-        l_lines_fasta = filin.readlines()
-        filin.close ()
-        nb_lines = len (l_lines_fasta)
-        i = 0
-        while i < nb_lines : 
-            if search (">" + PDB_ID.lower(), l_lines_fasta[i]) : 
-                filout.write (l_lines_fasta[i])
-                filout.write (l_lines_fasta[i + 1])
-                i = i + 2
-            else : 
-                i = i + 1
-                
-        filout.close ()
-        return directory_out + name_PDB
+        
+        if path.exists(directory_out + name_PDB) and path.getsize(directory_out + name_PDB) != 0: 
+            return directory_out + name_PDB
+        else :
+            filout = open (directory_out + name_PDB, "w")
+            filin = open (fastaGlobal, "r")
+            l_lines_fasta = filin.readlines()
+            filin.close ()
+            nb_lines = len (l_lines_fasta)
+            i = 0
+            while i < nb_lines : 
+                if search (">" + PDB_ID.lower(), l_lines_fasta[i]) : 
+                    filout.write (l_lines_fasta[i])
+                    filout.write (l_lines_fasta[i + 1])
+                    i = i + 2
+                else : 
+                    i = i + 1
+                    
+            filout.close ()
+            return directory_out + name_PDB
             
     else : 
     #     print PDB_ID, "download Fasta"

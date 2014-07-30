@@ -123,7 +123,7 @@ def searchReplacement (smile, PDB_query, PDB_ref, name_ligand) :
     elif searchSulfonyl(smile) : 
         return "sulfonyl",""
     elif searchCON (smile) : 
-        return "C=ON",""
+        return "carbamate",""
     else : 
         return "other"  ,""
     

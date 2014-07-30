@@ -90,6 +90,7 @@ def runShaep (p_struct1, p_struct2, p_out, clean = 0):
     
     # run
     cmd = shaep + " --output-file "  + p_out + " " + p_struct1 + " " + p_struct2  + " --noOptimization" 
+#     os.system (cmd)
     subprocessTimeControl(cmd, time_out=30) 
     print cmd
             
@@ -158,6 +159,7 @@ def babelPDBtoMOL2 (path_file_pdb) :
     path_filout = path_file_pdb[0:-4] + ".mol2"
     if not os.path.exists(path_filout) : 
         cmd_convert = "babel " + path_file_pdb + " "+ path_filout 
+#         os.system(cmd_convert)
         subprocessTimeControl(cmd_convert, time_out=5)
     return path_filout
 

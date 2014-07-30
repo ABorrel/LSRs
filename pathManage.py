@@ -200,7 +200,7 @@ def findSubstructFind(pr_result, name_ligand, PDB_query, substruct) :
     l_filin = listdir(pr_result )
     
     for filin in l_filin : 
-        if search (name_ligand, filin) and search ("^substituate", filin) and search (".pdb", filin) and search (PDB_query, filin) and search (substruct, filin) : 
+        if search (name_ligand, filin) and search ("^substituent", filin) and search (".pdb", filin) and search (PDB_query, filin) and search (substruct, filin) : 
             return pr_result + filin    
     
     
