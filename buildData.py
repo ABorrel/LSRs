@@ -233,6 +233,7 @@ def selectBestFilePDBFasta (d_PDB, result_align, substruct) :
         while i < nb_chain : 
             l_ligand = parsePDB.retrieveListLigand(d_PDB["p_pdb_chain"][i])
             if substruct in l_ligand : 
+		# print "999999",d_PDB
                 d_PDB["best"]["PDB"] = d_PDB["p_pdb_chain"][i]
                 d_PDB["best"]["fasta"] = d_PDB["p_fasta_chain"][i]
                 return

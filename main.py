@@ -521,6 +521,5 @@ thresold_shaep = 0.2
 # 
 # 
 # 
-# manageResult (["AMP"])
-
-# arrangeResult.controlResult (["AMP"])
+# manageResult (["AMP", "POP", "ADP", "ATP"])
+arrangeResult.controlResult (["AMP", "ADP", "ATP", "POP"])
