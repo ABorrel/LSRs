@@ -139,10 +139,10 @@ def controlResult (l_name_ligand):
                     if search(".hit", file_ref) : 
                         count_sheap = count_sheap + 1
                         
-                        if path.getsize(pr_ref +"/" + file_ref ) < 400 : 
+                        if path.getsize(pr_ref +"/" + file_ref ) < 100 : 
                             count_sheap_out = count_sheap_out + 1
-                            if search("ribose", file_ref) : 
-                                count_ribose = count_ribose + 1
+                        if search("ribose", file_ref) : 
+                            count_ribose = count_ribose + 1
         filout.write (name_ligand + "\n")
         filout.write ("count Shaep:" + str (count_sheap) + "\n")
         filout.write ("count Shaep wrong:" + str (count_sheap_out) + "\n")
