@@ -4,11 +4,12 @@ import parsePDB
 import analysis
 import superposeStructure
 import writePDBfile
+import tool
 
-
-from os import path, makedirs, listdir, path
+from os import makedirs, listdir, path
 from shutil import copy2
 from re import search
+import numpy as np
 
 def globalArrangement (pr_orgin, p_smile, p_family, name_ligand):
     
@@ -152,6 +153,66 @@ def controlResult (l_name_ligand):
         
 
     
+def qualityExtraction (l_ligand, p_list_ligand) : 
+    
+    filout = open(pathManage.result() + "quality_extraction.txt", "w")
+    
+    # number PDB by ligand, without filter
+    filout.write ("Number PDB by ligand:\n")
+    
+    d_dataset =  tool.parseLigandPDBList(p_list_ligand)
+    for ligand in l_ligand : 
+        filout.write (str (ligand) + ": " + str (len (d_dataset[ligand])) + "\n")
+    
+    # number references
+    filout.write ("\n*************\n\nNumber references by ligands:\n")
+    for ligand in l_ligand : 
+        pr_result_ligand = pathManage.result(ligand)
+        nb_ref = -2
+        l_file = listdir(pr_result_ligand)
+        for f in l_file : 
+            if path.isdir (pr_result_ligand + "/" + f) : 
+                nb_ref = nb_ref + 1
+        filout.write (ligand + ": " + str (nb_ref) + "\n")
+        
+    # number of query by ref in means and max and min (after blast)
+    filout.write ("\n*************\n\nNumber means queries by ligands:\n")
+    for ligand in l_ligand : 
+        d_nb_query = {}
+        pr_result_ligand = pathManage.result(ligand)
+        nb_ref = 0
+        l_file = listdir(pr_result_ligand)
+        for f in l_file : 
+            if path.isdir (pr_result_ligand + "/" + f) and len (f) == 4: 
+                nb_ref = nb_ref + 1
+                d_nb_query[f] = 0
+                l_file_queries = listdir(pr_result_ligand + "/" + f + "/")
+                for file_query in l_file_queries : 
+                    if search ("CX",file_query) : 
+                        d_nb_query[f] = d_nb_query[f] + 1
+        filout.write (ligand + ": " + str(np.mean(d_nb_query.values ())) + "+/-" + str(np.std (d_nb_query.values ())) + "\n")
+        filout.write ("MAX " + str (ligand) + ": " + str (max (d_nb_query.values ())) + " " + str (d_nb_query.keys ()[d_nb_query.values ().index (max (d_nb_query.values ()))]) +"\n")
+    
+    
+    
+    
+                
+                
+        
+    filout.close()
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+
 
 
 

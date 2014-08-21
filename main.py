@@ -522,4 +522,6 @@ thresold_shaep = 0.2
 # 
 # 
 # manageResult (["AMP", "POP", "ADP", "ATP"])
-arrangeResult.controlResult (["AMP", "ADP", "ATP", "POP"])
+# arrangeResult.controlResult (["AMP", "ADP", "ATP", "POP"])
+
+arrangeResult.qualityExtraction (["AMP", "POP", "ADP", "ATP"], p_list_ligand = "/home/borrel/Yue_project/resultLigandInPDB")
