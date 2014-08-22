@@ -1,4 +1,3 @@
-
 #!/usr/bin/env Rscript
 
 
@@ -6,7 +5,7 @@
 
 pieType = function (d, path_out){
 	
-	#print (d)
+	# print (d)
 	colors = seq (1,dim(d)[2])
 
 
@@ -23,7 +22,6 @@ pieType = function (d, path_out){
 
 
 # MAIN #
-
 args <- commandArgs(TRUE)
 p_filin = args[1]
 

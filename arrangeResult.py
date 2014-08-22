@@ -178,7 +178,6 @@ def qualityExtraction (l_ligand, p_list_ligand, thresold_sheap) :
         
     # number of query by ref in means and max and min (after blast)
     filout.write ("\n*************\n\nNumber means queries by references:\n")
-    d_family_out = {}
     for ligand in l_ligand : 
         d_nb_query = {}
         d_family = {}
@@ -193,8 +192,8 @@ def qualityExtraction (l_ligand, p_list_ligand, thresold_sheap) :
                 # count by family
                 family_ref = analysis.findFamily(f, pathManage.findFamilyFile (ligand))
                 if not family_ref in d_family.keys () : 
-                    d_family_out[family_ref] = 0
-                d_family_out[family_ref] = d_family_out[family_ref] + 1
+                    d_family[family_ref] = 0
+                d_family[family_ref] = d_family[family_ref] + 1
                 
                 # count number of references
                 nb_ref = nb_ref + 1
