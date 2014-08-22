@@ -5,6 +5,7 @@ import analysis
 import superposeStructure
 import writePDBfile
 import tool
+import runOtherSoft
 
 from os import makedirs, listdir, path
 from shutil import copy2
@@ -177,13 +178,25 @@ def qualityExtraction (l_ligand, p_list_ligand, thresold_sheap) :
         
     # number of query by ref in means and max and min (after blast)
     filout.write ("\n*************\n\nNumber means queries by references:\n")
+    d_family_out = {}
     for ligand in l_ligand : 
         d_nb_query = {}
+        d_family = {}
+        p_filout_family = pathManage.result() + "reference_family_" + ligand + ".txt"
+        filout_family = open (p_filout_family, "w")
         pr_result_ligand = pathManage.result(ligand)
         nb_ref = 0
         l_file = listdir(pr_result_ligand)
         for f in l_file : 
             if path.isdir (pr_result_ligand + "/" + f) and len (f) == 4: 
+                
+                # count by family
+                family_ref = analysis.findFamily(f, pathManage.findFamilyFile (ligand))
+                if not family_ref in d_family.keys () : 
+                    d_family_out[family_ref] = 0
+                d_family_out[family_ref] = d_family_out[family_ref] + 1
+                
+                # count number of references
                 nb_ref = nb_ref + 1
                 d_nb_query[f] = 0
                 l_file_queries = listdir(pr_result_ligand + "/" + f + "/")
@@ -192,6 +205,14 @@ def qualityExtraction (l_ligand, p_list_ligand, thresold_sheap) :
                         d_nb_query[f] = d_nb_query[f] + 1
         filout.write (ligand + ": " + str(np.mean(d_nb_query.values ())) + "+/-" + str(np.std (d_nb_query.values ())) + "\n")
         filout.write ("MAX " + str (ligand) + ": " + str (max (d_nb_query.values ())) + " " + str (d_nb_query.keys ()[d_nb_query.values ().index (max (d_nb_query.values ()))]) +"\n")
+    
+        # family
+        filout_family.write ("\t".join(d_family.keys ()) + "\n")
+        l_values = [str(x) for x in d_family.values ()]
+        filout_family.write ("\t".join(l_values) + "\n")
+        filout_family.close ()
+        runOtherSoft.piePlot(p_filout_family)
+            
     
     # number subref by ligand
     filout.write ("\n*************\n\nNumber of subref considered:\n")

@@ -164,4 +164,12 @@ def babelPDBtoMOL2 (path_file_pdb) :
     return path_filout
 
 
+def piePlot (p_filin):
+    
+    cmd = "./piePlot.R " + p_filin
+    print cmd
+    os.system (cmd)
+    
+    
+    
 
