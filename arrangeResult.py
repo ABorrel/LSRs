@@ -153,7 +153,7 @@ def controlResult (l_name_ligand):
         
 
     
-def qualityExtraction (l_ligand, p_list_ligand) : 
+def qualityExtraction (l_ligand, p_list_ligand, thresold_sheap) : 
     
     filout = open(pathManage.result() + "quality_extraction.txt", "w")
     
@@ -176,7 +176,7 @@ def qualityExtraction (l_ligand, p_list_ligand) :
         filout.write (ligand + ": " + str (nb_ref) + "\n")
         
     # number of query by ref in means and max and min (after blast)
-    filout.write ("\n*************\n\nNumber means queries by ligands:\n")
+    filout.write ("\n*************\n\nNumber means queries by references:\n")
     for ligand in l_ligand : 
         d_nb_query = {}
         pr_result_ligand = pathManage.result(ligand)
@@ -193,9 +193,34 @@ def qualityExtraction (l_ligand, p_list_ligand) :
         filout.write (ligand + ": " + str(np.mean(d_nb_query.values ())) + "+/-" + str(np.std (d_nb_query.values ())) + "\n")
         filout.write ("MAX " + str (ligand) + ": " + str (max (d_nb_query.values ())) + " " + str (d_nb_query.keys ()[d_nb_query.values ().index (max (d_nb_query.values ()))]) +"\n")
     
-    
-    
-    
+    # number subref by ligand
+    filout.write ("\n*************\n\nNumber of subref considered:\n")
+    for ligand in l_ligand :
+        d_nb_sub = {}
+        d_nb_sub_sheap = {}
+        pr_result_ligand = pathManage.result(ligand)
+        l_ref = listdir(pr_result_ligand)
+        for ref in l_ref : 
+            if path.isdir (pr_result_ligand + "/" + ref) and len (ref) == 4: 
+                l_file_queries = listdir(pr_result_ligand + "/" + ref + "/")
+                for file_query in l_file_queries : 
+                    if search ("substituent",file_query) and search (".pdb",file_query): 
+                        atom_substituate = file_query.split ("_")[-2]
+                        value_sheap = float(file_query.split ("_")[-1][:-4])
+                        if not atom_substituate in d_nb_sub.keys () : 
+                            d_nb_sub[atom_substituate] = 0
+                        d_nb_sub[atom_substituate] = d_nb_sub[atom_substituate] + 1
+                        
+                        if value_sheap > thresold_sheap : 
+                            if not atom_substituate in d_nb_sub_sheap : 
+                                d_nb_sub_sheap[atom_substituate] = 0
+                            d_nb_sub_sheap[atom_substituate] = d_nb_sub_sheap[atom_substituate] + 1
+        filout.write (ligand + "\n")
+        for atom_substituate in d_nb_sub.keys () : 
+            filout.write (atom_substituate + ": " + str (d_nb_sub[atom_substituate]) + "\n")
+            try : filout.write (atom_substituate + " ShaEP: " + str (d_nb_sub_sheap[atom_substituate]) + "\n")
+            except : filout.write (atom_substituate + " ShaEP: 0\n")
+            
                 
                 
         
