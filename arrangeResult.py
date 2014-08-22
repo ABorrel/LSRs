@@ -241,16 +241,51 @@ def qualityExtraction (l_ligand, p_list_ligand, thresold_sheap) :
             filout.write (atom_substituate + ": " + str (d_nb_sub[atom_substituate]) + "\n")
             try : filout.write (atom_substituate + " ShaEP: " + str (d_nb_sub_sheap[atom_substituate]) + "\n")
             except : filout.write (atom_substituate + " ShaEP: 0\n")
-            
-                
-                
-        
     filout.close()
     
     
     
     
+def countingSubstituent (pr_final_folder):
     
+    
+    d_count = {}
+    l_file_final = listdir(pr_final_folder)
+    
+    for pr_type_substituent in l_file_final : 
+        l_file_sub = listdir(pr_final_folder + "/" + pr_type_substituent + "/")
+        for ligand_sub in l_file_sub : 
+            if not ligand_sub in d_count.keys () : 
+                d_count[ligand_sub] = {}
+            if not pr_type_substituent in d_count[ligand_sub].keys ():
+                d_count[ligand_sub][pr_type_substituent] = 0
+            l_ref_folder = listdir(pr_final_folder + "/" + pr_type_substituent + "/" + ligand_sub + "/")
+            for ref_folder in l_ref_folder : 
+                l_file_ref  = listdir(pr_final_folder + "/" + pr_type_substituent + "/" + ligand_sub + "/" + ref_folder + "/")
+                for file_ref in l_file_ref : 
+                    if len (file_ref) == 4 : 
+                        l_file_query = listdir(pr_final_folder + "/" + pr_type_substituent + "/" + ligand_sub + "/" + ref_folder + "/" + file_ref + "/")
+                        for file_query in l_file_query : 
+                            if search("substituent", file_query) : 
+                                d_count[ligand_sub][pr_type_substituent] = d_count[ligand_sub][pr_type_substituent] + 1
+    
+    pr_result = pathManage.result("counting")
+    for ligand_sub in d_count.keys () : 
+        p_filout = pr_result + ligand_sub
+        filout = open (p_filout, "w")
+        filout.write ("\t".join(d_count[ligand_sub].keys ()) + "\n")
+        l_value = [str(x) for x in d_count[ligand_sub].values ()]
+        filout.write ("\t".join(l_value) + "\n")
+        filout.close ()
+        runOtherSoft.piePlot(p_filout)
+                                
+                                
+                                
+    
+    
+    
+    
+        
     
     
     
