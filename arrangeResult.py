@@ -206,7 +206,8 @@ def qualityExtraction (l_ligand, p_list_ligand, thresold_sheap) :
                 for file_query in l_file_queries : 
                     if search ("substituent",file_query) and search (".pdb",file_query): 
                         atom_substituate = file_query.split ("_")[-2]
-                        value_sheap = float(file_query.split ("_")[-1][:-4])
+                        try : value_sheap = float(file_query.split ("_")[-1][:-4])
+                        except : continue
                         if not atom_substituate in d_nb_sub.keys () : 
                             d_nb_sub[atom_substituate] = 0
                         d_nb_sub[atom_substituate] = d_nb_sub[atom_substituate] + 1
@@ -215,7 +216,7 @@ def qualityExtraction (l_ligand, p_list_ligand, thresold_sheap) :
                             if not atom_substituate in d_nb_sub_sheap : 
                                 d_nb_sub_sheap[atom_substituate] = 0
                             d_nb_sub_sheap[atom_substituate] = d_nb_sub_sheap[atom_substituate] + 1
-        filout.write (ligand + "\n")
+        filout.write ("\n" + ligand + "\n")
         for atom_substituate in d_nb_sub.keys () : 
             filout.write (atom_substituate + ": " + str (d_nb_sub[atom_substituate]) + "\n")
             try : filout.write (atom_substituate + " ShaEP: " + str (d_nb_sub_sheap[atom_substituate]) + "\n")
