@@ -169,7 +169,11 @@ def piePlot (p_filin):
     cmd = "./piePlot.R " + p_filin
     print cmd
     os.system (cmd)
+ 
     
+def barplotQuantity(p_filin):
     
+    cmd = "./barplotQuantity.R " + p_filin 
+    os.system(cmd)
     
 

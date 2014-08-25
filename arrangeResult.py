@@ -246,29 +246,45 @@ def qualityExtraction (l_ligand, p_list_ligand, thresold_sheap) :
     
     
     
-def countingSubstituent (pr_final_folder):
+def countingSubstituent (pr_final_folder, debug = 0):
     
     
     d_count = {}
+    d_lig = {}
     l_file_final = listdir(pr_final_folder)
-    
+    if debug : print pr_final_folder
     for pr_type_substituent in l_file_final : 
-        l_file_sub = listdir(pr_final_folder + "/" + pr_type_substituent + "/")
-        for ligand_sub in l_file_sub : 
-            if not ligand_sub in d_count.keys () : 
-                d_count[ligand_sub] = {}
-            if not pr_type_substituent in d_count[ligand_sub].keys ():
-                d_count[ligand_sub][pr_type_substituent] = 0
-            l_ref_folder = listdir(pr_final_folder + "/" + pr_type_substituent + "/" + ligand_sub + "/")
-            for ref_folder in l_ref_folder : 
-                l_file_ref  = listdir(pr_final_folder + "/" + pr_type_substituent + "/" + ligand_sub + "/" + ref_folder + "/")
+        l_file_sub = listdir(pr_final_folder + pr_type_substituent + "/")
+        if debug: print pr_final_folder +  pr_type_substituent + "/"
+        for sub_query in l_file_sub : 
+            l_ligand_sub = listdir(pr_final_folder + pr_type_substituent + "/" + sub_query + "/")
+            for ligand_sub in l_ligand_sub : 
+                l_file_ref  = listdir(pr_final_folder + pr_type_substituent + "/" + sub_query + "/" + ligand_sub + "/")
+                if not ligand_sub in d_count.keys () : 
+                    d_count[ligand_sub] = {}
+                if not sub_query in d_count[ligand_sub].keys () : 
+                    d_count[ligand_sub] [sub_query] = 0
+                
                 for file_ref in l_file_ref : 
-                    if len (file_ref) == 4 : 
-                        l_file_query = listdir(pr_final_folder + "/" + pr_type_substituent + "/" + ligand_sub + "/" + ref_folder + "/" + file_ref + "/")
+                    if len (file_ref.split ("_")[0]) == 4 : 
+                        l_file_query = listdir(pr_final_folder + pr_type_substituent +"/" + sub_query + "/" + ligand_sub + "/" + file_ref + "/")
+                        if debug : print pr_final_folder + pr_type_substituent +"/" + sub_query + "/" + ligand_sub + "/" + file_ref + "/"
+                        
                         for file_query in l_file_query : 
-                            if search("substituent", file_query) : 
-                                d_count[ligand_sub][pr_type_substituent] = d_count[ligand_sub][pr_type_substituent] + 1
-    
+                            if debug : print pr_final_folder + pr_type_substituent +"/" + sub_query + "/" + ligand_sub + "/" + file_ref + "/" + file_query + "/"
+                            if path.isdir(pr_final_folder + pr_type_substituent +"/" + sub_query + "/" + ligand_sub + "/" + file_ref + "/" + file_query + "/") : 
+                                l_file_query_in = listdir(pr_final_folder + pr_type_substituent +"/" + sub_query + "/" + ligand_sub + "/" + file_ref + "/" + file_query + "/")
+                                for file_query_in in l_file_query_in : 
+                                    if search("substituent", file_query_in) : 
+                                        d_count[ligand_sub][sub_query] = d_count[ligand_sub][sub_query] + 1
+                                        ligand = file_query_in.split ("_")[1]
+                                        if not ligand in d_lig.keys () : 
+                                            d_lig[ligand] = 0
+                                        else : 
+                                            d_lig[ligand] = d_lig[ligand] + 1
+            
+        
+    # write and plot
     pr_result = pathManage.result("counting")
     for ligand_sub in d_count.keys () : 
         p_filout = pr_result + ligand_sub
@@ -278,22 +294,19 @@ def countingSubstituent (pr_final_folder):
         filout.write ("\t".join(l_value) + "\n")
         filout.close ()
         runOtherSoft.piePlot(p_filout)
-                                
-                                
-                                
     
+    filout_lig = open (pr_result + "count_ligand", "w")
+    for lig in d_lig.keys () : 
+        if d_lig[lig] > 1 : 
+            filout_lig.write (str (lig) + "\t" + str (d_lig[lig]) + "\n")
+    filout_lig.close ()
     
-    
-    
+    runOtherSoft.barplotQuantity(pr_result + "count_ligand")
+        
+        
+        
+        
+        
+        
         
     
-    
-    
-    
-    
-    
-    
-
-
-
-
