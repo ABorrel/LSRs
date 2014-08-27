@@ -61,7 +61,7 @@ def countlenRing (smile):
             elif smile[i] == "1": 
                 return c
             elif smile[i] != "=" and smile[i] != "[" and smile[i] != "]" and smile[i] != "#" and smile[i] != "@" and smile[i] != "H": 
-                return 0
+                return 99
         elif ring_open == 2 : 
             if smile[i] == ")" : 
                 ring_open = 1
@@ -86,6 +86,38 @@ def searchCON (smile):
         return 1
     else : 
         return 0
+
+def searchCarboxy (smile) :
+    if search ("O=C\(O\)", smile) or search ("C\(=O\)O", smile) : 
+        return 1
+    else : 
+        return 0
+
+def searchCandOandN (smile) : 
+    
+    for at in smile : 
+        if search("[a-z,A-Z]", at) : 
+            if at.upper() != "C" and at.upper() != "O" and at.upper() != "N" : 
+                return 0
+    return 1
+
+
+def searchCandO (smile) : 
+    
+    for at in smile : 
+        if search("[a-z,A-Z]", at) : 
+            if at.upper() != "C" and at.upper() != "O" : 
+                return 0
+    return 1
+
+def searchCandN (smile) : 
+    
+    for at in smile : 
+        if search("[a-z,A-Z]", at) : 
+            if at.upper() != "C" and at.upper() != "N" : 
+                return 0
+    return 1
+
  
 
 def searchReplacement (smile, PDB_query, PDB_ref, name_ligand) : 
@@ -112,18 +144,22 @@ def searchReplacement (smile, PDB_query, PDB_ref, name_ligand) :
             
     if searchP(smile) == 1 : 
         return "phosphate", ""
-    elif searchRing(smile) == 5 : 
-        return "ring5",""
-    elif searchRing(smile) == 6 : 
-        return "ring6",""
-    elif searchRing(smile) > 6 : 
-        return "ringBig",""
-    elif searchRing(smile) == 1 : 
-        return "ring", ""
+    elif searchRing(smile) == 99 : 
+        return "heterocyclic",""
+    elif searchRing(smile) > 0 : 
+        return "ring",""
     elif searchSulfonyl(smile) : 
         return "sulfonyl",""
     elif searchCON (smile) : 
         return "carbamate",""
+    elif searchCarboxy (smile) : 
+        return "carboxy",""
+    elif searchCandOandN (smile) :
+        return "C+O+N", ""
+    elif searchCandO (smile) : 
+        return "C+O", ""
+    elif searchCandN (smile) : 
+        return "C+N", "" 
     else : 
         return "other"  ,""
     
