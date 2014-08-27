@@ -202,6 +202,7 @@ def qualityExtraction (l_ligand, p_list_ligand, thresold_sheap) :
                 for file_query in l_file_queries : 
                     if search ("CX",file_query) : 
                         d_nb_query[f] = d_nb_query[f] + 1
+        filout.write (ligand + ": " + str(np.sum(d_nb_query.values ())) + "\n")
         filout.write (ligand + ": " + str(np.mean(d_nb_query.values ())) + "+/-" + str(np.std (d_nb_query.values ())) + "\n")
         filout.write ("MAX " + str (ligand) + ": " + str (max (d_nb_query.values ())) + " " + str (d_nb_query.keys ()[d_nb_query.values ().index (max (d_nb_query.values ()))]) +"\n")
     
