@@ -5,7 +5,8 @@ import parseTMalign
 
 
 from re import search
-from os import listdir, remove, removedirs
+from os import listdir, remove
+from shutil import rmtree
 
 
 # clean after run (not clean)
@@ -16,29 +17,36 @@ def cleanResultFolder (thresold_sheap, l_lig_out, pr_result):
         if len(pr_lig) != 3 : 
             continue
         else : 
-            filout_control = (pr_result + pr_lig + "/control.txt", "w")
+            filout_control = open (pr_result + pr_lig + "/control.txt", "w")
             l_pr_ref = listdir(pr_result + pr_lig + "/")
             for pr_ref in l_pr_ref : 
                 if len (pr_ref) == 4 : 
                     l_file_query = listdir(pr_result + pr_lig + "/" + pr_ref + "/")
                     for file_query in l_file_query : 
+                        if search ("^all", file_query) : 
+                            continue
+                        elif search ("txt$", file_query) : 
+                            remove (pr_result + pr_lig + "/" + pr_ref + "/" + file_query)   
+                            continue
                         l_elem_name = file_query.split ("_")
                         lig = l_elem_name[1]
                         pdb_q = l_elem_name[2]
                         sub = l_elem_name[3]
                         if len(l_elem_name) == 5 : 
-                            sheap_score = float (l_elem_name[5][0:-4]) 
+                            sheap_score = float (l_elem_name[4][0:-4]) 
                         else : 
                             sheap_score = 1.0 #case file CX-BS
                         if lig in l_lig_out : 
-                            print pr_result + pr_lig + "/" + pr_ref + "/" + file_query
-                            #remove(pr_result + pr_lig + "/" + pr_ref + "/" + file_query)
+                            #print pr_result + pr_lig + "/" + pr_ref + "/" + file_query
+                            remove(pr_result + pr_lig + "/" + pr_ref + "/" + file_query)
                             continue
                         else :
                             if len(l_elem_name) == 5 : filout_control.write (str (sub) + "\t" + str (pr_ref) + "\t" + str (pdb_q) + "\t" + str (lig) + "\t" + str (sheap_score) + "\n")
                             if sheap_score < 0.2 : 
-                                print pr_result + pr_lig + "/" + pr_ref + "/" + file_query
-                                #remove(pr_result + pr_lig + "/" + pr_ref + "/" + file_query) 
+                                #print pr_result + pr_lig + "/" + pr_ref + "/" + file_query
+                                remove (pr_result + pr_lig + "/" + pr_ref + "/substituent_" + str (lig) + "_" + str(pdb_q) + "_" + str (sub) + ".hit")
+                                remove (pr_result + pr_lig + "/" + pr_ref + "/substituent_" + str (lig) + "_" + str (pdb_q) + "_" + str (sub) + ".smi")
+                                remove(pr_result + pr_lig + "/" + pr_ref + "/" + file_query) 
                     
                     # del ref folder
                     l_file_query_new = listdir(pr_result + pr_lig + "/" + pr_ref + "/")
@@ -48,8 +56,7 @@ def cleanResultFolder (thresold_sheap, l_lig_out, pr_result):
                             f = 1
                             break
                     if f==0 : 
-                        print pr_result + pr_lig + "/" + pr_ref + "/"
-                        #removedirs(pr_result + pr_lig + "/" + pr_ref + "/")
+                        rmtree(pr_result + pr_lig + "/" + pr_ref + "/")
                 
             filout_control.close ()      
                             
