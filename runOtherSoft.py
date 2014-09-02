@@ -64,8 +64,9 @@ def  babelConvertPDBtoSMILE (p_file_pdb) :
     
     if not os.path.exists(path_filout) : 
         cmd_convert = "babel " + p_file_pdb + " " + path_filout
+        os.system(cmd_convert)
         print cmd_convert
-        subprocessTimeControl(cmd_convert, time_out=10)
+#         subprocessTimeControl(cmd_convert, time_out=10)
     
     try : filin = open (path_filout, "r")
     except : return "0"
@@ -90,13 +91,12 @@ def runShaep (p_struct1, p_struct2, p_out, clean = 0):
     
     # run
     cmd = shaep + " --output-file "  + p_out + " " + p_struct1 + " " + p_struct2  + " --noOptimization" 
-#     os.system (cmd)
-    subprocessTimeControl(cmd, time_out=30) 
     print cmd
+    os.system (cmd)
+#     subprocessTimeControl(cmd, time_out=30) 
             
     # supp others files
     cmd_rm = "rm " + p_out[0:-4] + "_hits.txt"
-    
    
     try : os.system (cmd_rm)
     except : pass

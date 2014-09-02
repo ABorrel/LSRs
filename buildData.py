@@ -15,7 +15,7 @@ import analysis
 
 
 # rebuild the dataset
-def builtDatasetGlobal (p_list_ligand, ligand_ID, thresold_RX = 2.5, thresold_blast = 1e-4, verbose = 1 ):
+def builtDatasetGlobal (p_list_ligand, ligand_ID, thresold_RX = 2.5, thresold_blast = 1e-4, l_ligand_out = [], verbose = 1 ):
     
     # directory with dataset
     p_dir_dataset = pathManage.dataset(ligand_ID)
@@ -49,7 +49,7 @@ def builtDatasetGlobal (p_list_ligand, ligand_ID, thresold_RX = 2.5, thresold_bl
     if verbose : toolViewStructDataset (d_dataset)
     
     # filter by e-value and RX
-    filterBlastResult (d_dataset, p_dir_dataset,ligand_ID, thresold_RX = thresold_RX, thresold_blast = thresold_blast)
+    filterBlastResult (d_dataset, p_dir_dataset,ligand_ID, thresold_RX = thresold_RX, thresold_blast = thresold_blast, l_ligand_out = l_ligand_out)
     
     if verbose : toolViewStructDataset (d_dataset)
     
@@ -291,7 +291,7 @@ def filterGlobalDataset (d_dataset, p_dir_align) :
                         
 
 
-def filterBlastResult (d_dataset, p_dir_dataset, substruct, thresold_RX = 2.5, thresold_blast = 1e-4, debug = 0) : 
+def filterBlastResult (d_dataset, p_dir_dataset, substruct, thresold_RX = 2.5, thresold_blast = 1e-4, l_ligand_out = [], debug = 1) : 
     
     """
     Filter resolution PDB
@@ -313,13 +313,28 @@ def filterBlastResult (d_dataset, p_dir_dataset, substruct, thresold_RX = 2.5, t
                     continue
                 
 #                 print p_pdb_blast, pdb_blast, "************"
-                separeByChain(p_pdb_blast) # divise chain in reference folder
+                l_queries_by_chain = separeByChain(p_pdb_blast) # divise chain in reference folder
                 try : RX = parsePDB.resolution(p_pdb_blast)
                 except : RX = 100.0
                 l_ligand = parsePDB.retrieveListLigand(p_pdb_blast)
-                if debug == 1 : print p_pdb_blast, l_ligand, RX, "control blast"
-                # remove apo forms and remove not substiuant
+                if debug == 1 : print p_pdb_blast, l_ligand, RX, "control blast\n" + " ".join(l_queries_by_chain) + "\n" 
+                
+                # remove apo forms and remove not substiuant + list ligand do not considered
                 if l_ligand == [] or substruct in l_ligand: 
+                    remove (p_pdb_blast)
+                    for queries_by_chain in l_queries_by_chain : 
+                        remove (queries_by_chain)
+                    continue
+                
+                for ligand_out in l_ligand_out : 
+                    if ligand_out in l_ligand: 
+                        try : remove (p_pdb_blast)
+                        except : 
+                            if debug: print "CONTROL File", p_pdb_blast
+                        for queries_by_chain in l_queries_by_chain : 
+                            try : remove (queries_by_chain)
+                            except : 
+                                if debug: print "CONTROL File", " ".join(l_queries_by_chain)
                     continue
                 
                 # case RMN structure

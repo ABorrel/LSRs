@@ -180,8 +180,9 @@ def retrieveSubstructSuperimposed (name_lig, thresold_BS = 4.5, thresold_superim
         
         
         
-        # write lig ref -> connect matrix corrrect
+        # write lig ref -> connect matrix corrrect in all reference and all sheap
         writePDBfile.coordinateSection(d_filout_superimposed["global"], lig_ref_parsed, "HETATM", connect_matrix = 1)
+        writePDBfile.coordinateSection(d_filout_superimposed["sheap"], lig_ref_parsed, "HETATM", connect_matrix = 1)
         
         # inspect folder dataset
         l_pdbfile = listdir(p_dir_dataset + ref_folder + "/")
@@ -238,7 +239,7 @@ def retrieveSubstructSuperimposed (name_lig, thresold_BS = 4.5, thresold_superim
 #                             p_substruct_ref_mol2 = runOtherSoft.babelPDBtoMOL2 (p_substruct_ref)
 #                             p_subs_query_mol2 = runOtherSoft.babelPDBtoMOL2 (p_substituate_pdb)
                     
-                            p_sheap = runOtherSoft.runShaep (p_substruct_ref, p_substituate_pdb, p_substituate_pdb[0:-4] + ".hit", clean = 1)
+                            p_sheap = runOtherSoft.runShaep (p_substruct_ref, p_substituate_pdb, p_substituate_pdb[0:-4] + ".hit", clean = 0)
                             val_sheap = parseShaep.parseOutputShaep (p_sheap)
                             if val_sheap == {} : 
                                 p_log.write ("[ERROR] -> ShaEP " + p_substituate_pdb + " " + p_substruct_ref + "\n")
@@ -257,7 +258,10 @@ def retrieveSubstructSuperimposed (name_lig, thresold_BS = 4.5, thresold_superim
                             # rename file substituent with shaEP value
                             rename(p_substituate_pdb, p_substituate_pdb[:-4] + "_" + str (val_sheap["best_similarity"]) + ".pdb")
                             
-                            if val_sheap["best_similarity"] >= thresold_shaep  : 
+                            # write all substruct in global file
+                            writePDBfile.coordinateSection(d_filout_superimposed["global"], lig_parsed, recorder= "HETATM", header = str(p_lig.split ("/")[-1]) + "_" + str (val_sheap["best_similarity"]) ,  connect_matrix = 1)
+                                
+                            if float(val_sheap["best_similarity"]) >= thresold_shaep  : 
                                 # write subligand superimposed selected in global files
                                 writePDBfile.coordinateSection(d_filout_superimposed["sheap"], lig_parsed, recorder= "HETATM", header = str(p_lig.split ("/")[-1]) + "_" + str (val_sheap["best_similarity"]) ,  connect_matrix = 1)
                                 
@@ -471,12 +475,13 @@ thresold_superimposed_ribose = 2.5
 thresold_superimposed_pi = 3
 thresold_IDseq = 100
 thresold_shaep = 0.2
+l_ligand_out = ["AMP", "ADP", "ATP", "TTP", "DCP", "DGT", "DTP", "DUP", "ACP", "AD9", "NAD", "AGS", "UDP", "POP", "APC", "CTP", "AOV"]
 
 ### AMP ###
 ###########
 
 
-# buildData.builtDatasetGlobal(p_list_ligand = "/home/borrel/Yue_project/resultLigandInPDB" , ligand_ID = "AMP", thresold_RX = thresold_RX, thresold_blast = thresold_blast, verbose = 1)
+# buildData.builtDatasetGlobal(p_list_ligand = "/home/borrel/Yue_project/resultLigandInPDB" , ligand_ID = "AMP", thresold_RX = thresold_RX, thresold_blast = thresold_blast, l_ligand_out= l_ligand_out, verbose = 1)
 # datasetPreparation ("AMP")
 # applyTMAlign ("AMP")
 # ionIdentification ("AMP")
@@ -521,10 +526,10 @@ thresold_shaep = 0.2
 # 
 # 
 # 
-manageResult (["AMP", "POP", "ADP", "ATP"])
+manageResult (["AMP", "ADP", "ATP", "POP"])
 arrangeResult.controlResult (["AMP", "ADP", "ATP", "POP"])
 
-arrangeResult.qualityExtraction (["AMP", "ADP", "ATP", "POP"], p_list_ligand = "/home/borrel/Yue_project/resultLigandInPDB",  thresold_sheap=thresold_shaep)
+arrangeResult.qualityExtraction (["AMP", "ADP", "ATP", "POP"], p_list_ligand = "/home/borrel/Yue_project/resultLigandInPDB", thresold_sheap = thresold_shaep)
 arrangeResult.countingSubstituent(pathManage.result("final"))
 
 

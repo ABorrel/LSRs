@@ -119,6 +119,15 @@ def searchCandN (smile) :
     return 1
 
  
+ 
+def searchConly (smile) : 
+    
+    for at in smile : 
+        if search("[a-z,A-Z]", at) : 
+            if at.upper() != "C" : 
+                return 0
+    return 1
+ 
 
 def searchReplacement (smile, PDB_query, PDB_ref, name_ligand) : 
     
@@ -147,46 +156,22 @@ def searchReplacement (smile, PDB_query, PDB_ref, name_ligand) :
     elif searchRing(smile) == 99 : 
         return "heterocyclic",""
     elif searchRing(smile) > 0 : 
-        return "ring",""
+        return "cyclic",""
     elif searchSulfonyl(smile) : 
         return "sulfonyl",""
     elif searchCON (smile) : 
         return "carbamate",""
     elif searchCarboxy (smile) : 
         return "carboxy",""
-    elif searchCandOandN (smile) :
-        return "C+O+N", ""
+    elif searchConly(smile) :
+        return "onlyC", ""
     elif searchCandO (smile) : 
         return "C+O", ""
     elif searchCandN (smile) : 
         return "C+N", "" 
+    elif searchCandOandN (smile) :
+        return "C+O+N", ""
     else : 
         return "other"  ,""
-    
 
  
-                
-# 
-# filin = open ("/home/borrel/Yue_project/result/ATP/list_0.4_smile.txt", "r")   
-# l_lines = filin.readlines ()
-# for l in l_lines : 
-#     smile = l.split ("\t") [0]
-#     print smile, l.split ("\t") [-1]
-#     print searchMetal (smile), "Metal"
-#     print searchP(smile), "Phosphate"
-#     print searchRing(smile), "ring"
-#     print searchSulfonyl(smile), "sulfonyl"
-#     print searchCON (smile), "C=ON"
-#     
-    
-    
-    
-    
-    
-    
-
-
-
-            
-                
-                

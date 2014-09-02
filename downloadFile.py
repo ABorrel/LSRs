@@ -21,22 +21,22 @@ def importPDB ( PDB_ID , directory, dir_by_PDB = 1, debug=0 , dbPDB = "" ):
     """
     name_PDB = PDB_ID.upper () + ".pdb"
     if dir_by_PDB : 
-        directory_out = directory + PDB_ID + "/"
-        try:system ( "mkdir " + directory_out )
-        except:pass
+        pr_out = directory + PDB_ID + "/"
+        if not path.isdir(pr_out) : 
+            system ( "mkdir " + pr_out )
     else : 
-        directory_out = directory
+        pr_out = directory
     
     if dbPDB != "" : 
         
-        if path.exists(directory_out + PDB_ID.upper () + ".pdb") and path.getsize(directory_out + PDB_ID.upper () + ".pdb") != 0: 
-            return directory_out + PDB_ID.upper () + ".pdb"
+        if path.exists(pr_out + PDB_ID.upper () + ".pdb") and path.getsize(pr_out + PDB_ID.upper () + ".pdb") != 0: 
+            return pr_out + PDB_ID.upper () + ".pdb"
         else : 
             if not  path.exists(dbPDB + PDB_ID.lower() + ".pdb") : 
                 return 0
             else : 
-                copy (dbPDB + PDB_ID.lower() + ".pdb", directory_out + PDB_ID.upper () + ".pdb")
-                return directory_out + PDB_ID.upper () + ".pdb"
+                copy (dbPDB + PDB_ID.lower() + ".pdb", pr_out + PDB_ID.upper () + ".pdb")
+                return pr_out + PDB_ID.upper () + ".pdb"
         return 0
 
     else : 
@@ -45,23 +45,23 @@ def importPDB ( PDB_ID , directory, dir_by_PDB = 1, debug=0 , dbPDB = "" ):
         try:
             name_PDB = PDB_ID.upper () + ".pdb"
             if dir_by_PDB : 
-                directory_out = directory + PDB_ID + "/"
-                try:system ( "mkdir " + directory_out )
-                except:pass
+                pr_out = directory + PDB_ID + "/"
+                if not path.isdir(pr_out) : 
+                    system ( "mkdir " + pr_out )
             else : 
-                directory_out = directory
+                pr_out = directory
             
-            p_filout = directory_out + name_PDB
+            p_filout = pr_out + name_PDB
             if path.exists(p_filout) : 
                 return p_filout
             else : 
                 path_file_pdb = urlretrieve( adresseSeq )
                 if debug : print path_file_pdb
-                cmd = "mv " + path_file_pdb[0] + " " + directory_out + name_PDB
+                cmd = "mv " + path_file_pdb[0] + " " + pr_out + name_PDB
                 if debug : print cmd
                 system ( cmd )
                 print  str( PDB_ID ) + "-> done"
-                return directory_out + name_PDB
+                return pr_out + name_PDB
         except:
             print str( PDB_ID ) + "-> ERROR DOWNLOAD PDB file"
             return 0
@@ -75,18 +75,18 @@ def importFasta ( PDB_ID ,directory, dir_by_PDB = 1, debug=0, fastaGlobal = "" )
     """
     name_PDB = PDB_ID.upper () + ".fasta"
     if dir_by_PDB : 
-        directory_out = directory + PDB_ID + "/"
-        try:system ( "mkdir " + directory_out )
-        except:pass
+        pr_out = directory + PDB_ID + "/"
+        if not path.isdir(pr_out) : 
+            system ( "mkdir " + pr_out )
     else : 
-        directory_out = directory
+        pr_out = directory
         
     if fastaGlobal != "" : 
         
-        if path.exists(directory_out + name_PDB) and path.getsize(directory_out + name_PDB) != 0: 
-            return directory_out + name_PDB
+        if path.exists(pr_out + name_PDB) and path.getsize(pr_out + name_PDB) != 0: 
+            return pr_out + name_PDB
         else :
-            filout = open (directory_out + name_PDB, "w")
+            filout = open (pr_out + name_PDB, "w")
             filin = open (fastaGlobal, "r")
             l_lines_fasta = filin.readlines()
             filin.close ()
@@ -101,24 +101,24 @@ def importFasta ( PDB_ID ,directory, dir_by_PDB = 1, debug=0, fastaGlobal = "" )
                     i = i + 1
                     
             filout.close ()
-            return directory_out + name_PDB
+            return pr_out + name_PDB
             
     else : 
     #     print PDB_ID, "download Fasta"
         adresseSeq = ( "http://www.rcsb.org/pdb/files/fasta.txt?structureIdList=%s.pdb" % PDB_ID )
         
         try:
-            p_filout = directory_out + name_PDB
+            p_filout = pr_out + name_PDB
             if path.exists(p_filout) :    
                 return p_filout
             else : 
                 path_file_pdb = urlretrieve( adresseSeq )
                 if debug : print path_file_pdb
-                cmd = "mv " + path_file_pdb[0] + " " + directory_out + name_PDB
+                cmd = "mv " + path_file_pdb[0] + " " + pr_out + name_PDB
                 if debug : print cmd
                 system ( cmd )
                 print  str( PDB_ID ) + "-> done"
-                return directory_out + name_PDB
+                return pr_out + name_PDB
         except:
             print str( PDB_ID ) + "-> ERROR DOWNLOAD FASTA file"
             return 0
