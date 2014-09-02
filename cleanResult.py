@@ -61,82 +61,72 @@ def cleanResultFolder (thresold_sheap, l_lig_out, pr_result):
             filout_control.close ()      
                             
     
-    
-    
-    
-    
 
-
-
-
-# step 6
-# Analysis  
-# - smile, filtering
-# - shaep on substructure and ligand
-
-def analysisSmile (substruct):
-
-    l_p_smile = pathManage.findListSmileFile(substruct) 
-    for p_smile in l_p_smile : 
-        analysis.selectSmileCode(p_smile, minimal_length_smile = 4)
+def cleanSmileFile (thresold_shaep, l_ligand_out, pr_result) : 
     
-
-    return 1
-
-
-def analysisSameBS (substruct, ID_seq = '1.000'):
-    
-    pr_result = pathManage.result(substruct + "/sameBS")
-    
-    d_file_sameBS = {}
-    d_file_sameBS["global"] = open (pr_result + "RMSD_BS.txt", "w")
-    d_file_sameBS["global"].write ("name_bs\tRMSD_prot\tRMSD_BS_ca\tRMSD_BS_all\tD_max\tl_at_BS\tidentic\n")
-    pr_dataset = pathManage.dataset(substruct)
-    
-    
-    l_folder_ref = listdir(pr_dataset)
-    
-    for ref_folder in l_folder_ref  :
-        if len (ref_folder) != 4 : 
+    l_pr_lig = listdir(pr_result)
+    for pr_lig in l_pr_lig : 
+        if len(pr_lig) != 3 : 
             continue
-        l_reffile = listdir(pr_dataset + ref_folder + "/")
-        
-        p_pdb_ref = pathManage.findPDBRef(pr_dataset + ref_folder + "/")
-        
-        for file_ref in l_reffile : 
-#             print file_ref, p_pdb_ref.split ("/")[-1]
-            if len(file_ref.split("_")[0]) != 4 or file_ref == p_pdb_ref.split ("/")[-1] or search(".fasta", file_ref): 
-#                 print file_ref, p_pdb_ref.split ("/")[-1], "*************"
-                continue
-            else : 
-                p_TMalign =  pathManage.alignmentOutput(substruct) + p_pdb_ref.split ("/")[-1][0:-4] + "__" + file_ref[0:-4] + "/RMSD"
-                try : score_align = parseTMalign.parseOutputTMalign(p_TMalign)
-                except : continue
-#                 print score_align
-#                 print p_TMalign
+        else : 
+            filin_control = open (pr_result + pr_lig + "/control.txt", "r")
+            l_control = filin_control.readlines()
+            filin_control.close ()
+            d_control = {}
+            for control in l_control : 
+                l_element_control = l_control.strip ().split ("\t")
+                sub  = l_element_control[0]
+                ref = l_element_control[1]
+                query = l_element_control[2]
+                ligand = l_element_control[3]
+                sheap = float(l_element_control[4])
                 
-                if score_align["IDseq"] >= ID_seq : 
+                if not sub in d_control.keys () : 
+                    d_control[sub] = {}
+                if not ref in d_control[sub].keys () : 
+                    d_control[sub][ref] = {}
+                if not query in d_control[sub][ref].keys () : 
+                    d_control[sub][ref][query] = {}
+                if not ligand in d_control[sub][ref][query].keys () : 
+                    d_control[sub][ref][query][ligand] = sheap
+            
+            l_files = listdir(pr_result + pr_lig + "/")
+            for files in l_files : 
+                if search ("smile.txt", files) : 
+                    sub = files.split ("_")[1]
+                    filin_simle = open (pr_result + pr_lig + "/" + files, "r")
+                    l_smile = filin_simle.readlines()
+                    filin_simle.close ()
                     
-                    l_p_substruct_ref = pathManage.findSubstructRef (pr_dataset + ref_folder + "/", substruct)
-                    l_p_query = pathManage.findPDBQueryTransloc (pathManage.result(substruct) + ref_folder + "/")
+                    filout_smile = open (pr_result + pr_lig + "/bis" + files, "w")
                     
-                    for p_query in l_p_query : 
-                        for p_substruct_ref in l_p_substruct_ref : 
-                            struct_substitued = p_substruct_ref.split ("_")[-2]
+                    for smile in l_smile : 
+                        l_elem1 = smile.strip().split ("\t")
+                        l_ref = l_elem1[3].split (" ")
+                        l_queries =  l_elem1[2].split (" ")
+                        l_lig = l_elem1[4].split (" ")
+                    
+                        nb_queries = len (l_queries)
+                        i = 0
+                        while i < nb_queries : 
+                            if d_control[sub][l_ref[i]][l_queries[i]][l_lig[i]] < thresold_shaep : 
+                                del l_ref[i]
+                                del l_queries[i]
+                                del l_lig[i]
+                                nb_queries = nb_queries - 1
+                            elif l_lig[i] in l_ligand_out : 
+                                del l_ref[i]
+                                del l_queries[i]
+                                del l_lig[i]
+                                nb_queries = nb_queries - 1
+                            else :
+                                i = i + 1
+                        if len (l_ref) != 0 : 
+                            filout_smile.write (str(l_elem1[0]) + "\t" + " ".join(l_queries) + "\t" + " ".join (l_ref) + "\t" + " ".join (l_lig) + "\n")
+                    filout_smile.close ()
                             
-                            if not struct_substitued in d_file_sameBS.keys () : 
-                                d_file_sameBS[struct_substitued] = open (pr_result + struct_substitued + "_RMSD_BS.txt", "w")
-                                d_file_sameBS[struct_substitued].write ("name_bs\tRMSD_prot\tRMSD_BS_ca\tRMSD_BS_all\tD_max\tl_at_BS\tidentic\n")
-                        
-                            RMSD_bs = analysis.computeRMSDBS (p_pdb_ref, p_query, p_substruct_ref, pr_result)
-                            if RMSD_bs != [] : 
-                                d_file_sameBS["global"].write (p_substruct_ref.split("/")[-1][0:-4] +  "_*_" + p_query.split ("/")[-1][0:-4]  + "\t" + str(score_align["RMSD"]) + "\t" + str(RMSD_bs[1]) + "\t" + str(RMSD_bs[0]) + "\t" + str(RMSD_bs[2]) + "\t" + str(RMSD_bs[-2]) + "\t" + str(RMSD_bs[-1]) + "\n")
-                                d_file_sameBS[struct_substitued].write (p_substruct_ref.split("/")[-1][0:-4] +  "_*_" + p_query.split ("/")[-1][0:-4] + "\t" + str(score_align["RMSD"]) + "\t" + str(RMSD_bs[1]) + "\t" + str(RMSD_bs[0]) + "\t" + str(RMSD_bs[2]) + "\t" + str(RMSD_bs[-2]) + "\t" + str(RMSD_bs[-1]) + "\n")
-                                
-    
-    tool.closeDicoFile(d_file_sameBS)
-    return 1
-  
+
+
 
 ####################
 ###   MAIN     #####
@@ -155,13 +145,7 @@ l_ligand_out = ["AMP", "ADP", "ATP", "TTP", "DCP", "DGT", "DTP", "DUP", "ACP", "
 # main #
 ########
 pr_result = pathManage.result()
-cleanResultFolder (thresold_shaep, l_ligand_out, pr_result)
-
-
-# filter smile + analyse same BS
-# l_ligand = ["AMP", "ADP", "ATP", "POP"]
-# for lig in l_ligand : 
-#     analysisSmile ("AMP")
-#     analysisSameBS ("AMP")
+#cleanResultFolder (thresold_shaep, l_ligand_out, pr_result)
+cleanSmileFile (thresold_shaep, l_ligand_out, pr_result)
 
 

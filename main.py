@@ -486,8 +486,8 @@ l_ligand_out = ["AMP", "ADP", "ATP", "TTP", "DCP", "DGT", "DTP", "DUP", "ACP", "
 # applyTMAlign ("AMP")
 # ionIdentification ("AMP")
 # retrieveSubstructSuperimposed ("AMP", thresold_BS = thresold_BS, thresold_superimposed_ribose = thresold_superimposed_ribose, thresold_superimposed_pi = thresold_superimposed_pi, thresold_shaep = thresold_shaep)
-# analysisSmile ("AMP")
-# analysisSameBS ("AMP")
+analysisSmile ("AMP")
+analysisSameBS ("AMP")
 
 
 ### ADP ###
@@ -498,8 +498,8 @@ l_ligand_out = ["AMP", "ADP", "ATP", "TTP", "DCP", "DGT", "DTP", "DUP", "ACP", "
 # applyTMAlign ("ADP")
 # ionIdentification ("ADP")
 # retrieveSubstructSuperimposed ("ADP", thresold_BS = thresold_BS, thresold_superimposed_ribose = thresold_superimposed_ribose, thresold_superimposed_pi = thresold_superimposed_pi, thresold_shaep = thresold_shaep)
-# analysisSameBS ("ADP")
-# analysisSmile ("ADP")
+analysisSameBS ("ADP")
+analysisSmile ("ADP")
 # 
 # 
 # ### POP ###
@@ -510,8 +510,8 @@ l_ligand_out = ["AMP", "ADP", "ATP", "TTP", "DCP", "DGT", "DTP", "DUP", "ACP", "
 # applyTMAlign ("POP")
 # ionIdentification ("POP")
 # retrieveSubstructSuperimposed ("POP", thresold_BS = thresold_BS, thresold_superimposed_ribose = thresold_superimposed_ribose, thresold_superimposed_pi = thresold_superimposed_pi, thresold_shaep = thresold_shaep)
-# analysisSameBS ("POP")
-# analysisSmile ("POP")
+analysisSameBS ("POP")
+analysisSmile ("POP")
 # 
 # 
 # ### ATP ###
@@ -521,8 +521,8 @@ l_ligand_out = ["AMP", "ADP", "ATP", "TTP", "DCP", "DGT", "DTP", "DUP", "ACP", "
 # datasetPreparation ("ATP")
 # applyTMAlign ("ATP")
 # retrieveSubstructSuperimposed ("ATP", thresold_BS = thresold_BS, thresold_superimposed_ribose = thresold_superimposed_ribose, thresold_superimposed_pi = thresold_superimposed_pi, thresold_shaep = thresold_shaep)
-# analysisSameBS ("ATP")
-# analysisSmile ("ATP")
+analysisSameBS ("ATP")
+analysisSmile ("ATP")
 # 
 # 
 # 
