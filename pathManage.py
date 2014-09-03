@@ -112,8 +112,9 @@ def findPDBQueryDataset (p_dataset_folder):
     
 def findPDBQueryTransloc (p_result):
     
-    l_filesin = listdir(p_result)
-    
+    try : l_filesin = listdir(p_result)
+    except : return []    
+
     l_out = []
     for filein in l_filesin : 
         if search("CX_", filein) : 

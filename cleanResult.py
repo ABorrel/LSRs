@@ -74,7 +74,7 @@ def cleanSmileFile (thresold_shaep, l_ligand_out, pr_result) :
             filin_control.close ()
             d_control = {}
             for control in l_control : 
-                l_element_control = l_control.strip ().split ("\t")
+                l_element_control = control.strip ().split ("\t")
                 sub  = l_element_control[0]
                 ref = l_element_control[1]
                 query = l_element_control[2]
@@ -90,6 +90,7 @@ def cleanSmileFile (thresold_shaep, l_ligand_out, pr_result) :
                 if not ligand in d_control[sub][ref][query].keys () : 
                     d_control[sub][ref][query][ligand] = sheap
             
+            #print d_control
             l_files = listdir(pr_result + pr_lig + "/")
             for files in l_files : 
                 if search ("smile.txt", files) : 
@@ -98,9 +99,9 @@ def cleanSmileFile (thresold_shaep, l_ligand_out, pr_result) :
                     l_smile = filin_simle.readlines()
                     filin_simle.close ()
                     
-                    filout_smile = open (pr_result + pr_lig + "/bis" + files, "w")
-                    
+                    filout_smile = open (pr_result + pr_lig + "/" + files, "w")
                     for smile in l_smile : 
+                        #print smile, files, pr_lig, sub
                         l_elem1 = smile.strip().split ("\t")
                         l_ref = l_elem1[3].split (" ")
                         l_queries =  l_elem1[2].split (" ")
@@ -108,8 +109,17 @@ def cleanSmileFile (thresold_shaep, l_ligand_out, pr_result) :
                     
                         nb_queries = len (l_queries)
                         i = 0
-                        while i < nb_queries : 
-                            if d_control[sub][l_ref[i]][l_queries[i]][l_lig[i]] < thresold_shaep : 
+                        while i < nb_queries :
+                            #print "========="
+                            #print sub 
+                            #print l_ref[i]
+                            #print l_queries[i]
+                            #print l_lig[i]
+                            #print "--------"
+                            #print d_control["pi2"]["1RYR"]
+                            try : score_shaep = d_control[sub][l_ref[i]][l_queries[i]][l_lig[i]] 
+                            except : score_shaep = 0.0
+                            if score_shaep < thresold_shaep : 
                                 del l_ref[i]
                                 del l_queries[i]
                                 del l_lig[i]
@@ -122,7 +132,7 @@ def cleanSmileFile (thresold_shaep, l_ligand_out, pr_result) :
                             else :
                                 i = i + 1
                         if len (l_ref) != 0 : 
-                            filout_smile.write (str(l_elem1[0]) + "\t" + " ".join(l_queries) + "\t" + " ".join (l_ref) + "\t" + " ".join (l_lig) + "\n")
+                            filout_smile.write (str(l_elem1[0]) + "\t" + str (len (l_queries)) + "\t" + " ".join(l_queries) + "\t" + " ".join (l_ref) + "\t" + " ".join (l_lig) + "\n")
                     filout_smile.close ()
                             
 
