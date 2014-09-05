@@ -102,17 +102,22 @@ def globalArrangement (pr_orgin, p_smile, p_family, name_ligand):
 #             print p_BS
 #             print "**************"
             
-            pr_final = pr_orgin + replacement + "/"+ name_ligand + "_" + subst + "/" + l_PDB_ref[i] + "_" + family + "/" + l_PDB_query[i] + "/" 
+            pr_final = pr_orgin + replacement + "/" + l_PDB_query[i] + "/" 
             
             if not path.isdir(pr_final):
                 makedirs (pr_final)
             
-            copy2(PDB_ref, pr_orgin + replacement + "/" + name_ligand + "_" + subst + "/" + l_PDB_ref[i] + "_" + family + "/")
-            writePDBfile.coordinateSection(pr_final + p_lig_query.split ("/")[-1], lig_query_parsed, recorder = "HETATM", header = p_lig_query.split ("/")[-1], connect_matrix = 1)
-            copy2(p_ligand_ref, pr_orgin + replacement + "/" + name_ligand + "_" + subst + "/" + l_PDB_ref[i] + "_" + family + "/")
-            copy2(p_frag_ref, pr_orgin + replacement + "/" + name_ligand + "_" + subst + "/" + l_PDB_ref[i] + "_" + family + "/")
-            copy2(p_protein_query, pr_final)
-            copy2(p_lig_substituate, pr_final)
+            # lig de la query
+            writePDBfile.coordinateSection(pr_final + "LGD_" + p_lig_query.split ("/")[-1], lig_query_parsed, recorder = "HETATM", header = "LCG_" + p_lig_query.split ("/")[-1], connect_matrix = 1)
+            # lig de reference
+            copy2(p_ligand_ref, pr_orgin + replacement + "/LGD_REF" + p_ligand_ref.split ("/")[-1])
+            # LSR de ref
+            copy2(p_frag_ref, pr_orgin + replacement + "/LSR_REF_" + name_ligand + "_" + l_PDB_ref[i] + ".pdb")
+            # protein query
+            #copy2(p_protein_query, pr_final)
+            # LSR query
+            copy2(p_lig_substituate, pr_final + "LSR_" + p_lig_substituate.split ("/")[-1][6:])
+            # BS de la query
             copy2(p_BS, pr_final)   
             
             i = i + 1

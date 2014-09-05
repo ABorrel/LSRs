@@ -18,9 +18,7 @@ d = read.table (file, header = TRUE, sep = "\t")
 # cut function number col
 nb_hist = dim (d)[2] - 1
 
-png (paste (file, ".png", sep = ""), 400, 400*nb_hist)
-par (mfrow = c(nb_hist, 1))
-
+pdf (paste (file, ".pdf", sep = ""))
 for (i in seq (1, nb_hist)){
 	hist (d[,i+1], xlim = c(min(d[,i+1]), max(d[,i+1])), breaks = brk, main = colnames (d)[i+1], col = "grey")
 }

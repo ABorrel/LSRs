@@ -232,13 +232,6 @@ def retrieveSubstructSuperimposed (name_lig, thresold_BS = 4.5, thresold_superim
                             p_substituate_pdb = p_dir_result_ref + "substituent_" + pdbfile.split ("_")[0] + "_" + pdbfile.split ("_")[1] + "_" + struct_type + ".pdb"
                             writePDBfile.coordinateSection(p_substituate_pdb, l_atom_substituate, recorder="HETATM", header=0, connect_matrix = 1)
     
-                            # Step2 -> convert to smile -> review to smart if a find a good software
-                            smile_find = runOtherSoft.babelConvertPDBtoSMILE(p_substituate_pdb)
-                    
-                            # step3 apply sheap---> try without mol2 --- convertion ---
-#                             p_substruct_ref_mol2 = runOtherSoft.babelPDBtoMOL2 (p_substruct_ref)
-#                             p_subs_query_mol2 = runOtherSoft.babelPDBtoMOL2 (p_substituate_pdb)
-                    
                             p_sheap = runOtherSoft.runShaep (p_substruct_ref, p_substituate_pdb, p_substituate_pdb[0:-4] + ".hit", clean = 0)
                             val_sheap = parseShaep.parseOutputShaep (p_sheap)
                             if val_sheap == {} : 
@@ -262,6 +255,7 @@ def retrieveSubstructSuperimposed (name_lig, thresold_BS = 4.5, thresold_superim
                             writePDBfile.coordinateSection(d_filout_superimposed["global"], lig_parsed, recorder= "HETATM", header = str(p_lig.split ("/")[-1]) + "_" + str (val_sheap["best_similarity"]) ,  connect_matrix = 1)
                                 
                             if float(val_sheap["best_similarity"]) >= thresold_shaep  : 
+                                
                                 # write subligand superimposed selected in global files
                                 writePDBfile.coordinateSection(d_filout_superimposed["sheap"], lig_parsed, recorder= "HETATM", header = str(p_lig.split ("/")[-1]) + "_" + str (val_sheap["best_similarity"]) ,  connect_matrix = 1)
                                 
@@ -286,27 +280,29 @@ def retrieveSubstructSuperimposed (name_lig, thresold_BS = 4.5, thresold_superim
                                             p_binding = p_dir_result_ref +  "BS_" + p_lig.split ("/")[-1]
                                             writePDBfile.coordinateSection(p_binding, l_atom_res, "ATOM", p_binding, connect_matrix = 0)
                                 
-                            # smile code substituate analysis                    
-                            if not struct_type in d_smile.keys ()  :
-                                d_smile[struct_type] = {}
-                                d_smile[struct_type][smile_find] = {}
-                                d_smile[struct_type][smile_find]["count"] = 1
-                                d_smile[struct_type][smile_find]["PDB"] = [pdbfile.split ("_")[1]]
-                                d_smile[struct_type][smile_find]["ligand"] = [pdbfile.split ("_")[0]]
-                                d_smile[struct_type][smile_find]["ref"] = [ref_folder]
-                            else : 
-                                if not smile_find in d_smile[struct_type].keys () : 
+                                # smile code substituate analysis                    
+                                # Step smile -> not conversion if shaep not validate 
+                                smile_find = runOtherSoft.babelConvertPDBtoSMILE(p_substituate_pdb)
+                                if not struct_type in d_smile.keys ()  :
+                                    d_smile[struct_type] = {}
                                     d_smile[struct_type][smile_find] = {}
                                     d_smile[struct_type][smile_find]["count"] = 1
                                     d_smile[struct_type][smile_find]["PDB"] = [pdbfile.split ("_")[1]]
-                                    d_smile[struct_type][smile_find]["ligand"] = [pdbfile.split ("_")[0]] 
+                                    d_smile[struct_type][smile_find]["ligand"] = [pdbfile.split ("_")[0]]
                                     d_smile[struct_type][smile_find]["ref"] = [ref_folder]
                                 else : 
-                                    d_smile[struct_type][smile_find]["count"] = d_smile[struct_type][smile_find]["count"] + 1
-                                    d_smile[struct_type][smile_find]["PDB"].append (pdbfile.split ("_")[1])
-                                    d_smile[struct_type][smile_find]["ligand"].append (pdbfile.split ("_")[0])
-                                    d_smile[struct_type][smile_find]["ref"].append (ref_folder)
-        
+                                    if not smile_find in d_smile[struct_type].keys () : 
+                                        d_smile[struct_type][smile_find] = {}
+                                        d_smile[struct_type][smile_find]["count"] = 1
+                                        d_smile[struct_type][smile_find]["PDB"] = [pdbfile.split ("_")[1]]
+                                        d_smile[struct_type][smile_find]["ligand"] = [pdbfile.split ("_")[0]] 
+                                        d_smile[struct_type][smile_find]["ref"] = [ref_folder]
+                                    else : 
+                                        d_smile[struct_type][smile_find]["count"] = d_smile[struct_type][smile_find]["count"] + 1
+                                        d_smile[struct_type][smile_find]["PDB"].append (pdbfile.split ("_")[1])
+                                        d_smile[struct_type][smile_find]["ligand"].append (pdbfile.split ("_")[0])
+                                        d_smile[struct_type][smile_find]["ref"].append (ref_folder)
+            
         tool.closeDicoFile (d_filout_superimposed)
     
     # sheap control    
@@ -377,54 +373,58 @@ def analysisShaep (substruct):
 def analysisSameBS (substruct, ID_seq = '1.000'):
     
     pr_result = pathManage.result(substruct + "/sameBS")
+#     
+#     d_file_sameBS = {}
+#     d_file_sameBS["global"] = open (pr_result + "RMSD_BS.txt", "w")
+#     d_file_sameBS["global"].write ("name_bs\tRMSD_prot\tRMSD_BS_ca\tRMSD_BS_all\tD_max\tl_at_BS\tidentic\n")
+#     pr_dataset = pathManage.dataset(substruct)
+#     
+#     
+#     l_folder_ref = listdir(pr_dataset)
+#     
+#     for ref_folder in l_folder_ref  :
+#         if len (ref_folder) != 4 : 
+#             continue
+#         l_reffile = listdir(pr_dataset + ref_folder + "/")
+#         
+#         p_pdb_ref = pathManage.findPDBRef(pr_dataset + ref_folder + "/")
+#         
+#         for file_ref in l_reffile : 
+# #             print file_ref, p_pdb_ref.split ("/")[-1]
+#             if len(file_ref.split("_")[0]) != 4 or file_ref == p_pdb_ref.split ("/")[-1] or search(".fasta", file_ref): 
+# #                 print file_ref, p_pdb_ref.split ("/")[-1], "*************"
+#                 continue
+#             else : 
+#                 p_TMalign =  pathManage.alignmentOutput(substruct) + p_pdb_ref.split ("/")[-1][0:-4] + "__" + file_ref[0:-4] + "/RMSD"
+#                 try : score_align = parseTMalign.parseOutputTMalign(p_TMalign)
+#                 except : continue
+# #                 print score_align
+# #                 print p_TMalign
+#                 
+#                 if score_align["IDseq"] >= ID_seq : 
+#                     
+#                     l_p_substruct_ref = pathManage.findSubstructRef (pr_dataset + ref_folder + "/", substruct)
+#                     l_p_query = pathManage.findPDBQueryTransloc (pathManage.result(substruct) + ref_folder + "/")
+#                     
+#                     for p_query in l_p_query : 
+#                         for p_substruct_ref in l_p_substruct_ref : 
+#                             struct_substitued = p_substruct_ref.split ("_")[-2]
+#                             
+#                             if not struct_substitued in d_file_sameBS.keys () : 
+#                                 d_file_sameBS[struct_substitued] = open (pr_result + struct_substitued + "_RMSD_BS.txt", "w")
+#                                 d_file_sameBS[struct_substitued].write ("name_bs\tRMSD_prot\tRMSD_BS_ca\tRMSD_BS_all\tD_max\tl_at_BS\tidentic\n")
+#                         
+#                             RMSD_bs = analysis.computeRMSDBS (p_pdb_ref, p_query, p_substruct_ref, pr_result)
+#                             if RMSD_bs != [] : 
+#                                 d_file_sameBS["global"].write (p_substruct_ref.split("/")[-1][0:-4] +  "_*_" + p_query.split ("/")[-1][0:-4]  + "\t" + str(score_align["RMSD"]) + "\t" + str(RMSD_bs[1]) + "\t" + str(RMSD_bs[0]) + "\t" + str(RMSD_bs[2]) + "\t" + str(RMSD_bs[-2]) + "\t" + str(RMSD_bs[-1]) + "\n")
+#                                 d_file_sameBS[struct_substitued].write (p_substruct_ref.split("/")[-1][0:-4] +  "_*_" + p_query.split ("/")[-1][0:-4] + "\t" + str(score_align["RMSD"]) + "\t" + str(RMSD_bs[1]) + "\t" + str(RMSD_bs[0]) + "\t" + str(RMSD_bs[2]) + "\t" + str(RMSD_bs[-2]) + "\t" + str(RMSD_bs[-1]) + "\n")
+#                                 
+#     
+#     tool.closeDicoFile(d_file_sameBS)
     
-    d_file_sameBS = {}
-    d_file_sameBS["global"] = open (pr_result + "RMSD_BS.txt", "w")
-    d_file_sameBS["global"].write ("name_bs\tRMSD_prot\tRMSD_BS_ca\tRMSD_BS_all\tD_max\tl_at_BS\tidentic\n")
-    pr_dataset = pathManage.dataset(substruct)
-    
-    
-    l_folder_ref = listdir(pr_dataset)
-    
-    for ref_folder in l_folder_ref  :
-        if len (ref_folder) != 4 : 
-            continue
-        l_reffile = listdir(pr_dataset + ref_folder + "/")
-        
-        p_pdb_ref = pathManage.findPDBRef(pr_dataset + ref_folder + "/")
-        
-        for file_ref in l_reffile : 
-#             print file_ref, p_pdb_ref.split ("/")[-1]
-            if len(file_ref.split("_")[0]) != 4 or file_ref == p_pdb_ref.split ("/")[-1] or search(".fasta", file_ref): 
-#                 print file_ref, p_pdb_ref.split ("/")[-1], "*************"
-                continue
-            else : 
-                p_TMalign =  pathManage.alignmentOutput(substruct) + p_pdb_ref.split ("/")[-1][0:-4] + "__" + file_ref[0:-4] + "/RMSD"
-                try : score_align = parseTMalign.parseOutputTMalign(p_TMalign)
-                except : continue
-#                 print score_align
-#                 print p_TMalign
-                
-                if score_align["IDseq"] >= ID_seq : 
-                    
-                    l_p_substruct_ref = pathManage.findSubstructRef (pr_dataset + ref_folder + "/", substruct)
-                    l_p_query = pathManage.findPDBQueryTransloc (pathManage.result(substruct) + ref_folder + "/")
-                    
-                    for p_query in l_p_query : 
-                        for p_substruct_ref in l_p_substruct_ref : 
-                            struct_substitued = p_substruct_ref.split ("_")[-2]
-                            
-                            if not struct_substitued in d_file_sameBS.keys () : 
-                                d_file_sameBS[struct_substitued] = open (pr_result + struct_substitued + "_RMSD_BS.txt", "w")
-                                d_file_sameBS[struct_substitued].write ("name_bs\tRMSD_prot\tRMSD_BS_ca\tRMSD_BS_all\tD_max\tl_at_BS\tidentic\n")
-                        
-                            RMSD_bs = analysis.computeRMSDBS (p_pdb_ref, p_query, p_substruct_ref, pr_result)
-                            if RMSD_bs != [] : 
-                                d_file_sameBS["global"].write (p_substruct_ref.split("/")[-1][0:-4] +  "_*_" + p_query.split ("/")[-1][0:-4]  + "\t" + str(score_align["RMSD"]) + "\t" + str(RMSD_bs[1]) + "\t" + str(RMSD_bs[0]) + "\t" + str(RMSD_bs[2]) + "\t" + str(RMSD_bs[-2]) + "\t" + str(RMSD_bs[-1]) + "\n")
-                                d_file_sameBS[struct_substitued].write (p_substruct_ref.split("/")[-1][0:-4] +  "_*_" + p_query.split ("/")[-1][0:-4] + "\t" + str(score_align["RMSD"]) + "\t" + str(RMSD_bs[1]) + "\t" + str(RMSD_bs[0]) + "\t" + str(RMSD_bs[2]) + "\t" + str(RMSD_bs[-2]) + "\t" + str(RMSD_bs[-1]) + "\n")
-                                
-    
-    tool.closeDicoFile(d_file_sameBS)
+    l_p_files = [pr_result + "ribose_RMSD_BS.txt", pr_result + "pi1_RMSD_BS.txt", pr_result + "RMSD_BS.txt"]
+    for p_file in l_p_files : 
+        runOtherSoft.RhistogramMultiple(p_file)
     return 1
                 
         
@@ -475,19 +475,19 @@ thresold_superimposed_ribose = 2.5
 thresold_superimposed_pi = 3
 thresold_IDseq = 100
 thresold_shaep = 0.2
-l_ligand_out = ["AMP", "ADP", "ATP", "TTP", "DCP", "DGT", "DTP", "DUP", "ACP", "AD9", "NAD", "AGS", "UDP", "POP", "APC", "CTP", "AOV"]
+l_ligand_out = ["AMP", "ADP", "ATP", "TTP", "DCP", "DGT", "DTP", "DUP", "ACP", "AD9", "NAD", "AGS", "UDP", "POP", "APC", "CTP", "AOV", "ANP", "GDP", "GTP"]
 
 ### AMP ###
 ###########
 
-
+ 
 # buildData.builtDatasetGlobal(p_list_ligand = "/home/borrel/Yue_project/resultLigandInPDB" , ligand_ID = "AMP", thresold_RX = thresold_RX, thresold_blast = thresold_blast, l_ligand_out= l_ligand_out, verbose = 1)
 # datasetPreparation ("AMP")
 # applyTMAlign ("AMP")
 # ionIdentification ("AMP")
 # retrieveSubstructSuperimposed ("AMP", thresold_BS = thresold_BS, thresold_superimposed_ribose = thresold_superimposed_ribose, thresold_superimposed_pi = thresold_superimposed_pi, thresold_shaep = thresold_shaep)
 # analysisSmile ("AMP")
-analysisSameBS ("AMP")
+# analysisSameBS ("AMP")
 
 
 ### ADP ###
@@ -498,8 +498,8 @@ analysisSameBS ("AMP")
 # applyTMAlign ("ADP")
 # ionIdentification ("ADP")
 # retrieveSubstructSuperimposed ("ADP", thresold_BS = thresold_BS, thresold_superimposed_ribose = thresold_superimposed_ribose, thresold_superimposed_pi = thresold_superimposed_pi, thresold_shaep = thresold_shaep)
-analysisSameBS ("ADP")
-analysisSmile ("ADP")
+# analysisSameBS ("ADP")
+# analysisSmile ("ADP")
 # 
 # 
 # ### POP ###
@@ -510,8 +510,8 @@ analysisSmile ("ADP")
 # applyTMAlign ("POP")
 # ionIdentification ("POP")
 # retrieveSubstructSuperimposed ("POP", thresold_BS = thresold_BS, thresold_superimposed_ribose = thresold_superimposed_ribose, thresold_superimposed_pi = thresold_superimposed_pi, thresold_shaep = thresold_shaep)
-analysisSameBS ("POP")
-analysisSmile ("POP")
+# analysisSameBS ("POP")
+# analysisSmile ("POP")
 # 
 # 
 # ### ATP ###
@@ -521,15 +521,15 @@ analysisSmile ("POP")
 # datasetPreparation ("ATP")
 # applyTMAlign ("ATP")
 # retrieveSubstructSuperimposed ("ATP", thresold_BS = thresold_BS, thresold_superimposed_ribose = thresold_superimposed_ribose, thresold_superimposed_pi = thresold_superimposed_pi, thresold_shaep = thresold_shaep)
-analysisSameBS ("ATP")
-analysisSmile ("ATP")
+# analysisSameBS ("ATP")
+# analysisSmile ("ATP")
 # 
 # 
 # 
 manageResult (["AMP", "ADP", "ATP", "POP"])
-arrangeResult.controlResult (["AMP", "ADP", "ATP", "POP"])
+# arrangeResult.controlResult (["AMP", "ADP", "ATP", "POP"])
 
-arrangeResult.qualityExtraction (["AMP", "ADP", "ATP", "POP"], p_list_ligand = "/home/borrel/Yue_project/resultLigandInPDB", thresold_sheap = thresold_shaep)
-arrangeResult.countingSubstituent(pathManage.result("final"))
+# arrangeResult.qualityExtraction (["AMP", "ADP", "ATP", "POP"], p_list_ligand = "/home/borrel/Yue_project/resultLigandInPDB", thresold_sheap = thresold_shaep)
+# arrangeResult.countingSubstituent(pathManage.result("final"))
 
 
