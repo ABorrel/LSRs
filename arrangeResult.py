@@ -103,22 +103,34 @@ def globalArrangement (pr_orgin, p_smile, p_family, name_ligand):
 #             print "**************"
             
             pr_final = pr_orgin + replacement + "/" + l_PDB_query[i] + "/" 
+            pr_ligand = pr_orgin + replacement + "/" + l_PDB_query[i] + "/LGD/"
+            pr_BS =  pr_orgin + replacement + "/" + l_PDB_query[i] + "/BS/"
+            pr_sust = pr_orgin + replacement + "/" + l_PDB_query[i] + "/" + str (subst) + "/"
             
             if not path.isdir(pr_final):
                 makedirs (pr_final)
             
+            if not path.isdir(pr_ligand):
+                makedirs (pr_ligand)
+            
+            if not path.isdir(pr_BS):
+                makedirs (pr_BS)
+                
+            if not path.isdir(pr_sust):
+                makedirs (pr_sust)   
+            
             # lig de la query
-            writePDBfile.coordinateSection(pr_final + "LGD_" + p_lig_query.split ("/")[-1], lig_query_parsed, recorder = "HETATM", header = "LCG_" + p_lig_query.split ("/")[-1], connect_matrix = 1)
+            writePDBfile.coordinateSection(pr_ligand + "LGD_" + p_lig_query.split ("/")[-1], lig_query_parsed, recorder = "HETATM", header = "LCG_" + p_lig_query.split ("/")[-1], connect_matrix = 1)
             # lig de reference
-            copy2(p_ligand_ref, pr_orgin + replacement + "/LGD_REF_" + p_ligand_ref.split ("/")[-1])
+            copy2(p_ligand_ref, pr_ligand + "LGD_REF_" + p_ligand_ref.split ("/")[-1])
             # LSR de ref
-            copy2(p_frag_ref, pr_orgin + replacement + "/LSR_REF_" + name_ligand + "_" + l_PDB_ref[i] + ".pdb")
+            copy2(p_frag_ref, pr_sust + "LSR_REF_" + name_ligand + "_" + l_PDB_ref[i] + ".pdb")
             # protein query
             #copy2(p_protein_query, pr_final)
             # LSR query -> p_lig_ref only for the name
-            copy2(p_lig_substituate, pr_final + "LSR_" + p_lig_query.split ("/")[-1])
+            copy2(p_lig_substituate, pr_sust + "LSR_" + p_lig_query.split ("/")[-1])
             # BS de la query
-            copy2(p_BS, pr_final)   
+            copy2(p_BS, pr_BS)   
             
             i = i + 1
     

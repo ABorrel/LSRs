@@ -442,8 +442,9 @@ def analysisSameBS (substruct, ID_seq = '1.000'):
 def manageResult (l_ligand):
     
     pr_result = pathManage.result("final")
-    pr_pi = pathManage.result("final/phosphates")
-    pr_ribose = pathManage.result("final/ribose")
+    # remove the folder 
+#     pr_pi = pathManage.result("final/phosphates")
+#     pr_ribose = pathManage.result("final/ribose")
     
     
     for name_lig in l_ligand : 
@@ -451,9 +452,9 @@ def manageResult (l_ligand):
         p_file_famile = pathManage.findFamilyFile (name_lig)
         for p_smile in l_p_smile : 
             if search("ribose", p_smile) and  search("txt", p_smile) and search("smile", p_smile): 
-                arrangeResult.globalArrangement(pr_ribose, p_smile, p_file_famile, name_lig) 
+                arrangeResult.globalArrangement(pr_result, p_smile, p_file_famile, name_lig) 
             elif search("smile", p_smile) and search(".txt", p_smile) : 
-                arrangeResult.globalArrangement(pr_pi, p_smile, p_file_famile, name_lig) 
+                arrangeResult.globalArrangement(pr_result, p_smile, p_file_famile, name_lig) 
         
     return 1
 
