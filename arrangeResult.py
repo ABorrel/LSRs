@@ -102,10 +102,10 @@ def globalArrangement (pr_orgin, p_smile, p_family, name_ligand):
 #             print p_BS
 #             print "**************"
             
-            pr_final = pr_orgin + replacement + "/" + l_PDB_query[i] + "/" 
-            pr_ligand = pr_orgin + replacement + "/" + l_PDB_query[i] + "/LGD/"
-            pr_BS =  pr_orgin + replacement + "/" + l_PDB_query[i] + "/BS/"
-            pr_sust = pr_orgin + replacement + "/" + l_PDB_query[i] + "/" + str (subst) + "/"
+            pr_final = pr_orgin + replacement + "/" + l_PDB_ref[i] + "/" 
+            pr_ligand = pr_orgin + replacement + "/" + l_PDB_ref[i] + "/LGD/"
+            pr_BS =  pr_orgin + replacement + "/" + l_PDB_ref[i] + "/BS/"
+            pr_sust = pr_orgin + replacement + "/" + l_PDB_ref[i] + "/" + str (subst) + "/"
             
             if not path.isdir(pr_final):
                 makedirs (pr_final)
