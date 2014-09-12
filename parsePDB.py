@@ -376,12 +376,16 @@ def buildMatrixConnect (l_atom_parsed):
 def getResidues(l_atom_binding, l_atom_complex_parsed) : 
     """
     """
-    
+    dico_code = {"S":"SER", "T":"THR", "N":"ASN", "Q":"GLN", "E":"GLU", "D":"ASP", "K":"LYS", "R":"ARG", "H":"HIS", "M":"MET", "C":"CYS", "W":"TRP", "F":"PHE", "Y":"TYR", "A":"ALA", "V":"VAL", "L":"LEU", "I":"ILE", "P":"PRO", "G":"GLY"}
     # -> retrieve residue
     memory_res = []
     l_res = []
     
     for atom_bs in l_atom_binding : 
+        # case where consider all atom, het and atom
+        if not atom_bs["resName"] in dico_code.values () : 
+            l_res.append (atom_bs)
+            continue
         for atom_complex in l_atom_complex_parsed : 
             if atom_bs["x"] == atom_complex["x"] and atom_bs["y"] == atom_complex["y"] and atom_bs ["z"] == atom_complex["z"] : 
                 chain_id = atom_complex["chainID"]
@@ -557,7 +561,25 @@ def retrieveListIon(l_atom_parsed) :
         
         
         
-        
+def computeBS (p_protein, p_ligand, thresold = 4.50, option_onlyATOM = 0):
+    
+    
+    l_atom_BS = []
+    l_atom_pr = loadCoordSectionPDB(p_protein)
+    l_atom_lig = loadCoordSectionPDB(p_ligand)
+    
+    for atom_pr in l_atom_pr : 
+        for atom_lig in l_atom_lig : 
+            if distanceTwoatoms(atom_pr, atom_lig) <= thresold : 
+                l_atom_BS.append (atom_pr)
+    
+    
+    l_res_BS = getResidues(l_atom_BS, l_atom_pr)
+    
+    return l_res_BS
+    
+    
+          
     
     
     

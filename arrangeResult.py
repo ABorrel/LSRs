@@ -119,6 +119,15 @@ def globalArrangement (pr_orgin, p_smile, p_family, name_ligand):
             if not path.isdir(pr_sust):
                 makedirs (pr_sust)   
             
+            # list file
+            p_list_smile_queries = pr_sust + "list.smile"
+            if not path.exists(p_list_smile_queries) : 
+                file_smile_queries = open (p_list_smile_queries, "w")
+            else : 
+                file_smile_queries = open (p_list_smile_queries, "a")
+            file_smile_queries.write (str(smile) + "\n")
+            file_smile_queries.close ()
+            
             # lig de la query
             writePDBfile.coordinateSection(pr_ligand + "LGD_" + p_lig_query.split ("/")[-1], lig_query_parsed, recorder = "HETATM", header = "LCG_" + p_lig_query.split ("/")[-1], connect_matrix = 1)
             # lig de reference
@@ -129,8 +138,12 @@ def globalArrangement (pr_orgin, p_smile, p_family, name_ligand):
             #copy2(p_protein_query, pr_final)
             # LSR query -> p_lig_ref only for the name
             copy2(p_lig_substituate, pr_sust + "LSR_" + p_lig_query.split ("/")[-1])
-            # BS de la query
+            # BS query
             copy2(p_BS, pr_BS)   
+            
+            # BS from reference
+            l_atom_BS = parsePDB.computeBS (PDB_ref, p_ligand_ref, thresold = 4.50, option_onlyATOM = 0)
+            writePDBfile.coordinateSection(pr_BS + "BS_REF_" + name_ligand, l_atom_BS, recorder = "ATOM", header = "BS_REF_" + name_ligand, connect_matrix = 0)
             
             i = i + 1
     
