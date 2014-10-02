@@ -130,8 +130,10 @@ def globalArrangement (pr_orgin, p_smile, p_family, name_ligand):
             
             # lig de la query
             writePDBfile.coordinateSection(pr_ligand + "LGD_" + p_lig_query.split ("/")[-1], lig_query_parsed, recorder = "HETATM", header = "LCG_" + p_lig_query.split ("/")[-1], connect_matrix = 1)
-            # lig de reference
+            runOtherSoft.babelConvertPDBtoSMILE(pr_ligand + "LGD_" + p_lig_query.split ("/")[-1])
+            # lig de reference + smile
             copy2(p_ligand_ref, pr_ligand + "LGD_REF_" + p_ligand_ref.split ("/")[-1])
+            runOtherSoft.babelConvertPDBtoSMILE(pr_ligand + "LGD_REF_" + p_ligand_ref.split ("/")[-1])
             # LSR de ref
             copy2(p_frag_ref, pr_sust + "LSR_REF_" + name_ligand + "_" + l_PDB_ref[i] + ".pdb")
             # protein query
@@ -143,7 +145,7 @@ def globalArrangement (pr_orgin, p_smile, p_family, name_ligand):
             
             # BS from reference
             l_atom_BS = parsePDB.computeBS (PDB_ref, p_ligand_ref, thresold = 4.50, option_onlyATOM = 0)
-            writePDBfile.coordinateSection(pr_BS + "BS_REF_" + name_ligand, l_atom_BS, recorder = "ATOM", header = "BS_REF_" + name_ligand, connect_matrix = 0)
+            writePDBfile.coordinateSection(pr_BS + "BS_REF_" + name_ligand + "_" + PDB_ref + ".pdb", l_atom_BS, recorder = "ATOM", header = "BS_REF_" + name_ligand + "_" + PDB_ref, connect_matrix = 0)
             
             i = i + 1
     

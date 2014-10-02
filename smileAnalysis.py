@@ -154,15 +154,15 @@ def searchReplacement (smile, PDB_query, PDB_ref, name_ligand) :
     if searchP(smile) == 1 : 
         return "phosphate", ""
     elif searchRing(smile) == 99 : 
-        return "heterocyclic",""
+        return "cycle",""
     elif searchRing(smile) > 0 : 
-        return "cyclic",""
+        return "cycle",""
     elif searchSulfonyl(smile) : 
-        return "sulfonyl",""
+        return "SO2",""
     elif searchCON (smile) : 
-        return "carbamate",""
+        return "CON",""
     elif searchCarboxy (smile) : 
-        return "carboxy",""
+        return "COO",""
     elif searchConly(smile) :
         return "onlyC", ""
     elif searchCandO (smile) : 
