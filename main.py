@@ -521,16 +521,15 @@ l_ligand_out = ["AMP", "ADP", "ATP", "TTP", "DCP", "DGT", "DTP", "DUP", "ACP", "
 # buildData.builtDatasetGlobal(p_list_ligand = "/home/borrel/Yue_project/resultLigandInPDB" , ligand_ID = "ATP", thresold_RX = thresold_RX, thresold_blast = thresold_blast, verbose = 1)
 # datasetPreparation ("ATP")
 # applyTMAlign ("ATP")
+# ionIdentification ("ATP")
 # retrieveSubstructSuperimposed ("ATP", thresold_BS = thresold_BS, thresold_superimposed_ribose = thresold_superimposed_ribose, thresold_superimposed_pi = thresold_superimposed_pi, thresold_shaep = thresold_shaep)
 # analysisSameBS ("ATP")
 # analysisSmile ("ATP")
 # 
 # 
 # 
-manageResult (["AMP", "ADP", "ATP", "POP"])
+# manageResult (["AMP", "ADP", "ATP", "POP"])
 # arrangeResult.controlResult (["AMP", "ADP", "ATP", "POP"])
 
-# arrangeResult.qualityExtraction (["AMP", "ADP", "ATP", "POP"], p_list_ligand = "/home/borrel/Yue_project/resultLigandInPDB", thresold_sheap = thresold_shaep)
-# arrangeResult.countingSubstituent(pathManage.result("final"))
-
-
+#arrangeResult.qualityExtraction (["AMP", "ADP", "ATP", "POP"], p_list_ligand = "/home/borrel/Yue_project/resultLigandInPDB", thresold_sheap = thresold_shaep)
+arrangeResult.countingSubstituent(pathManage.result("final"))

@@ -145,7 +145,7 @@ def globalArrangement (pr_orgin, p_smile, p_family, name_ligand):
             
             # BS from reference
             l_atom_BS = parsePDB.computeBS (PDB_ref, p_ligand_ref, thresold = 4.50, option_onlyATOM = 0)
-            writePDBfile.coordinateSection(pr_BS + "BS_REF_" + name_ligand + "_" + PDB_ref + ".pdb", l_atom_BS, recorder = "ATOM", header = "BS_REF_" + name_ligand + "_" + PDB_ref, connect_matrix = 0)
+            writePDBfile.coordinateSection(pr_BS + "BS_REF_" + name_ligand + "_" + PDB_ref.split ("/")[-1], l_atom_BS, recorder = "ATOM", header = "BS_REF_" + name_ligand + "_" + PDB_ref, connect_matrix = 0)
             
             i = i + 1
     
@@ -279,42 +279,39 @@ def qualityExtraction (l_ligand, p_list_ligand, thresold_sheap) :
     
     
     
-def countingSubstituent (pr_final_folder, debug = 0):
+def countingSubstituent (pr_final_folder, debug = 1):
     
     
     d_count = {}
     d_lig = {}
     l_file_final = listdir(pr_final_folder)
-    if debug : print pr_final_folder
-    for pr_type_substituent in l_file_final : 
+    if debug : print "1", pr_final_folder
+    for pr_type_substituent in l_file_final :
+        sub_query = pr_type_substituent
+        print sub_query, "00000" 
         l_file_sub = listdir(pr_final_folder + pr_type_substituent + "/")
-        if debug: print pr_final_folder +  pr_type_substituent + "/"
-        for sub_query in l_file_sub : 
-            l_ligand_sub = listdir(pr_final_folder + pr_type_substituent + "/" + sub_query + "/")
-            for ligand_sub in l_ligand_sub : 
-                l_file_ref  = listdir(pr_final_folder + pr_type_substituent + "/" + sub_query + "/" + ligand_sub + "/")
+        if debug: print "2",pr_final_folder +  pr_type_substituent + "/"
+        for ref_ID in l_file_sub : 
+            print ref_ID, "1111111"
+            l_ligand_sub = listdir(pr_final_folder + pr_type_substituent + "/" + ref_ID + "/")
+            for ligand_sub in l_ligand_sub :
+                print ligand_sub,"22222" 
+                print 
+                l_file_ref  = listdir(pr_final_folder + pr_type_substituent + "/" + ref_ID + "/" + ligand_sub + "/")
                 if not ligand_sub in d_count.keys () : 
                     d_count[ligand_sub] = {}
                 if not sub_query in d_count[ligand_sub].keys () : 
                     d_count[ligand_sub] [sub_query] = 0
+		d_count[ligand_sub][sub_query] = d_count[ligand_sub][sub_query] + 1
                 
                 for file_ref in l_file_ref : 
-                    if len (file_ref.split ("_")[0]) == 4 : 
-                        l_file_query = listdir(pr_final_folder + pr_type_substituent +"/" + sub_query + "/" + ligand_sub + "/" + file_ref + "/")
-                        if debug : print pr_final_folder + pr_type_substituent +"/" + sub_query + "/" + ligand_sub + "/" + file_ref + "/"
-                        
-                        for file_query in l_file_query : 
-                            if debug : print pr_final_folder + pr_type_substituent +"/" + sub_query + "/" + ligand_sub + "/" + file_ref + "/" + file_query + "/"
-                            if path.isdir(pr_final_folder + pr_type_substituent +"/" + sub_query + "/" + ligand_sub + "/" + file_ref + "/" + file_query + "/") : 
-                                l_file_query_in = listdir(pr_final_folder + pr_type_substituent +"/" + sub_query + "/" + ligand_sub + "/" + file_ref + "/" + file_query + "/")
-                                for file_query_in in l_file_query_in : 
-                                    if search("substituent", file_query_in) : 
-                                        d_count[ligand_sub][sub_query] = d_count[ligand_sub][sub_query] + 1
-                                        ligand = file_query_in.split ("_")[1]
-                                        if not ligand in d_lig.keys () : 
-                                            d_lig[ligand] = 0
-                                        else : 
-                                            d_lig[ligand] = d_lig[ligand] + 1
+                    # print file_ref
+                    if search ("LGD", file_ref):
+                        ligand = file_ref.split ("_")[1]
+                        if not ligand in d_lig.keys () : 
+                            d_lig[ligand] = 0
+                        else : 
+                            d_lig[ligand] = d_lig[ligand] + 1
             
         
     # write and plot
