@@ -288,15 +288,11 @@ def countingSubstituent (pr_final_folder, debug = 1):
     if debug : print "1", pr_final_folder
     for pr_type_substituent in l_file_final :
         sub_query = pr_type_substituent
-        print sub_query, "00000" 
         l_file_sub = listdir(pr_final_folder + pr_type_substituent + "/")
         if debug: print "2",pr_final_folder +  pr_type_substituent + "/"
         for ref_ID in l_file_sub : 
-            print ref_ID, "1111111"
             l_ligand_sub = listdir(pr_final_folder + pr_type_substituent + "/" + ref_ID + "/")
             for ligand_sub in l_ligand_sub :
-                print ligand_sub,"22222" 
-                print 
                 l_file_ref  = listdir(pr_final_folder + pr_type_substituent + "/" + ref_ID + "/" + ligand_sub + "/")
                 if not ligand_sub in d_count.keys () : 
                     d_count[ligand_sub] = {}
@@ -335,7 +331,62 @@ def countingSubstituent (pr_final_folder, debug = 1):
         
         
         
+def enantiomer(l_ligand, pr_final) : 
+    "to do file output"
+    
+    pr_enantiomer = pathManage.result("enantiomer")
+    
+    d_filout = {}
+    l_filout = []
+    for ligand in l_ligand : 
+        d_filout[ligand] = open (pr_enantiomer + ligand + "_" + "distOx.txt" , "w")
+        l_filout.append (pr_enantiomer + ligand + "_" + "distOx.txt")
+
+    l_p_substruct = listdir(pr_final) 
+    for pr_substruct in l_p_substruct : 
+        print pr_substruct
+        l_pr_ref = listdir(pr_final + pr_substruct + "/")
+        for pr_ref in l_pr_ref : 
+            print pr_ref
+            l_file = listdir(pr_final + pr_substruct + "/" + pr_ref + "/LGD/")
+            for name_file in l_file : 
+                if search("REF_A",name_file) and   search(".pdb",name_file): 
+                    ligand = name_file.split ("_")[2]
+                    l_atom_ligand = parsePDB.loadCoordSectionPDB(pr_final + pr_substruct + "/" + pr_ref + "/LGD/" + name_file, "HETATM")
+                    for atom_ligand in l_atom_ligand : 
+                        if atom_ligand["name"] == "O4'" :
+                            atom_O4 = atom_ligand
+                        elif atom_ligand["name"] == "O5'" :
+                            atom_O5 = atom_ligand
+                    d_out = parsePDB.distanceTwoatoms(atom_O4, atom_O5)
+                    d_filout[ligand].write (pr_ref + "\t" + str (d_out) + "\n")
+    
+    # close files
+    for lig in d_filout.keys () : 
+        d_filout[lig].close ()
+    
+    for file_dist in l_filout : 
+        runOtherSoft.Rhistogram(file_dist, "DistanceO4-O5")
+                
+                                
+                                
+                                
+            
         
+        
+        
+        
+        
+        
+        
+    
+    
+    
+    
+    
+    
+    
+            
         
         
         
