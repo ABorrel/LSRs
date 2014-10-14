@@ -11,6 +11,7 @@ from os import makedirs, listdir, path
 from shutil import copy2
 from re import search
 import numpy as np
+from copy import deepcopy
 
 def globalArrangement (pr_orgin, p_smile, p_family, name_ligand):
     
@@ -353,20 +354,33 @@ def enantiomer(l_ligand, pr_final) :
                 if search("REF_A",name_file) and   search(".pdb",name_file): 
                     ligand = name_file.split ("_")[2]
                     l_atom_ligand = parsePDB.loadCoordSectionPDB(pr_final + pr_substruct + "/" + pr_ref + "/LGD/" + name_file, "HETATM")
+                    d_min = 100
                     for atom_ligand in l_atom_ligand : 
                         if atom_ligand["name"] == "O4'" :
                             atom_O4 = atom_ligand
-                        elif atom_ligand["name"] == "O5'" :
-                            atom_O5 = atom_ligand
-                    d_out = parsePDB.distanceTwoatoms(atom_O4, atom_O5)
-                    d_filout[ligand].write (pr_ref + "_" + pr_substruct + "\t" + str (d_out) + "\n")
+                            break
+                    
+                    for atom_ligand in l_atom_ligand : 
+                        if ligand == "AMP" : 
+                            if atom_ligand["name"] == "O1P" or atom_ligand["name"] == "O2P" or atom_ligand["name"] == "O3P" : 
+                                d_temp = parsePDB.distanceTwoatoms(atom_O4, atom_ligand)
+                                if d_temp < d_min : 
+                                    d_min = d_temp
+                                    atom_temp = deepcopy(atom_ligand)
+                        else : 
+                            if atom_ligand["name"] == "O1A" or atom_ligand["name"] == "O2A" or atom_ligand["name"] == "O3A" : 
+                                d_temp = parsePDB.distanceTwoatoms(atom_O4, atom_ligand)
+                                if d_temp < d_min : 
+                                    d_min = d_temp
+                                    atom_temp = deepcopy(atom_ligand)
+                    d_filout[ligand].write (pr_ref + "_" + pr_substruct  +"_" + str(atom_temp["name"]) + "\t" + str (d_min) + "\n")
     
     # close files
     for lig in d_filout.keys () : 
         d_filout[lig].close ()
     
     for file_dist in l_filout : 
-        runOtherSoft.Rhistogram(file_dist, "DistanceO4-O5")
+        runOtherSoft.Rhistogram(file_dist, "DistanceO4-OP")
                 
                                 
                                 
