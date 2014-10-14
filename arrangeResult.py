@@ -359,7 +359,7 @@ def enantiomer(l_ligand, pr_final) :
                         elif atom_ligand["name"] == "O5'" :
                             atom_O5 = atom_ligand
                     d_out = parsePDB.distanceTwoatoms(atom_O4, atom_O5)
-                    d_filout[ligand].write (pr_ref + "\t" + str (d_out) + "\n")
+                    d_filout[ligand].write (pr_ref + "_" + pr_substruct + "\t" + str (d_out) + "\n")
     
     # close files
     for lig in d_filout.keys () : 
