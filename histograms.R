@@ -24,5 +24,10 @@ for (i in seq (1, nb_hist)){
 }
 dev.off()
 
-
+for (i in seq (1, nb_hist)){
+	svg (paste (file, ".svg",colnames (d)[i+1], sep = ""))
+	par(mar=c(8,8,8,8))
+	hist (d[,i+1], xlim = c(min(d[,i+1]), max(d[,i+1])), breaks = brk, ylab = "Number of occurences", xlab = "RMSD Å", col = "grey", cex.lab = 2.5, cex.axis = 2)
+	dev.off()
+}
 

@@ -72,7 +72,7 @@ def lineCoords (line):
     return atom
 
 
-def loadCoordSectionPDB (path_PDB_file, section = "", debug = 0):
+def loadCoordSectionPDB (path_PDB_file, section = "", remove_H = 0, debug = 0):
     """
     Retrieve every atom in cordinate section. If it is NMR complex
     retrieve only first model
@@ -92,9 +92,17 @@ def loadCoordSectionPDB (path_PDB_file, section = "", debug = 0):
         
         if section == "" : 
             if search ("^ATOM", line_PDB) or search ("^HETATM", line_PDB) : 
-                list_atom.append (lineCoords(line_PDB))
+                atom = lineCoords(line_PDB)
+                if remove_H != 0 : 
+                    if atom["element"] == "H" : 
+                        continue
+                list_atom.append (atom)
         else : 
             if search ("^" + section, line_PDB)  : 
+                atom = lineCoords(line_PDB)
+                if remove_H != 0 : 
+                    if atom["element"] == "H" : 
+                        continue
                 list_atom.append (lineCoords(line_PDB))
                 
 #    if debug : 

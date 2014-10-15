@@ -8,6 +8,10 @@ pieType = function (d, path_out){
 	# print (d)
 	colors = seq (1,dim(d)[2])
 
+	leg = NULL
+	for (l in names (d)){
+		leg = append (leg, paste (d, "\n", d[l], sep = ""))
+	}
 
 	par (lwd = 1000)
 	png(filename=paste(path_out,".png",sep = ""),400, 400)
@@ -15,7 +19,7 @@ pieType = function (d, path_out){
 	dev.off()
 
 	svg(filename=paste(path_out,".svg",sep = ""))
-	try(pie(as.double(d), col = colors, label = names(d)))
+	try(pie(as.double(d), col = colors, label = leg))
 	dev.off()
 }
 

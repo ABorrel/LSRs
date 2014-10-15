@@ -6,6 +6,8 @@ import superposeStructure
 import writePDBfile
 import tool
 import runOtherSoft
+import substructTools
+import superimpose
 
 from os import makedirs, listdir, path
 from shutil import copy2
@@ -338,11 +340,12 @@ def enantiomer(l_ligand, pr_final) :
     pr_enantiomer = pathManage.result("enantiomer")
     
     d_filout = {}
-    l_filout = []
     for ligand in l_ligand : 
-        d_filout[ligand] = open (pr_enantiomer + ligand + "_" + "distOx.txt" , "w")
-        l_filout.append (pr_enantiomer + ligand + "_" + "distOx.txt")
-
+        d_filout[ligand] = {}
+        d_filout[ligand]["O3OP"]= open (pr_enantiomer + ligand + "_" + "O3OP.txt" , "w")
+        d_filout[ligand]["O4O5"]= open (pr_enantiomer + ligand + "_" + "O3O5.txt" , "w")
+        d_filout[ligand]["OPOP"]= open (pr_enantiomer + ligand + "_" + "OPOP.txt" , "w")
+        
     l_p_substruct = listdir(pr_final) 
     for pr_substruct in l_p_substruct : 
         print pr_substruct
@@ -354,54 +357,122 @@ def enantiomer(l_ligand, pr_final) :
                 if search("REF_A",name_file) and   search(".pdb",name_file): 
                     ligand = name_file.split ("_")[2]
                     l_atom_ligand = parsePDB.loadCoordSectionPDB(pr_final + pr_substruct + "/" + pr_ref + "/LGD/" + name_file, "HETATM")
-                    d_min = 100
+                    d_minO3OP = 100
                     for atom_ligand in l_atom_ligand : 
                         if atom_ligand["name"] == "O4'" :
                             atom_O4 = atom_ligand
-                            break
+                        elif atom_ligand["name"] == "O5'" :
+                            atom_O5 = atom_ligand
+                        elif  atom_ligand["name"] == "O3'" :
+                            atom_O3 = atom_ligand
+                        elif  atom_ligand["name"] == "O1A" :
+                            atom_O1A = atom_ligand
+                        elif  atom_ligand["name"] == "O2A" :
+                            atom_O2A = atom_ligand
+                        elif  atom_ligand["name"] == "O1B" :
+                            atom_O1B = atom_ligand
+                        elif  atom_ligand["name"] == "O2B" :
+                            atom_O2B = atom_ligand
+                        elif  atom_ligand["name"] == "O3B" :
+                            atom_O3B = atom_ligand
                     
+                    # d O4 - O5        
+                    d_O4O5 = parsePDB.distanceTwoatoms(atom_O4, atom_O5)
+                    d_filout[ligand]["O4O5"].write (pr_ref + "_" + pr_substruct  + "\t" + str (d_O4O5) + "\n")
+
+                    # d O3 - OP
                     for atom_ligand in l_atom_ligand : 
                         if ligand == "AMP" : 
                             if atom_ligand["name"] == "O1P" or atom_ligand["name"] == "O2P" or atom_ligand["name"] == "O3P" : 
-                                d_temp = parsePDB.distanceTwoatoms(atom_O4, atom_ligand)
-                                if d_temp < d_min : 
-                                    d_min = d_temp
-                                    atom_temp = deepcopy(atom_ligand)
+                                d_tempO3OP = parsePDB.distanceTwoatoms(atom_O3, atom_ligand)
+                                if d_tempO3OP < d_minO3OP : 
+                                    d_minO3OP = d_tempO3OP
+                                    atom_tempO3OP = deepcopy(atom_ligand)
                         else : 
                             if atom_ligand["name"] == "O1A" or atom_ligand["name"] == "O2A" or atom_ligand["name"] == "O3A" : 
-                                d_temp = parsePDB.distanceTwoatoms(atom_O4, atom_ligand)
-                                if d_temp < d_min : 
-                                    d_min = d_temp
-                                    atom_temp = deepcopy(atom_ligand)
-                    d_filout[ligand].write (pr_ref + "_" + pr_substruct  +"_" + str(atom_temp["name"]) + "\t" + str (d_min) + "\n")
+                                d_tempO3OP = parsePDB.distanceTwoatoms(atom_O4, atom_ligand)
+                                if d_tempO3OP < d_minO3OP : 
+                                    d_minO3OP = d_tempO3OP
+                                    atom_tempO3OP = deepcopy(atom_ligand)
+                    d_filout[ligand]["O3OP"].write (pr_ref + "_" + pr_substruct  +"_" + str(atom_tempO3OP["name"]) + "\t" + str (d_minO3OP) + "\n")
     
+                    # d OP OP
+                    d_OP = {}
+                    if ligand == "ATP" or ligand == "ADP" : 
+                        d_OP ["O1AO1B"] = parsePDB.distanceTwoatoms(atom_O1A, atom_O1B)
+                        d_OP ["O1AO2B"] = parsePDB.distanceTwoatoms(atom_O1A, atom_O2B)
+                        d_OP ["O1AO3B"] = parsePDB.distanceTwoatoms(atom_O1A, atom_O3B)
+                        d_OP ["O2AO1B"] = parsePDB.distanceTwoatoms(atom_O2A, atom_O1B)
+                        d_OP ["O2AO2B"] = parsePDB.distanceTwoatoms(atom_O2A, atom_O2B)
+                        d_OP ["O2AO3B"] = parsePDB.distanceTwoatoms(atom_O2A, atom_O3B)
+                        
+                        d_minOPOP = min (d_OP.values())
+                        k_min = [name for name, age in d_minOPOP.items() if age == min (d_OP.values())]
+                        d_filout[ligand]["O3OP"].write (pr_ref + "_" + pr_substruct  +"_" + str(k_min) + "\t" + str (d_OP[k_min]) + "\n")
+                        
     # close files
-    for lig in d_filout.keys () : 
-        d_filout[lig].close ()
+    for lig in l_ligand : 
+        for type_dist in d_filout[lig].keys () : 
+            p_file = d_filout[lig][type_dist].name
+            d_filout[lig][type_dist].close ()
+            runOtherSoft.Rhistogram(p_file, type_dist, brk = 20)
     
-    for file_dist in l_filout : 
-        runOtherSoft.Rhistogram(file_dist, "DistanceO4-OP")
-                
                                 
                                 
-                                
+def superpositionAllRef (l_ligand, pr_final):   
+    
+    pr_align = pathManage.result("refAlignement")
+    
+    d_filout_pdb = {}
+    d_filout_RMSE = {}
+    d_ref = {}
+    l_file_RMSE = []
+    for ligand in l_ligand : 
+        d_filout_pdb[ligand] = open (pr_align + ligand + "_" + "superimposed.pdb" , "w")
+        d_filout_RMSE[ligand] = open (pr_align + ligand + "_" + "RMSE.txt" , "w")
+        l_file_RMSE.append (pr_align + ligand + "_" + "RMSE.txt") 
+    
+    l_p_substruct = listdir(pr_final) 
+    for pr_substruct in l_p_substruct : 
+        l_pr_ref = listdir(pr_final + pr_substruct + "/")
+        for pr_ref in l_pr_ref : 
+            l_file = listdir(pr_final + pr_substruct + "/" + pr_ref + "/LGD/")
+            for name_file in l_file : 
+                if search("REF_A",name_file) and   search(".pdb",name_file): 
+                    ligand = name_file.split ("_")[2]
+                    l_atom_ligand = parsePDB.loadCoordSectionPDB(pr_final + pr_substruct + "/" + pr_ref + "/LGD/" + name_file, "HETATM", remove_H=1)
+                    l_atom_adenine = substructTools.retrieveAdenine(l_atom_ligand)
+                    if not ligand in d_ref.keys () : 
+                        # stock in tempory dictionary for the reference
+                        d_ref[ligand] = []
+                        d_ref[ligand].append (l_atom_ligand)
+                        d_ref[ligand].append (l_atom_adenine)
+                        writePDBfile.coordinateSection(d_filout_pdb[ligand], l_atom_ligand, "HETATM", connect_matrix = 1)
+                        continue
+                    else : 
+                        rotation, translocation =  superimpose.rigid_transform_3D(l_atom_adenine, d_ref[ligand][-1])
+                        if rotation == None or translocation == None : 
+                            continue
+                        # rotation + translation
+                        l_atom_lig_rotated = superimpose.applyTranformation(rotation, translocation, l_atom_in=l_atom_ligand)
+                        # write PDB file and RMSE
+#                         print "============"
+#                         print ligand, pr_ref
+#                         print len (l_atom_lig_rotated)
+#                         print len (d_ref[ligand][0])
+#                         print "============"
+                        if len (l_atom_lig_rotated) != len (d_ref[ligand][0]) : 
+                            continue
+                        
+                        writePDBfile.coordinateSection(d_filout_pdb[ligand], l_atom_lig_rotated, "HETATM", connect_matrix = 1)
+                        RMSE_ligand = superimpose.rmse(d_ref[ligand][0], l_atom_lig_rotated)
+                        d_filout_RMSE[ligand].write (str (pr_ref) + "\t" + str(RMSE_ligand) + "\n")
             
-        
-        
-        
-        
-        
-        
-        
-    
-    
-    
-    
-    
-    
-    
+    # close files
+    for lig in d_filout_pdb.keys () : 
+        d_filout_pdb[lig].close ()
+        d_filout_RMSE[lig].close ()
+
+    for file_RMSE in l_file_RMSE : 
+        runOtherSoft.Rhistogram(file_RMSE, "RMSE_Adenine")                                 
             
-        
-        
-        
-    

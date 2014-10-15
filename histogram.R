@@ -9,7 +9,6 @@ file = args[1]
 type = args[2]
 brk = as.integer (args[3])
 
-
 # histograms
 
 # open both case with header and without header
@@ -18,9 +17,10 @@ rownames (d) = d[,1]
 d = d[,-1]
 
 png (paste (file, ".png", sep = ""), 400, 400)
-
 hist (d, xlim = c(min(d), max(d)), breaks = brk, main = type, col = "grey")
 dev.off()
 
-
-
+svg (paste (file, ".svg", sep = ""), 22, 22)
+par(mar=c(8,8,8,8))
+hist (d, xlim = c(min(d), max(d)), breaks = brk, main = "", col = "grey", xlab = "Distance (Å)", ylab = "Number of occurences", cex.lab = 2.5, cex.axis = 2)
+dev.off()

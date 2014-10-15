@@ -93,4 +93,30 @@ def retrieveSubstruct (l_lig_parsed, name_ligand):
                 
     return d_out
     
+
+def retrieveAdenine (l_lig_parsed) : 
+    
+    l_adenine = []
+    
+    for atom_parsed in l_lig_parsed : 
+        if atom_parsed["name"] == "N9" or atom_parsed["name"] == "C8" or atom_parsed["name"] == "N7" or atom_parsed["name"] == "C5" or atom_parsed["name"] == "C4" or atom_parsed["name"] == "C6" or atom_parsed["name"] == "N1" or atom_parsed["name"] == "C2" or  atom_parsed["name"] == "N3" or atom_parsed["name"] == "N6"or atom_parsed["name"] == "O4'" or atom_parsed["name"] == "C1'": 
+            l_adenine.append (deepcopy(atom_parsed))
+            
+    return l_adenine
+    
+    
+            
+            
+        
+        
+        
+    
+    
+    
+    
+    
+    
+
+
+
     
