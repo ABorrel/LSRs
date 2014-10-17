@@ -533,8 +533,7 @@ l_ligand_out = ["AMP", "ADP", "ATP", "TTP", "DCP", "DGT", "DTP", "DUP", "ACP", "
 
 #arrangeResult.qualityExtraction (["AMP", "ADP", "ATP", "POP"], p_list_ligand = "/home/borrel/Yue_project/resultLigandInPDB", thresold_sheap = thresold_shaep)
 #arrangeResult.countingSubstituent(pathManage.result("final"))
-
-# arrangeResult.enantiomer(["AMP", "ADP", "ATP"], pathManage.result("final"))
-# arrangeResult.superpositionAllRef(["AMP"], pathManage.result("final"))
+arrangeResult.enantiomer(["AMP", "ADP", "ATP"], pathManage.result("final"))
+#arrangeResult.superpositionAllRef(["AMP", "ADP", "ATP"], pathManage.result("final"))
 
 

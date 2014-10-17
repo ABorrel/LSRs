@@ -10,7 +10,7 @@ pieType = function (d, path_out){
 
 	leg = NULL
 	for (l in names (d)){
-		leg = append (leg, paste (d, "\n", d[l], sep = ""))
+		leg = append (leg, paste (l, "\n", d[l], sep = ""))
 	}
 
 	par (lwd = 1000)

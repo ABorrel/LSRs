@@ -343,7 +343,7 @@ def enantiomer(l_ligand, pr_final) :
     for ligand in l_ligand : 
         d_filout[ligand] = {}
         d_filout[ligand]["O3OP"]= open (pr_enantiomer + ligand + "_" + "O3OP.txt" , "w")
-        d_filout[ligand]["O4O5"]= open (pr_enantiomer + ligand + "_" + "O3O5.txt" , "w")
+        d_filout[ligand]["O4O5"]= open (pr_enantiomer + ligand + "_" + "O4O5.txt" , "w")
         d_filout[ligand]["OPOP"]= open (pr_enantiomer + ligand + "_" + "OPOP.txt" , "w")
         
     l_p_substruct = listdir(pr_final) 
@@ -373,8 +373,8 @@ def enantiomer(l_ligand, pr_final) :
                             atom_O1B = atom_ligand
                         elif  atom_ligand["name"] == "O2B" :
                             atom_O2B = atom_ligand
-                        elif  atom_ligand["name"] == "O3B" :
-                            atom_O3B = atom_ligand
+                        #elif  atom_ligand["name"] == "O3B" :
+                        #    atom_O3B = atom_ligand
                     
                     # d O4 - O5        
                     d_O4O5 = parsePDB.distanceTwoatoms(atom_O4, atom_O5)
@@ -401,15 +401,32 @@ def enantiomer(l_ligand, pr_final) :
                     if ligand == "ATP" or ligand == "ADP" : 
                         d_OP ["O1AO1B"] = parsePDB.distanceTwoatoms(atom_O1A, atom_O1B)
                         d_OP ["O1AO2B"] = parsePDB.distanceTwoatoms(atom_O1A, atom_O2B)
-                        d_OP ["O1AO3B"] = parsePDB.distanceTwoatoms(atom_O1A, atom_O3B)
+                        #d_OP ["O1AO3B"] = parsePDB.distanceTwoatoms(atom_O1A, atom_O3B)
                         d_OP ["O2AO1B"] = parsePDB.distanceTwoatoms(atom_O2A, atom_O1B)
                         d_OP ["O2AO2B"] = parsePDB.distanceTwoatoms(atom_O2A, atom_O2B)
-                        d_OP ["O2AO3B"] = parsePDB.distanceTwoatoms(atom_O2A, atom_O3B)
+                        #d_OP ["O2AO3B"] = parsePDB.distanceTwoatoms(atom_O2A, atom_O3B)
                         
                         d_minOPOP = min (d_OP.values())
-                        k_min = [name for name, age in d_minOPOP.items() if age == min (d_OP.values())]
-                        d_filout[ligand]["O3OP"].write (pr_ref + "_" + pr_substruct  +"_" + str(k_min) + "\t" + str (d_OP[k_min]) + "\n")
-                        
+                        #print d_minOPOP
+                        k_min = [name for name, age in d_OP.items() if age == min (d_OP.values())][0]
+                        #print k_min
+                        d_filout[ligand]["OPOP"].write (pr_ref + "_" + pr_substruct  +"_" + str(k_min) + "\t" + str (d_minOPOP) + "\n")
+                    
+                    try :
+                        del d_OP 
+                        del atom_O1A
+                        del atom_O1B
+                        del atom_O2A
+                        del atom_O2B
+                    except : 
+                        pass
+                    try : 
+                        del atom_O3
+                        del atom_O4
+                        del atom_O5
+                    except :
+                        pass
+            
     # close files
     for lig in l_ligand : 
         for type_dist in d_filout[lig].keys () : 
@@ -466,7 +483,7 @@ def superpositionAllRef (l_ligand, pr_final):
                         
                         writePDBfile.coordinateSection(d_filout_pdb[ligand], l_atom_lig_rotated, "HETATM", connect_matrix = 1)
                         RMSE_ligand = superimpose.rmse(d_ref[ligand][0], l_atom_lig_rotated)
-                        d_filout_RMSE[ligand].write (str (pr_ref) + "\t" + str(RMSE_ligand) + "\n")
+                        d_filout_RMSE[ligand].write (str (pr_ref) + pr_substruct  + "\t" + str(RMSE_ligand) + "\n")
             
     # close files
     for lig in d_filout_pdb.keys () : 

@@ -16,8 +16,9 @@ d = read.table (file, header = FALSE)
 rownames (d) = d[,1]
 d = d[,-1]
 
-png (paste (file, ".png", sep = ""), 400, 400)
-hist (d, xlim = c(min(d), max(d)), breaks = brk, main = type, col = "grey")
+png (paste (file, ".png", sep = ""), 800, 800)
+par (mar = c(5,5,5,5))
+hist (d, xlim = c(min(d), max(d)), breaks = brk, main = "", col = "grey", xlab = "Distance (Å)", ylab = "Number of occurences", cex.lab = 2, cex.axis = 2)
 dev.off()
 
 svg (paste (file, ".svg", sep = ""), 22, 22)
