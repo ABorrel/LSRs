@@ -163,11 +163,11 @@ def computeRMSDBS (p_ref, p_query, p_substruct, pr_result, thresold_BS = 6) :
     l_RMSD = RMSDTwoList (l_BS_query, l_BS_ref)
     
     # write PDB
-    p_filout_pdb = pr_result + p_query.split ("/")[-1][0:-4] + "_" + str (flag_identic_crystal) + "_" + p_substruct.split ("_")[-2] + "_" + p_ref.split ("/")[-1]
-    filout_pdb = open (p_filout_pdb, "w")
-    writePDBfile.coordinateSection(filout_pdb, l_BS_ref, recorder = "ATOM")
-    writePDBfile.coordinateSection(filout_pdb, l_BS_query, recorder = "ATOM", header = 0 )
-    filout_pdb.close ()
+    #p_filout_pdb = pr_result + p_query.split ("/")[-1][0:-4] + "_" + str (flag_identic_crystal) + "_" + p_substruct.split ("_")[-2] + "_" + p_ref.split ("/")[-1]
+    #filout_pdb = open (p_filout_pdb, "w")
+    #writePDBfile.coordinateSection(filout_pdb, l_BS_ref, recorder = "ATOM")
+    #writePDBfile.coordinateSection(filout_pdb, l_BS_query, recorder = "ATOM", header = 0 )
+    #filout_pdb.close ()
     
     if l_RMSD == [] : 
         return []

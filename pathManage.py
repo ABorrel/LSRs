@@ -124,12 +124,12 @@ def findPDBQueryTransloc (p_result):
     return l_out     
     
     
-def findligandRef(p_dataset_folder, substruct) :     
+def findligandRef(p_dataset_folder, name_lig) :     
     
     l_filesin = listdir(p_dataset_folder)
     name_ref = path.dirname(p_dataset_folder).split ("/")[-1]
     for filein in l_filesin : 
-        if search( name_ref, filein) and  search( substruct, filein) and not search("subref", filein): 
+        if search( name_ref, filein) and  search( name_lig, filein) and not search("subref", filein): 
             return p_dataset_folder + filein
     return 0
     
