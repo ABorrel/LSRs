@@ -10,12 +10,12 @@ data=data[order(data[,2],decreasing = T),]
 
 large = dim(data)[1]*20
 
-if (large < 300){
-	large = 300
+if (large < 600){
+	large = 600
 }
 
-png(filename=paste(file,".png",sep = ""), width=as.integer(large), 300)
-barplot(data[,2], names.arg=data[,1], main="Count Ligand", xlab="", ylab="Quantity", axes=TRUE, cex.axis=1, cex.lab=1, cex.main=1.5, cex.names = 0.6, col = "blue", las=2,space = 0.7, cex = 1)
+png(filename=paste(file,".png",sep = ""), width=as.integer(large), 600)
+barplot(data[,2], names.arg=data[,1], main="", xlab="", ylab="Quantity", axes=TRUE, cex.axis=1, cex.lab=1, cex.main=1.5, cex.names = 1.2, col = "blue", las=2, space = 0.7, cex = 2)
 
 dev.off()
 

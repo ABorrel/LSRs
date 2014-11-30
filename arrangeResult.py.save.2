@@ -190,7 +190,11 @@ def controlResult (l_name_ligand):
 
     
 def qualityExtraction (l_ligand, p_list_ligand, thresold_sheap) : 
-    
+    """
+    OK but problem with the version of extraction, pb qith sheap
+    """    
+
+
     filout = open(pathManage.result() + "quality_extraction.txt", "w")
     
     # number PDB by ligand, without filter
@@ -287,7 +291,6 @@ def countingSubstituent (pr_final_folder, debug = 1):
     
     d_count = {}
     d_lig = {}
-    d_by_ref = {}
     l_file_final = listdir(pr_final_folder)
     if debug : print "1", pr_final_folder
     for pr_type_substituent in l_file_final :
@@ -304,7 +307,6 @@ def countingSubstituent (pr_final_folder, debug = 1):
                     d_count[ligand_sub] [sub_query] = 0
 		d_count[ligand_sub][sub_query] = d_count[ligand_sub][sub_query] + 1
                 
-
                 for file_ref in l_file_ref : 
                     # print file_ref
                     if search ("LGD", file_ref):
@@ -313,26 +315,8 @@ def countingSubstituent (pr_final_folder, debug = 1):
                             d_lig[ligand] = 0
                         else : 
                             d_lig[ligand] = d_lig[ligand] + 1
-
-                for file_ref in l_file_ref :
-                    if search ("LSR", file_ref):
-                        if file_ref.split ("_")[1] == "REF" :
-                            lig_ref = file_ref.split ("_")[2]
-                            if not lig_ref in d_by_ref.keys () : 
-                                d_by_ref[lig_ref] = {}
-                            if not ligand_sub in d_by_ref[lig_ref].keys () : 
-                                d_by_ref[lig_ref][ligand_sub] = 0
-                            d_by_ref[lig_ref][ligand_sub] = d_by_ref[lig_ref][ligand_sub] + 1
-                            break
-
-
-
-
-
             
-    # print d_count
-    # print d_by_ref
-  
+        
     # write and plot
     pr_result = pathManage.result("counting")
     for ligand_sub in d_count.keys () : 
@@ -350,14 +334,6 @@ def countingSubstituent (pr_final_folder, debug = 1):
             filout_lig.write (str (lig) + "\t" + str (d_lig[lig]) + "\n")
     filout_lig.close ()
     
-    filout_LSR_lig = open (pr_result + "CountByLigandRef", "w")
-    for lig_ref in d_by_ref.keys () : 
-        filout_LSR_lig.write ("====" + str (lig_ref) + "====\n")
-        for sub_ref in d_by_ref[lig_ref].keys () : 
-            filout_LSR_lig.write (str (sub_ref) + ": " + str (d_by_ref[lig_ref][sub_ref]) + "\n")
-
-    filout_LSR_lig.close ()
-
     runOtherSoft.barplotQuantity(pr_result + "count_ligand")
         
         

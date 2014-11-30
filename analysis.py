@@ -149,14 +149,15 @@ def computeRMSDBS (p_ref, p_query, p_substruct, pr_result, thresold_BS = 6) :
                     res_temp = atom_query
                 
         
-        if d_max < thresold_BS : 
+        #if d_max < thresold_BS : 
+        if "res_temp" in locals () :     
             l_BS_query.append (deepcopy(res_temp))
-            # identic check number
+        # identic check number
             if res_temp["resSeq"] != atomBS_ref["resSeq"] : 
                 flag_identic_crystal = 0
-        else : 
+        #else : 
             # case structure not found
-            return []
+        #    return []
     
     
 #     print len (l_BS_query), len (l_BS_ref)

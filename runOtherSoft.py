@@ -58,7 +58,7 @@ def runTMalign(path_pr1, path_pr2, path_dir_out, debug = 1) :
     return [path_dir_out + "align.out", path_dir_out + "align.out_all", path_dir_out + "align.out_atm",path_dir_out + "align.out_all_atm", path_dir_out + "RMSD" ]
 
 
-def  babelConvertPDBtoSMILE (p_file_pdb) : 
+def babelConvertPDBtoSMILE (p_file_pdb) : 
     
     path_filout = p_file_pdb[0:-4] + ".smi"
     
@@ -109,6 +109,21 @@ def RhistogramMultiple (p_filin, brk = 20) :
     cmd_run = "./histograms.R " + p_filin + " " + str (brk) 
     print cmd_run
     os.system (cmd_run)
+
+
+def RhistogramRMSD (p_filin, brk = 20) : 
+    
+    cmd_run = "./histogramsRMSD.R " + p_filin + " " + str (brk) 
+    print cmd_run
+    os.system (cmd_run)
+
+
+
+def barplot (p_filin) :
+    cmd_run = "./barplotQuantity.R " + p_filin + " "
+    print cmd_run
+    os.system (cmd_run)
+
     
 def Rhistogram (p_filin, name_main, brk = 100) : 
     
@@ -170,10 +185,3 @@ def piePlot (p_filin):
     print cmd
     os.system (cmd)
  
-    
-def barplotQuantity(p_filin):
-    
-    cmd = "./barplotQuantity.R " + p_filin 
-    os.system(cmd)
-    
-

@@ -360,13 +360,16 @@ def analysisSameBS (name_lig, ID_seq = '1.000', debug = 0):
     pr_result = pathManage.result(name_lig + "/sameBS")
 #     
     d_file_sameBS = {}
-    d_file_sameBS["global"] = open (pr_result + "RMSD_BS.txt", "w")
+    d_file_sameBS["global"] = open (pr_result + "ligand_", "w")
     d_file_sameBS["global"].write ("name_bs\tRMSD_prot\tRMSD_BS_ca\tRMSD_BS_all\tD_max\tl_at_BS\tidentic\n")
+    d_file_sameBS["summary"] = open (pr_result + "summary.txt", "w")
     pr_dataset = pathManage.dataset(name_lig)
      
      
     l_folder_ref = listdir(pr_dataset)
-     
+    nb_BS = 0
+    nb_same_BS = 0
+    nb_same_atom_count = 0  
     for ref_folder in l_folder_ref  :
         if debug : print ref_folder
         if len (ref_folder) != 4 : 
@@ -384,30 +387,41 @@ def analysisSameBS (name_lig, ID_seq = '1.000', debug = 0):
             p_TMalign =  pathManage.alignmentOutput(name_lig) + p_pdb_ref.split ("/")[-1][0:-4] + "__" + p_query.split ("/")[-1][7:-4] + "/RMSD"
             try : score_align = parseTMalign.parseOutputTMalign(p_TMalign)
             except : continue
-            
+            nb_BS = nb_BS + 1
             if score_align["IDseq"] >= ID_seq : 
+                nb_same_BS = nb_same_BS + 1
                 l_p_substruct_ref = pathManage.findSubstructRef (pr_dataset + ref_folder + "/", name_lig)
                 
                 # sub BS
                 for p_substruct_ref in l_p_substruct_ref : 
                     struct_substitued = p_substruct_ref.split ("_")[-2]
                     if not struct_substitued in d_file_sameBS.keys () : 
-                        d_file_sameBS[struct_substitued] = open (pr_result + struct_substitued + "_RMSD_BS.txt", "w")
+                        d_file_sameBS[struct_substitued] = open (pr_result + struct_substitued + "_", "w")
                         d_file_sameBS[struct_substitued].write ("name_bs\tRMSD_prot\tRMSD_BS_ca\tRMSD_BS_all\tD_max\tl_at_BS\tidentic\n")
                     RMSD_bs = analysis.computeRMSDBS (p_pdb_ref, p_query, p_substruct_ref, pr_result)
-                    if RMSD_bs != [] : 
-                        d_file_sameBS[struct_substitued].write (p_substruct_ref.split("/")[-1][0:-4] +  "_*_" + p_query.split ("/")[-1][0:-4] + "\t" + str(score_align["RMSD"]) + "\t" + str(RMSD_bs[1]) + "\t" + str(RMSD_bs[0]) + "\t" + str(RMSD_bs[2]) + "\t" + str(RMSD_bs[-2]) + "\t" + str(RMSD_bs[-1]) + "\n")
-               
+                if RMSD_bs != [] : 
+                    d_file_sameBS[struct_substitued].write (p_substruct_ref.split("/")[-1][0:-4] +  "_*_" + p_query.split ("/")[-1][0:-4] + "\t" + str(score_align["RMSD"]) + "\t" + str(RMSD_bs[1]) + "\t" + str(RMSD_bs[0]) + "\t" + str(RMSD_bs[2]) + "\t" + str(RMSD_bs[-2]) + "\t" + str(RMSD_bs[-1]) + "\n")
+                    if RMSD_bs [-1] == 1 : 
+                            nb_same_atom_count = nb_same_atom_count + 1  
+  
+
                 p_ligand_ref = pathManage.findligandRef(pr_dataset + ref_folder + "/", name_lig)
                 RMSD_bs_lig = analysis.computeRMSDBS (p_pdb_ref, p_query, p_ligand_ref, pr_result)
                 if RMSD_bs_lig != [] : 
                     d_file_sameBS["global"].write (p_ligand_ref.split("/")[-1][0:-4] +  "_*_" + p_query.split ("/")[-1][0:-4] + "\t" + str(score_align["RMSD"]) + "\t" + str(RMSD_bs_lig[1]) + "\t" + str(RMSD_bs_lig[0]) + "\t" + str(RMSD_bs_lig[2]) + "\t" + str(RMSD_bs_lig[-2]) + "\t" + str(RMSD_bs_lig[-1]) + "\n")
+
+    # write summary
+    d_file_sameBS["summary"].write ("BS global: " + str (nb_BS) + "\n")
+    d_file_sameBS["summary"].write ("BS - IDseq 100%: " + str (nb_same_BS) + "\n")
+    d_file_sameBS["summary"].write ("BS - same atom number: " + str (nb_same_atom_count) + "\n")
                     
+    
     # close files and run histograms                
     for k_dico in d_file_sameBS.keys () : 
         p_file = d_file_sameBS[k_dico].name
         d_file_sameBS[k_dico].close ()
-        runOtherSoft.RhistogramMultiple(p_file)
+        runOtherSoft.RhistogramRMSD(p_file)
+
         
     return 1
                 
@@ -462,10 +476,10 @@ l_ligand_out = ["AMP", "ADP", "ATP", "TTP", "DCP", "DGT", "DTP", "DUP", "ACP", "
 # buildData.builtDatasetGlobal(p_list_ligand = "/home/borrel/Yue_project/resultLigandInPDB" , ligand_ID = "AMP", thresold_RX = thresold_RX, thresold_blast = thresold_blast, l_ligand_out= l_ligand_out, verbose = 1)
 # datasetPreparation ("AMP")
 # applyTMAlign ("AMP")
-ionIdentification ("AMP")
+# ionIdentification ("AMP")
 # retrieveSubstructSuperimposed ("AMP", thresold_BS = thresold_BS, thresold_superimposed_ribose = thresold_superimposed_ribose, thresold_superimposed_pi = thresold_superimposed_pi, thresold_shaep = thresold_shaep)
 # analysisSmile ("AMP")
-analysisSameBS ("AMP")
+# analysisSameBS ("AMP")
 
 
 ### ADP ###
@@ -474,9 +488,9 @@ analysisSameBS ("AMP")
 # buildData.builtDatasetGlobal(p_list_ligand = "/home/borrel/Yue_project/resultLigandInPDB" , ligand_ID = "ADP", thresold_RX = thresold_RX, thresold_blast = thresold_blast, verbose = 1)
 # datasetPreparation ("ADP")
 # applyTMAlign ("ADP")
-ionIdentification ("ADP")
+# ionIdentification ("ADP")
 # retrieveSubstructSuperimposed ("ADP", thresold_BS = thresold_BS, thresold_superimposed_ribose = thresold_superimposed_ribose, thresold_superimposed_pi = thresold_superimposed_pi, thresold_shaep = thresold_shaep)
-analysisSameBS ("ADP")
+# analysisSameBS ("ADP")
 # analysisSmile ("ADP")
 # 
 # 
@@ -486,9 +500,9 @@ analysisSameBS ("ADP")
 # buildData.builtDatasetGlobal(p_list_ligand = "/home/borrel/Yue_project/resultLigandInPDB" , ligand_ID = "POP", thresold_RX = thresold_RX, thresold_blast = thresold_blast, verbose = 1)
 # datasetPreparation ("POP")
 # applyTMAlign ("POP")
-ionIdentification ("POP")
+# ionIdentification ("POP")
 # retrieveSubstructSuperimposed ("POP", thresold_BS = thresold_BS, thresold_superimposed_ribose = thresold_superimposed_ribose, thresold_superimposed_pi = thresold_superimposed_pi, thresold_shaep = thresold_shaep)
-analysisSameBS ("POP")
+# analysisSameBS ("POP")
 # analysisSmile ("POP")
 # 
 # 
@@ -498,19 +512,18 @@ analysisSameBS ("POP")
 # buildData.builtDatasetGlobal(p_list_ligand = "/home/borrel/Yue_project/resultLigandInPDB" , ligand_ID = "ATP", thresold_RX = thresold_RX, thresold_blast = thresold_blast, verbose = 1)
 # datasetPreparation ("ATP")
 # applyTMAlign ("ATP")
-ionIdentification ("ATP")
+# ionIdentification ("ATP")
 # retrieveSubstructSuperimposed ("ATP", thresold_BS = thresold_BS, thresold_superimposed_ribose = thresold_superimposed_ribose, thresold_superimposed_pi = thresold_superimposed_pi, thresold_shaep = thresold_shaep)
-analysisSameBS ("ATP")
+# analysisSameBS ("ATP")
 # analysisSmile ("ATP")
 # 
 # 
 # 
-# manageResult (["AMP"])#, "ADP", "ATP", "POP"])
+# manageResult (["AMP", "ADP", "ATP", "POP"])
 # arrangeResult.controlResult (["AMP", "ADP", "ATP", "POP"])
-
-#arrangeResult.qualityExtraction (["AMP", "ADP", "ATP", "POP"], p_list_ligand = "/home/borrel/Yue_project/resultLigandInPDB", thresold_sheap = thresold_shaep)
-#arrangeResult.countingSubstituent(pathManage.result("final"))
+# arrangeResult.qualityExtraction (["AMP", "ADP", "ATP", "POP"], p_list_ligand = "/home/borrel/Yue_project/resultLigandInPDB", thresold_sheap = thresold_shaep)
+arrangeResult.countingSubstituent(pathManage.result("final"))
 # arrangeResult.enantiomer(["AMP", "ADP", "ATP"], pathManage.result("final"))
-#arrangeResult.superpositionAllRef(["AMP", "ADP", "ATP"], pathManage.result("final"))
+# arrangeResult.superpositionAllRef(["AMP", "ADP", "ATP"], pathManage.result("final"))
 
 

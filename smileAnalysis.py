@@ -171,7 +171,7 @@ def searchReplacement (smile, PDB_query, PDB_ref, name_ligand) :
         return "C+N", "" 
     elif searchCandOandN (smile) :
         return "C+O+N", ""
-    else : 
-        return "other"  ,""
+
+    return "other"  ,""
 
  

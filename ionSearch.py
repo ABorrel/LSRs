@@ -1,5 +1,6 @@
 import parsePDB
 import pathManage
+import runOtherSoft
 
 from os import listdir
 
@@ -31,7 +32,9 @@ def retrieveTwoAtomForAngle (lig_parsed, substruct):
             if atom_lig["name"] == "O5'" : 
                 l_phosphate.append (atom_lig)
     
-    
+    # case where ATP not complet
+    if substruct == "ATP" and len (l_phosphate) != 3 : 
+        return []
     return l_phosphate
 
 
@@ -53,12 +56,15 @@ def analyseIons (pr_dataset, name_ligand, p_filout) :
     d_count["CX+ions"] = 0
     d_count["BS+ions"] = 0
     
+    # dictionnary by ions
+    d_ions = {}
+    
     for ref_folder in l_folder_ref  :
         only_one = 0
         if len (ref_folder) != 4 : 
             continue
         d_count["CX"] = d_count["CX"] + 1
-        
+        l_temp = []
         # path and complex
         p_lig_ref = pathManage.findligandRef(pr_dataset + ref_folder + "/", name_ligand)
         p_complex = pathManage.findPDBRef(pr_dataset + ref_folder + "/")
@@ -75,10 +81,16 @@ def analyseIons (pr_dataset, name_ligand, p_filout) :
         for het_parsed in l_het_parsed : 
             if het_parsed["resName"] in l_ions : 
                 d_count["CX+ions"] = d_count["CX+ions"] + 1
+                if not het_parsed ["resName"] in d_ions.keys () : 
+                    d_ions[het_parsed["resName"]] = 0
+                if not het_parsed["resName"] in l_temp :  
+                    d_ions[het_parsed["resName"]] = d_ions[het_parsed["resName"]] + 1
+                    l_temp.append (het_parsed["resName"])
                 PDB_id = ref_folder
                 d1 = parsePDB.distanceTwoatoms(l_pi[0], het_parsed)
                 d2 = parsePDB.distanceTwoatoms(l_pi[1], het_parsed)
                 if name_ligand == "ATP" : 
+                    # print len(l_pi), ref_folder, p_lig_ref
                     d3 = parsePDB.distanceTwoatoms(l_pi[2], het_parsed)
                     angle_bis = parsePDB.angleVector(l_pi[1], het_parsed, l_pi[2])
                 angle = parsePDB.angleVector(l_pi[0], het_parsed, l_pi[1])
@@ -101,3 +113,12 @@ def analyseIons (pr_dataset, name_ligand, p_filout) :
     filout_count.write ("CX+ions: " + str (d_count["CX+ions"]) + "\n")
     filout_count.write ("BS+ions: " + str(d_count["BS+ions"]) + "\n")
     filout_count.close ()
+
+    filout_by_ion = open(p_filout[0:-4] + "byIons.txt", "w")
+    l_k = d_ions.keys ()
+    for k in l_k : 
+        filout_by_ion.write (str (k.capitalize()) + "\t" + str (d_ions[k]) + "\n")
+    filout_by_ion.close ()
+   
+    runOtherSoft.barplot (p_filout[0:-4] + "byIons.txt")
+
