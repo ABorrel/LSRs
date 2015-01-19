@@ -49,7 +49,8 @@ def lineCoords (line):
     atom["name"] = line[12:16].replace (" ", "")
     atom["char"] = line[16]
     atom["resName"] = line[17:20].replace (" ", "")
-    atom["chainID"] = str(line[21])
+    try : atom["chainID"] = str(line[21])
+    except : print line
     try : atom["resSeq"] = int (line[22:26].replace (" ", ""))
     except : atom["resSeq"] = 0
     atom["iCode"] = str(line[26])
@@ -388,7 +389,6 @@ def getResidues(l_atom_binding, l_atom_complex_parsed) :
     # -> retrieve residue
     memory_res = []
     l_res = []
-    
     for atom_bs in l_atom_binding : 
         # case where consider all atom, het and atom
         if not atom_bs["resName"] in dico_code.values () : 

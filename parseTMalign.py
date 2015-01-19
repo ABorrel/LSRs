@@ -2,6 +2,7 @@
 
 def parseOutputTMalign (p_filin):
     
+    print p_filin
     d_out = {}
     
     filin = open (p_filin, "r")
@@ -10,10 +11,11 @@ def parseOutputTMalign (p_filin):
     
     d_out["RMSD"] = retrieveRMSD (f_read)
     d_out["IDseq"] = retrieveIDseq (f_read)
+    l_score = retrieveTMScore (f_read)
+    d_out["TMscore1"] = l_score[0]
+    d_out["TMscore2"] = l_score[1]
     
     return d_out
-
-
 
 
 
@@ -47,5 +49,13 @@ def retrieveIDseq (filin_read) :
     return IDseq
 
 
+def retrieveTMScore (filin_read):
+    
+    
+    TMScore1 = filin_read.split ("TM-score= ")[1].split (" (")[0]
+    TMScore2 = filin_read.split ("TM-score= ")[2].split (" (")[0]
 
-# print parseOutputTMalign("/home/borrel/Yue_project/alignment/12AS_A_2.20__12AS_B_2.20/RMSD")
+    return [TMScore1, TMScore2]
+
+
+# print parseOutputTMalign("/home/borrel/Yue_project/alignment/AMP/1Z8D__3E3O_D/RMSD")

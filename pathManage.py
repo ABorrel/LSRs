@@ -117,7 +117,7 @@ def findPDBQueryTransloc (p_result):
 
     l_out = []
     for filein in l_filesin : 
-        if search("CX_", filein) : 
+        if search("^CX_", filein) : 
             l_out.append (p_result + filein)
             
     

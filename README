@@ -1,0 +1,4 @@
+#! pb export for database for blast and clustal
+
+export BLASTDB=/home/borrel/blast/db/
+export PATH=$PATH:/home/borrel/softwares/clustal

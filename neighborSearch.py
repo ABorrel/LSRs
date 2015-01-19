@@ -9,11 +9,14 @@ import parsePDB
 
 def retrievePi (substruct_parsed):
     
+    l_out = []
     for atom_substruct in substruct_parsed : 
-        if atom_substruct["element"] == "P" : 
-            return atom_substruct
-    print "ERROR l15 -- neighborSearch"
-    return 0
+        if atom_substruct["element"] == "P" or atom_substruct["element"] == "O": 
+            out = copy(atom_substruct)
+            l_out.append (out)
+    if l_out == [] : 
+        print "ERROR l15 -- neighborSearch"
+    return l_out
 
 
 
@@ -30,12 +33,13 @@ def searchNeighborAtom(substruct_parsed, lig_query_parsed, struct_type, log_file
                         l_atom_substituate.append (out)
         
     else : 
-        atom_interest = retrievePi (substruct_parsed)
-        for atom_query in lig_query_parsed : 
-            if parsePDB.distanceTwoatoms(atom_interest, atom_query) <= thresold_superimposed_pi : 
-                out = copy(atom_query)
-                if not out in l_atom_substituate : 
-                    l_atom_substituate.append (out)
+        l_atom_interest = retrievePi (substruct_parsed)
+        for atom_interest in l_atom_interest :
+            for atom_query in lig_query_parsed : 
+                if parsePDB.distanceTwoatoms(atom_interest, atom_query) <= thresold_superimposed_pi : 
+                    out = copy(atom_query)
+                    if not out in l_atom_substituate : 
+                        l_atom_substituate.append (out)
     
     # control out empty
     if l_atom_substituate == [] : 
