@@ -558,7 +558,9 @@ def manageResult (l_ligand):
 # PDB #
 #######
 
+# update 19-01-2014
 # downloadPDB ("/home/borrel/PDB/")
+managePDB.searchLigands("/home/borrel/Yue_project/", "/home/borrel/PDB/")
 
 # constante
 thresold_RX = 2.7
