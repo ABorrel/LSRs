@@ -13,6 +13,7 @@ import parseShaep
 import tool
 import arrangeResult
 import managePDB
+import refClassification
 
 from os import listdir, path, remove, rename, system
 from re import search
@@ -150,7 +151,7 @@ def retrieveSubstructSuperimposed (name_lig, thresold_BS = 4.5, thresold_superim
     # ouput
     p_dir_dataset = pathManage.dataset(name_lig)
     p_dir_result = pathManage.result(name_lig )
-    l_folder_ref = listdir(p_dir_dataset)[0:20]
+    l_folder_ref = listdir(p_dir_dataset)
     
     # log control
     p_log = open(p_dir_result + "log_superimposed.txt", "w")
@@ -560,7 +561,7 @@ def manageResult (l_ligand):
 
 # update 19-01-2014
 # downloadPDB ("/home/borrel/PDB/")
-managePDB.searchLigands("/home/borrel/Yue_project/", "/home/borrel/PDB/")
+# managePDB.searchLigands("/home/borrel/Yue_project/", "/home/borrel/PDB/")
 
 # constante
 thresold_RX = 2.7
@@ -581,7 +582,7 @@ l_ligand_out = ["AMP", "ADP", "ATP", "TTP", "DCP", "DGT", "DTP", "DUP", "ACP", "
 # applyTMAlign ("AMP")
 # ionIdentification ("AMP")
 # retrieveSubstructSuperimposed ("AMP", thresold_BS = thresold_BS, thresold_superimposed_ribose = thresold_superimposed_ribose, thresold_superimposed_pi = thresold_superimposed_pi, thresold_shaep = thresold_shaep)
-# analysisSmile ("AMP")
+analysisSmile ("AMP")
 # analysisBS ("AMP")
 
 
@@ -594,7 +595,7 @@ l_ligand_out = ["AMP", "ADP", "ATP", "TTP", "DCP", "DGT", "DTP", "DUP", "ACP", "
 # ionIdentification ("ADP")
 # retrieveSubstructSuperimposed ("ADP", thresold_BS = thresold_BS, thresold_superimposed_ribose = thresold_superimposed_ribose, thresold_superimposed_pi = thresold_superimposed_pi, thresold_shaep = thresold_shaep)
 # analysisBS ("ADP")
-# analysisSmile ("ADP")
+analysisSmile ("ADP")
 # 
 # 
 # ### POP ###
@@ -606,7 +607,7 @@ l_ligand_out = ["AMP", "ADP", "ATP", "TTP", "DCP", "DGT", "DTP", "DUP", "ACP", "
 # ionIdentification ("POP")
 # retrieveSubstructSuperimposed ("POP", thresold_BS = thresold_BS, thresold_superimposed_ribose = thresold_superimposed_ribose, thresold_superimposed_pi = thresold_superimposed_pi, thresold_shaep = thresold_shaep)
 # analysisBS ("POP")
-# analysisSmile ("POP")
+analysisSmile ("POP")
 # 
 # 
 # ### ATP ###
@@ -618,14 +619,20 @@ l_ligand_out = ["AMP", "ADP", "ATP", "TTP", "DCP", "DGT", "DTP", "DUP", "ACP", "
 # ionIdentification ("ATP")
 # retrieveSubstructSuperimposed ("ATP", thresold_BS = thresold_BS, thresold_superimposed_ribose = thresold_superimposed_ribose, thresold_superimposed_pi = thresold_superimposed_pi, thresold_shaep = thresold_shaep)
 # analysisBS ("ATP")
-# analysisSmile ("ATP")
+analysisSmile ("ATP")
 # 
-# 
-# 
-# manageResult (["AMP"])#, "ADP", "ATP", "POP"])
+#
+################# 
+# RESULT MANAGE #
+#################
+#
+#
+# refClassification.classifRefProtein ("/home/borrel/Yue_project/dataset/", ["AMP", "ADP", "ATP", "POP"])
+#
+# manageResult (["AMP", "ADP", "ATP", "POP"])
 # arrangeResult.controlResult (["AMP"])#, "ADP", "ATP", "POP"])
 # arrangeResult.qualityExtraction (["AMP"], p_list_ligand = "/home/borrel/Yue_project/resultLigandInPDB", thresold_sheap = thresold_shaep)
-# arrangeResult.countingSubstituent(pathManage.result("final"))
+arrangeResult.countingSubstituent(pathManage.result("final"))
 # arrangeResult.enantiomer(["AMP", "ADP", "ATP"], pathManage.result("final"))
 # arrangeResult.superpositionAllRef(["AMP", "ADP", "ATP"], pathManage.result("final"))
 

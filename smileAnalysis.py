@@ -152,7 +152,7 @@ def searchReplacement (smile, PDB_query, PDB_ref, name_ligand) :
                 return "metal", metal_find
             
     if searchP(smile) == 1 : 
-        return "phosphate", ""
+        return "P", ""
     elif searchRing(smile) == 99 : 
         return "cycle",""
     elif searchRing(smile) > 0 : 

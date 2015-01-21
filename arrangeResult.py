@@ -288,6 +288,7 @@ def countingSubstituent (pr_final_folder, debug = 1):
     d_count = {}
     d_lig = {}
     d_by_ref = {}
+    d_count_pr = {}
     l_file_final = listdir(pr_final_folder)
     if debug : print "1", pr_final_folder
     for pr_type_substituent in l_file_final :
@@ -298,13 +299,14 @@ def countingSubstituent (pr_final_folder, debug = 1):
             l_ligand_sub = listdir(pr_final_folder + pr_type_substituent + "/" + ref_ID + "/")
             for ligand_sub in l_ligand_sub :
                 l_file_ref  = listdir(pr_final_folder + pr_type_substituent + "/" + ref_ID + "/" + ligand_sub + "/")
+                #print l_file_ref
                 if not ligand_sub in d_count.keys () : 
                     d_count[ligand_sub] = {}
                 if not sub_query in d_count[ligand_sub].keys () : 
                     d_count[ligand_sub] [sub_query] = 0
 		d_count[ligand_sub][sub_query] = d_count[ligand_sub][sub_query] + 1
                 
-
+                # count ligand
                 for file_ref in l_file_ref : 
                     # print file_ref
                     if search ("LGD", file_ref):
@@ -313,6 +315,44 @@ def countingSubstituent (pr_final_folder, debug = 1):
                             d_lig[ligand] = 0
                         else : 
                             d_lig[ligand] = d_lig[ligand] + 1
+
+                # count proteins
+                if ligand_sub == "BS" : 
+                    for file_BS in l_file_ref : 
+                        if search ("BS_REF", file_BS):
+                            lig_ref = file_BS.split ("_")[2]
+                            pr_ref = file_BS.split ("_")[3].split (".")[0]
+                            print lig_ref, pr_ref, "*****"
+                            if not lig_ref in d_count_pr.keys () : 
+                                d_count_pr[lig_ref] = {}
+                                d_count_pr[lig_ref]["pr ref"] = []
+                                d_count_pr[lig_ref]["pr queries"] = []
+                                d_count_pr[lig_ref]["lig queries"] = []
+                                d_count_pr[lig_ref]["HSP"] = 0
+                                d_count_pr[lig_ref]["kinase"] = 0
+                                d_count_pr[lig_ref]["others"] = 0
+                                   
+                            if not pr_ref in d_count_pr[lig_ref]["pr ref"] : 
+                                d_count_pr[lig_ref]["pr ref"].append (pr_ref)
+                                try:
+                                    family = analysis.findFamily (pr_ref, pathManage.dataset (lig_ref) + "family_PDB.txt")
+                                    d_count_pr[lig_ref][family] = d_count_pr[lig_ref][family] + 1
+                                except: pass
+
+                    for file_BS in l_file_ref : 
+                        if not search ("BS_REF", file_BS) : 
+                            lig_querie = file_BS.split ("_")[1]
+                            pr_querie = file_BS.split ("_")[2][0:4]
+                            # find ligand reference
+                            l_lig_in = pathManage.findligandRef (pr_querie, lig_ref)
+                            #print lig_in, "*************===="
+                            for lig_in in l_lig_in :  
+                                try : 
+                                    if not pr_querie in d_count_pr[lig_in]["pr queries"] : d_count_pr[lig_in]["pr queries"].append (pr_querie)
+                                    if not lig_querie in d_count_pr[lig_in]["lig queries"] : d_count_pr[lig_in]["lig queries"].append (lig_querie)
+                                except :
+                                    pass
+
 
                 for file_ref in l_file_ref :
                     if search ("LSR", file_ref):
@@ -326,12 +366,10 @@ def countingSubstituent (pr_final_folder, debug = 1):
                             break
 
 
-
-
-
             
     # print d_count
     # print d_by_ref
+    # print d_count_pr
   
     # write and plot
     pr_result = pathManage.result("counting")
@@ -355,8 +393,23 @@ def countingSubstituent (pr_final_folder, debug = 1):
         filout_LSR_lig.write ("====" + str (lig_ref) + "====\n")
         for sub_ref in d_by_ref[lig_ref].keys () : 
             filout_LSR_lig.write (str (sub_ref) + ": " + str (d_by_ref[lig_ref][sub_ref]) + "\n")
-
     filout_LSR_lig.close ()
+
+    filout_pr_count = open (pr_result + "count_pr", "w")
+    for lig in d_count_pr.keys () : 
+        filout_pr_count.write ("====" + str (lig) + "====\n")
+        filout_pr_count.write ("nb ref pr: " + str (len (d_count_pr[lig]["pr ref"])) + "\n")
+        filout_pr_count.write ("nb querie pr: " + str (len (d_count_pr[lig]["pr queries"])) + "\n")
+        filout_pr_count.write ("nb ligand queries: " + str (len (d_count_pr[lig]["lig queries"])) + "\n")
+        filout_pr_count.write ("Ref kinase: " + str (d_count_pr[lig]["kinase"]) + "\n")
+        filout_pr_count.write ("Ref HSP: " + str (d_count_pr[lig]["HSP"]) + "\n")
+        filout_pr_count.write ("Ref other: " + str (d_count_pr[lig]["others"]) + "\n")
+
+
+    filout_pr_count.close ()
+
+
+
 
     runOtherSoft.barplotQuantity(pr_result + "count_ligand")
         

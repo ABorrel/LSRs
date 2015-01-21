@@ -1,4 +1,20 @@
 #! pb export for database for blast and clustal
 
+
+######################
+# creat db for blast #
+######################
+
+# format ncbi format
+seqret pdb.fasta pdb_ncbi.fasta -osf ncbi
+
+# make db
+makeblastdb -in pdb_ncbi.fasta -out pdb -dbtype prot
+
+# test
+blastp -query test.fasta -db pdb -out result.txt
+
+
+
 export BLASTDB=/home/borrel/blast/db/
 export PATH=$PATH:/home/borrel/softwares/clustal
