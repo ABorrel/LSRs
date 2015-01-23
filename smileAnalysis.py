@@ -11,6 +11,27 @@ def searchP (smile):
         return 1
     else : 
         return 0
+
+
+
+def searchB (smile):
+    
+    
+    if not search ("B", smile) : 
+        return 0
+    else : 
+        nb_char = len(smile)
+        i = 0 
+        while (i < nb_char) : 
+            if smile[i] == "B" : 
+                # check if not BE, Br, Bk, Bh
+                if not smile[i + 1] in ["e", "r", "k", "h"] : 
+                    print smile
+                    return 1
+            i = i + 1
+    return 0
+
+
     
 def searchMetal (smile):
     l_metal = ["B", "F", "I", "K", "V", "W", "Y","AG", "AL", "AR" ,"AU", "BA", "BE", "BR", "CA","CD","CE","CF","CL","CO","CR","CS","CU","EU","FE","GA","GD","HE","HF","HG","IN","IR","KR","LA","LI","LU" ,"MG","MN" ,"MO" ,"NA","ND","NE","NI","OS","PB","PD","PR","PT","RB","RE","RU","SB","SE","SI","SM","SR","TA","TB","TE","TL","XE","YB","ZN","ZR"]
@@ -153,23 +174,23 @@ def searchReplacement (smile, PDB_query, PDB_ref, name_ligand) :
             
     if searchP(smile) == 1 : 
         return "P", ""
-    elif searchRing(smile) == 99 : 
-        return "cycle",""
+    elif searchB(smile) == 1 : 
+        return "B",""
     elif searchRing(smile) > 0 : 
         return "cycle",""
-    elif searchSulfonyl(smile) : 
+    elif searchSulfonyl(smile) == 1: 
         return "SO2",""
-    elif searchCON (smile) : 
+    elif searchCON (smile) == 1 : 
         return "CON",""
-    elif searchCarboxy (smile) : 
+    elif searchCarboxy (smile) == 1 : 
         return "COO",""
-    elif searchConly(smile) :
+    elif searchConly(smile) == 1 :
         return "onlyC", ""
-    elif searchCandO (smile) : 
+    elif searchCandO (smile) == 1 : 
         return "C+O", ""
-    elif searchCandN (smile) : 
+    elif searchCandN (smile) == 1 : 
         return "C+N", "" 
-    elif searchCandOandN (smile) :
+    elif searchCandOandN (smile) == 1 :
         return "C+O+N", ""
 
     return "other"  ,""

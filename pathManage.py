@@ -132,6 +132,31 @@ def findligandRef(p_dataset_folder, name_lig) :
         if search( name_ref, filein) and  search( name_lig, filein) and not search("subref", filein): 
             return p_dataset_folder + filein
     return 0
+
+
+
+def findRef(prot_querie, lig_query) :     
+    
+    print prot_querie, lig_query
+    
+    l_out = []
+    pr_dataset = dataset()
+    
+    l_lig = listdir(pr_dataset)
+    for lig in l_lig : 
+        l_folder_ref = listdir(pr_dataset + lig)
+        
+        for folder_ref in l_folder_ref : 
+            if len (folder_ref) == 4 : 
+                l_file_dataset = listdir(pr_dataset + lig + "/" + folder_ref)
+                
+                for file_dataset in l_file_dataset : 
+                    if search (prot_querie, file_dataset) and search(lig_query, file_dataset) : 
+                        l_out.append (lig)
+
+    print l_out    
+    return l_out
+                
     
  
 def findSubstructRef (p_dataset_folder, substruct): 

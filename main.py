@@ -29,7 +29,7 @@ from copy import deepcopy, copy
 def downloadPDB (pr_in):
     
     pathManage.generatePath(pr_in)
-    managePDB.formatFilePDB(pr_in)
+    managePDB.formatPDBDatabase(pr_in)
 
 
 
@@ -528,9 +528,9 @@ def analysisBS (name_lig, ID_seq = '0.0', debug = 1):
 # - table result
 # - folder tree
 
-def manageResult (l_ligand):
+def manageResult (l_ligand, name_final, l_out = []):
     
-    pr_result = pathManage.result("final")
+    pr_result = pathManage.result("final_" + name_final)
     # remove the folder 
 #     pr_pi = pathManage.result("final/phosphates")
 #     pr_ribose = pathManage.result("final/ribose")
@@ -540,10 +540,10 @@ def manageResult (l_ligand):
         l_p_smile = pathManage.findListSmileFile(name_lig)
         p_file_famile = pathManage.findFamilyFile (name_lig)
         for p_smile in l_p_smile : 
-            if search("ribose", p_smile) and  search("txt", p_smile) and search("smile", p_smile): 
-                arrangeResult.globalArrangement(pr_result, p_smile, p_file_famile, name_lig) 
+            if search("ribose", p_smile) and  search(".txt", p_smile) and search("smile", p_smile): 
+                arrangeResult.globalArrangement(pr_result, p_smile, p_file_famile, name_lig, l_out) 
             elif search("smile", p_smile) and search(".txt", p_smile) : 
-                arrangeResult.globalArrangement(pr_result, p_smile, p_file_famile, name_lig) 
+                arrangeResult.globalArrangement(pr_result, p_smile, p_file_famile, name_lig, l_out) 
         
     return 1
 
@@ -577,12 +577,12 @@ l_ligand_out = ["AMP", "ADP", "ATP", "TTP", "DCP", "DGT", "DTP", "DUP", "ACP", "
 ###########
 
   
-# buildData.builtDatasetGlobal(p_list_ligand = "/home/borrel/Yue_project/resultLigandInPDB" , ligand_ID = "AMP", thresold_RX = thresold_RX, thresold_blast = thresold_blast, l_ligand_out= l_ligand_out, verbose = 1)
+# buildData.builtDatasetGlobal(p_list_ligand = "/home/borrel/Yue_project/resultLigandInPDB" , ligand_ID = "AMP", thresold_RX = thresold_RX, thresold_blast = thresold_blast, verbose = 1)
 # datasetPreparation ("AMP")
 # applyTMAlign ("AMP")
 # ionIdentification ("AMP")
 # retrieveSubstructSuperimposed ("AMP", thresold_BS = thresold_BS, thresold_superimposed_ribose = thresold_superimposed_ribose, thresold_superimposed_pi = thresold_superimposed_pi, thresold_shaep = thresold_shaep)
-analysisSmile ("AMP")
+# analysisSmile ("AMP")
 # analysisBS ("AMP")
 
 
@@ -595,7 +595,7 @@ analysisSmile ("AMP")
 # ionIdentification ("ADP")
 # retrieveSubstructSuperimposed ("ADP", thresold_BS = thresold_BS, thresold_superimposed_ribose = thresold_superimposed_ribose, thresold_superimposed_pi = thresold_superimposed_pi, thresold_shaep = thresold_shaep)
 # analysisBS ("ADP")
-analysisSmile ("ADP")
+# analysisSmile ("ADP")
 # 
 # 
 # ### POP ###
@@ -607,7 +607,7 @@ analysisSmile ("ADP")
 # ionIdentification ("POP")
 # retrieveSubstructSuperimposed ("POP", thresold_BS = thresold_BS, thresold_superimposed_ribose = thresold_superimposed_ribose, thresold_superimposed_pi = thresold_superimposed_pi, thresold_shaep = thresold_shaep)
 # analysisBS ("POP")
-analysisSmile ("POP")
+# analysisSmile ("POP")
 # 
 # 
 # ### ATP ###
@@ -619,21 +619,22 @@ analysisSmile ("POP")
 # ionIdentification ("ATP")
 # retrieveSubstructSuperimposed ("ATP", thresold_BS = thresold_BS, thresold_superimposed_ribose = thresold_superimposed_ribose, thresold_superimposed_pi = thresold_superimposed_pi, thresold_shaep = thresold_shaep)
 # analysisBS ("ATP")
-analysisSmile ("ATP")
+# analysisSmile ("ATP")
 # 
+#######################
+# arrangeResult.controlResult (["AMP", "ADP", "POP"])
+# refClassification.classifRefProtein ("/home/borrel/Yue_project/dataset/", ["AMP", "ADP", "ATP", "POP"])
+#
 #
 ################# 
 # RESULT MANAGE #
 #################
-#
-#
-# refClassification.classifRefProtein ("/home/borrel/Yue_project/dataset/", ["AMP", "ADP", "ATP", "POP"])
-#
-# manageResult (["AMP", "ADP", "ATP", "POP"])
-# arrangeResult.controlResult (["AMP"])#, "ADP", "ATP", "POP"])
-# arrangeResult.qualityExtraction (["AMP"], p_list_ligand = "/home/borrel/Yue_project/resultLigandInPDB", thresold_sheap = thresold_shaep)
-arrangeResult.countingSubstituent(pathManage.result("final"))
-# arrangeResult.enantiomer(["AMP", "ADP", "ATP"], pathManage.result("final"))
-# arrangeResult.superpositionAllRef(["AMP", "ADP", "ATP"], pathManage.result("final"))
+
+# name_folder_final = "withoutLigOut"
+# manageResult (["AMP", "ADP", "POP"], name_folder_final, l_ligand_out)
+# arrangeResult.qualityExtraction (["AMP", "ADP", "POP"], name_folder_final, p_list_ligand = "/home/borrel/Yue_project/resultLigandInPDB", thresold_sheap = thresold_shaep)
+# arrangeResult.countingSubstituent(name_folder_final)
+# arrangeResult.enantiomer(["AMP", "ADP"], name_folder_final)
+# arrangeResult.superpositionAllRef(["AMP", "ADP", "POP"], name_folder_final)
 
 

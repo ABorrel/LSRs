@@ -15,7 +15,7 @@ from re import search
 import numpy as np
 from copy import deepcopy
 
-def globalArrangement (pr_orgin, p_smile, p_family, name_ligand):
+def globalArrangement (pr_orgin, p_smile, p_family, name_ligand, l_ligand_out):
     
 #     print "--------"
 #     print pr_orgin
@@ -51,6 +51,13 @@ def globalArrangement (pr_orgin, p_smile, p_family, name_ligand):
         len_find = len (l_PDB_ref)
         i = 0
         while i < len_find : 
+            
+            # exclusion of ligand out
+            if l_ligand[i] in l_ligand_out : 
+                i = i + 1
+                continue
+            
+            
             family = analysis.findFamily(l_PDB_ref[i], p_family)
             
             # folder reference
@@ -189,9 +196,11 @@ def controlResult (l_name_ligand):
         
 
     
-def qualityExtraction (l_ligand, p_list_ligand, thresold_sheap) : 
+def qualityExtraction (l_ligand, name_folder, p_list_ligand, thresold_sheap) : 
     
-    filout = open(pathManage.result() + "quality_extraction.txt", "w")
+    pr_result = pathManage.result("final_" + name_folder)
+    
+    filout = open(pr_result + "quality_extraction.txt", "w")
     
     # number PDB by ligand, without filter
     filout.write ("Number PDB by ligand:\n")
@@ -282,8 +291,9 @@ def qualityExtraction (l_ligand, p_list_ligand, thresold_sheap) :
     
     
     
-def countingSubstituent (pr_final_folder, debug = 1):
+def countingSubstituent (name_final, debug = 1):
     
+    pr_final_folder = pathManage.result("final_" + name_final)
     
     d_count = {}
     d_lig = {}
@@ -293,86 +303,113 @@ def countingSubstituent (pr_final_folder, debug = 1):
     if debug : print "1", pr_final_folder
     for pr_type_substituent in l_file_final :
         sub_query = pr_type_substituent
-        l_file_sub = listdir(pr_final_folder + pr_type_substituent + "/")
+        # case where pr type is a file not a folder
+        try : l_ref_ID = listdir(pr_final_folder + pr_type_substituent + "/")
+        except : continue
         if debug: print "2",pr_final_folder +  pr_type_substituent + "/"
-        for ref_ID in l_file_sub : 
-            l_ligand_sub = listdir(pr_final_folder + pr_type_substituent + "/" + ref_ID + "/")
+        
+        for ref_ID in l_ref_ID : 
+            # case where pr_type_substituent is a folder
+            try : l_ligand_sub = listdir(pr_final_folder + pr_type_substituent + "/" + ref_ID + "/")
+            except : continue
+            
+            ################
+            #  folder LSR  #
+            ################
             for ligand_sub in l_ligand_sub :
-                l_file_ref  = listdir(pr_final_folder + pr_type_substituent + "/" + ref_ID + "/" + ligand_sub + "/")
-                #print l_file_ref
-                if not ligand_sub in d_count.keys () : 
-                    d_count[ligand_sub] = {}
-                if not sub_query in d_count[ligand_sub].keys () : 
-                    d_count[ligand_sub] [sub_query] = 0
-		d_count[ligand_sub][sub_query] = d_count[ligand_sub][sub_query] + 1
-                
-                # count ligand
-                for file_ref in l_file_ref : 
-                    # print file_ref
-                    if search ("LGD", file_ref):
-                        ligand = file_ref.split ("_")[1]
-                        if not ligand in d_lig.keys () : 
-                            d_lig[ligand] = 0
-                        else : 
-                            d_lig[ligand] = d_lig[ligand] + 1
-
-                # count proteins
-                if ligand_sub == "BS" : 
-                    for file_BS in l_file_ref : 
-                        if search ("BS_REF", file_BS):
-                            lig_ref = file_BS.split ("_")[2]
-                            pr_ref = file_BS.split ("_")[3].split (".")[0]
-                            print lig_ref, pr_ref, "*****"
-                            if not lig_ref in d_count_pr.keys () : 
-                                d_count_pr[lig_ref] = {}
-                                d_count_pr[lig_ref]["pr ref"] = []
-                                d_count_pr[lig_ref]["pr queries"] = []
-                                d_count_pr[lig_ref]["lig queries"] = []
-                                d_count_pr[lig_ref]["HSP"] = 0
-                                d_count_pr[lig_ref]["kinase"] = 0
-                                d_count_pr[lig_ref]["others"] = 0
-                                   
-                            if not pr_ref in d_count_pr[lig_ref]["pr ref"] : 
-                                d_count_pr[lig_ref]["pr ref"].append (pr_ref)
-                                try:
-                                    family = analysis.findFamily (pr_ref, pathManage.dataset (lig_ref) + "family_PDB.txt")
-                                    d_count_pr[lig_ref][family] = d_count_pr[lig_ref][family] + 1
-                                except: pass
-
-                    for file_BS in l_file_ref : 
-                        if not search ("BS_REF", file_BS) : 
-                            lig_querie = file_BS.split ("_")[1]
-                            pr_querie = file_BS.split ("_")[2][0:4]
-                            # find ligand reference
-                            l_lig_in = pathManage.findligandRef (pr_querie, lig_ref)
-                            #print lig_in, "*************===="
-                            for lig_in in l_lig_in :  
-                                try : 
-                                    if not pr_querie in d_count_pr[lig_in]["pr queries"] : d_count_pr[lig_in]["pr queries"].append (pr_querie)
-                                    if not lig_querie in d_count_pr[lig_in]["lig queries"] : d_count_pr[lig_in]["lig queries"].append (lig_querie)
-                                except :
-                                    pass
-
-
-                for file_ref in l_file_ref :
-                    if search ("LSR", file_ref):
-                        if file_ref.split ("_")[1] == "REF" :
-                            lig_ref = file_ref.split ("_")[2]
-                            if not lig_ref in d_by_ref.keys () : 
-                                d_by_ref[lig_ref] = {}
+                if ligand_sub == "BS" or ligand_sub == "LGD" : 
+                    continue
+                else : 
+                    #print l_file_ref
+                    if not ligand_sub in d_count.keys () : 
+                        d_count[ligand_sub] = {}
+                    
+                    if not sub_query in d_count[ligand_sub].keys () : 
+                        d_count[ligand_sub] [sub_query] = 0
+                    
+                    d_count[ligand_sub][sub_query] = d_count[ligand_sub][sub_query] + 1
+                    
+                    ################
+                    # complet LSR  #
+                    ################
+                    l_file_LSR = listdir(pr_final_folder + pr_type_substituent + "/" + ref_ID + "/" + ligand_sub + "/")
+                    for file_LSR in l_file_LSR :
+                        if search ("LSR", file_LSR):
+                            # case LSR reference #
+                            ######################
+                            if search ("REF_", file_LSR) :
+                                lig_ref = file_LSR.split ("_")[2]
+                                if not lig_ref in d_by_ref.keys () : 
+                                    d_by_ref[lig_ref] = {}
+                                break
+                            
+                    for file_LSR in l_file_LSR : 
+                        if not search ("REF_", file_LSR) and search ("LSR", file_LSR) :
+                            # count case other LSR that ligand #
+                            ####################################      
                             if not ligand_sub in d_by_ref[lig_ref].keys () : 
                                 d_by_ref[lig_ref][ligand_sub] = 0
                             d_by_ref[lig_ref][ligand_sub] = d_by_ref[lig_ref][ligand_sub] + 1
-                            break
-
+            
+            
+            #################    
+            #  folder LGD   #
+            #################
+            l_file_LGD = listdir(pr_final_folder + pr_type_substituent + "/" + ref_ID + "/LGD/")
+            for file_LGD in l_file_LGD : 
+                # print file_ref
+                if search ("LGD", file_LGD):
+                    ligand = file_LGD.split ("_")[1]
+                    if ligand == "REF" : 
+                        continue
+                    if not ligand in d_lig.keys () : 
+                        d_lig[ligand] = 1
+                    else : 
+                        d_lig[ligand] = d_lig[ligand] + 1
 
             
-    # print d_count
-    # print d_by_ref
-    # print d_count_pr
-  
-    # write and plot
-    pr_result = pathManage.result("counting")
+            ###############
+            #  folder BS  #
+            ###############
+            l_file_BS = listdir(pr_final_folder + pr_type_substituent + "/" + ref_ID + "/BS/")
+            for file_BS in l_file_BS : 
+                if search ("BS_REF", file_BS):
+                    lig_ref = file_BS.split ("_")[2]
+                    pr_ref = file_BS.split ("_")[3].split (".")[0]
+                    print lig_ref, pr_ref, "*****"
+                    if not lig_ref in d_count_pr.keys () : 
+                        d_count_pr[lig_ref] = {}
+                        d_count_pr[lig_ref]["pr ref"] = []
+                        d_count_pr[lig_ref]["pr queries"] = []
+                        d_count_pr[lig_ref]["lig queries"] = []
+                        d_count_pr[lig_ref]["HSP"] = 0
+                        d_count_pr[lig_ref]["kinase"] = 0
+                        d_count_pr[lig_ref]["others"] = 0
+                                   
+                    if not pr_ref in d_count_pr[lig_ref]["pr ref"] : 
+                        d_count_pr[lig_ref]["pr ref"].append (pr_ref)
+                                
+                                
+                    try:
+                        family = analysis.findFamily (pr_ref, pathManage.dataset (lig_ref) + "family_PDB.txt")
+                        d_count_pr[lig_ref][family] = d_count_pr[lig_ref][family] + 1
+                    except: pass
+                
+            for file_BS in l_file_BS : 
+                # for not reference BS
+                if not search ("BS_REF", file_BS) : 
+                    lig_querie = file_BS.split ("_")[1]
+                    prot_querie = file_BS.split ("_")[2][0:4]
+                    print prot_querie, lig_querie, "*******"
+                    # find ligand reference
+                    # lig ref define in previous step
+                    d_count_pr[lig_ref]["pr queries"].append (prot_querie)
+                    d_count_pr[lig_ref]["lig queries"].append (lig_querie)
+
+
+    # write and plot #
+    ##################
+    pr_result = pathManage.generatePath(pr_final_folder + "counting/")
     for ligand_sub in d_count.keys () : 
         p_filout = pr_result + ligand_sub
         filout = open (p_filout, "w")
@@ -408,17 +445,16 @@ def countingSubstituent (pr_final_folder, debug = 1):
 
     filout_pr_count.close ()
 
-
-
-
-    runOtherSoft.barplotQuantity(pr_result + "count_ligand")
+    runOtherSoft.barplot(pr_result + "count_ligand")
         
         
         
-def enantiomer(l_ligand, pr_final) : 
+def enantiomer(l_ligand, name_folder_final) : 
     "to do file output"
     
-    pr_enantiomer = pathManage.result("enantiomer")
+    pr_final = pathManage.result("final_" + name_folder_final)
+    
+    pr_enantiomer = pathManage.generatePath(pr_final + "enantiomer/")
     
     d_filout = {}
     for ligand in l_ligand : 
@@ -430,10 +466,14 @@ def enantiomer(l_ligand, pr_final) :
     l_p_substruct = listdir(pr_final) 
     for pr_substruct in l_p_substruct : 
         print pr_substruct
-        l_pr_ref = listdir(pr_final + pr_substruct + "/")
+        # case where pr_substruct is a file not a folder
+        try : l_pr_ref = listdir(pr_final + pr_substruct + "/")
+        except : continue
         for pr_ref in l_pr_ref : 
             print pr_ref
-            l_file = listdir(pr_final + pr_substruct + "/" + pr_ref + "/LGD/")
+            # case no folder
+            try : l_file = listdir(pr_final + pr_substruct + "/" + pr_ref + "/LGD/")
+            except : continue
             for name_file in l_file : 
                 if search("REF_A",name_file) and   search(".pdb",name_file): 
                     ligand = name_file.split ("_")[2]
@@ -458,7 +498,8 @@ def enantiomer(l_ligand, pr_final) :
                         #    atom_O3B = atom_ligand
                     
                     # d O4 - O5        
-                    d_O4O5 = parsePDB.distanceTwoatoms(atom_O4, atom_O5)
+                    try : d_O4O5 = parsePDB.distanceTwoatoms(atom_O4, atom_O5)
+                    except : continue
                     d_filout[ligand]["O4O5"].write (pr_ref + "_" + pr_substruct  + "\t" + str (d_O4O5) + "\n")
 
                     # d O3 - OP
@@ -517,9 +558,11 @@ def enantiomer(l_ligand, pr_final) :
     
                                 
                                 
-def superpositionAllRef (l_ligand, pr_final):   
+def superpositionAllRef (l_ligand, name_folder_final):   
     
-    pr_align = pathManage.result("refAlignement")
+    pr_final = pathManage.result("final_" + name_folder_final)
+    
+    pr_align = pathManage.generatePath(pr_final + "refAlignement/")
     
     d_filout_pdb = {}
     d_filout_RMSE = {}
@@ -532,9 +575,12 @@ def superpositionAllRef (l_ligand, pr_final):
     
     l_p_substruct = listdir(pr_final) 
     for pr_substruct in l_p_substruct : 
-        l_pr_ref = listdir(pr_final + pr_substruct + "/")
+        try : l_pr_ref = listdir(pr_final + pr_substruct + "/")
+        except : continue
         for pr_ref in l_pr_ref : 
-            l_file = listdir(pr_final + pr_substruct + "/" + pr_ref + "/LGD/")
+            # case where pr_ref is not a folder
+            try : l_file = listdir(pr_final + pr_substruct + "/" + pr_ref + "/LGD/")
+            except : continue
             for name_file in l_file : 
                 if search("REF_A",name_file) and   search(".pdb",name_file): 
                     ligand = name_file.split ("_")[2]
