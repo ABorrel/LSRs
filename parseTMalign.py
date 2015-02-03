@@ -1,21 +1,26 @@
-
+from os import path
 
 def parseOutputTMalign (p_filin):
     
-    print p_filin
+    #print p_filin
+    if not path.exists (p_filin) : 
+        return {}
     d_out = {}
     
-    filin = open (p_filin, "r")
-    f_read = filin.read()
-    filin.close ()
+    try :
+        filin = open (p_filin, "r")
+        f_read = filin.read()
+        filin.close ()
     
-    d_out["RMSD"] = retrieveRMSD (f_read)
-    d_out["IDseq"] = retrieveIDseq (f_read)
-    l_score = retrieveTMScore (f_read)
-    d_out["TMscore1"] = l_score[0]
-    d_out["TMscore2"] = l_score[1]
+        d_out["RMSD"] = retrieveRMSD (f_read)
+        d_out["IDseq"] = retrieveIDseq (f_read)
+        l_score = retrieveTMScore (f_read)
+        d_out["TMscore1"] = l_score[0]
+        d_out["TMscore2"] = l_score[1]
     
-    return d_out
+        return d_out
+    except : 
+        return d_out
 
 
 

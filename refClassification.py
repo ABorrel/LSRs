@@ -1,4 +1,4 @@
-from os import listdir
+from os import listdir, remove
 from re import search
 
 import pathManage
@@ -72,14 +72,19 @@ def applyTMAlignList (l_pr_ref, pr_out):
     while i < nb_pr_ref : 
         j = i + 1
         PDB1 = l_pr_ref[i].split ("/")[-1][0:4]
-        print PDB1
+        # print PDB1
     
         while j < nb_pr_ref :
             PDB2 =  l_pr_ref[j].split ("/")[-1][0:4]
             # folder TM align
-            pr_alignement = pathManage.generatePath(pr_out + PDB1 + "__" + PDB2 + "/")
+            pr_alignement = pr_out + PDB1 + "__" + PDB2 + "/"
+            #print pr_alignement
+            print PDB1,i, PDB2,j
+            #print l_pr_ref[i]
             # RUN
             out_file = runOtherSoft.runTMalign(l_pr_ref[i], l_pr_ref[j], pr_alignement)
+            # clean folders
+            CleanResultTMalign (pr_alignement)
             # parse result
             if not PDB1 in d_out.keys () : 
                 if not PDB2 in d_out.keys () : 
@@ -95,12 +100,17 @@ def applyTMAlignList (l_pr_ref, pr_out):
         i = i + 1
     
     return d_out
-                
-            
-            
-    
 
-# classifRefProtein ("/home/borrel/Yue_project/dataset/", ["AMP"])
+
+
+
+def CleanResultTMalign (pr_TM_out):
+
+    l_p_filout = listdir (pr_TM_out)
+    for p_filout in l_p_filout : 
+        if p_filout != "RMSD" and p_filout != "matrix.out" :
+            remove (pr_TM_out + p_filout)
+
 
 
 

@@ -23,13 +23,22 @@ def searchB (smile):
         nb_char = len(smile)
         i = 0 
         while (i < nb_char) : 
-            if smile[i] == "B" : 
+            if smile[i] == "B" and (i + 1) != nb_char: 
                 # check if not BE, Br, Bk, Bh
                 if not smile[i + 1] in ["e", "r", "k", "h"] : 
                     print smile
                     return 1
             i = i + 1
     return 0
+
+
+def searchBe (smile) : 
+
+    if search ("Be", smile) : 
+        return 1
+    else : 
+        return 0
+
 
 
     
@@ -99,7 +108,21 @@ def searchSulfonyl (smile):
     if search("O=S\(=O\)", smile) or search ("S\(=O\)\(=O\)", smile) or  search("S\(=O\)O", smile ) or search("O=S=O", smile) or search ("\(=O\)S\(=O\)", smile) or search ("S\(O\)O", smile): 
         return 1
     else : 
-        return 0    
+        return 0
+
+
+def searchNO2 (smile): 
+    
+    smile = smile.replace ("[", "")
+    smile = smile.replace ("]", "")
+
+    if search("O=N\(=O\)", smile) or search ("N\(=O\)\(=O\)", smile) or  search("N\(=O\)O", smile ) or search("O=N=O", smile) or search ("\(=O\)N\(=O\)", smile) or search ("N\(O\)O", smile): 
+        print smile
+        return 1
+    else : 
+        return 0
+
+    
              
 def searchCON (smile):
     
@@ -176,6 +199,10 @@ def searchReplacement (smile, PDB_query, PDB_ref, name_ligand) :
         return "P", ""
     elif searchB(smile) == 1 : 
         return "B",""
+    elif searchBe (smile) == 1 : 
+        return "Be", ""
+    elif searchNO2 (smile) == 1 : 
+        return "NO2", ""
     elif searchRing(smile) > 0 : 
         return "cycle",""
     elif searchSulfonyl(smile) == 1: 

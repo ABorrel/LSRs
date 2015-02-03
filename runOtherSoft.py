@@ -6,7 +6,7 @@ import superposeStructure
 import os
 import subprocess
 import time
-
+import pathManage
 
 
 
@@ -44,7 +44,9 @@ def runTMalign(path_pr1, path_pr2, path_dir_out, debug = 1) :
     
     # if exist doesnt run again
     
-    if not os.path.exists(path_dir_out + "align.out") and not  os.path.exists( path_dir_out + "matrix.out")  : 
+    #if not os.path.exists(path_dir_out + "align.out") and not  os.path.exists( path_dir_out + "matrix.out")  : 
+    if not os.path.exists (path_dir_out) : 
+        pathManage.generatePath (path_dir_out)
         p_pr1 = tool.removeChain (path_pr1, path_dir_out)
         p_pr2 = tool.removeChain (path_pr2, path_dir_out)
         cmd_run = TMalign + " " + str (p_pr1) + " " + str (p_pr2) + " -o " + path_dir_out + "align.out -m " + path_dir_out + "matrix.out" +" > " + path_dir_out + "RMSD"
@@ -60,9 +62,9 @@ def babelConvertPDBtoSMILE (p_file_pdb) :
     path_filout = p_file_pdb[0:-4] + ".smi"
     
     if not os.path.exists(path_filout) : 
-        cmd_convert = "babel " + p_file_pdb + " " + path_filout
+        cmd_convert = "babel " + p_file_pdb + " " + path_filout + " 2>/dev/null"
         os.system(cmd_convert)
-        print cmd_convert
+        #print cmd_convert
 #         subprocessTimeControl(cmd_convert, time_out=10)
     
     try : filin = open (path_filout, "r")
