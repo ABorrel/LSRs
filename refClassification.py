@@ -83,8 +83,9 @@ def applyTMAlignList (l_pr_ref, pr_out):
             #print l_pr_ref[i]
             # RUN
             out_file = runOtherSoft.runTMalign(l_pr_ref[i], l_pr_ref[j], pr_alignement)
-            # clean folders
-            CleanResultTMalign (pr_alignement)
+            # clean folders -> pb with several run -> clean too fast -> try / except
+            try : CleanResultTMalign (pr_alignement)
+            except : pass
             # parse result
             if not PDB1 in d_out.keys () : 
                 if not PDB2 in d_out.keys () : 
@@ -106,7 +107,8 @@ def applyTMAlignList (l_pr_ref, pr_out):
 
 def CleanResultTMalign (pr_TM_out):
 
-    l_p_filout = listdir (pr_TM_out)
+    try : l_p_filout = listdir (pr_TM_out)
+    except : return
     for p_filout in l_p_filout : 
         if p_filout != "RMSD" and p_filout != "matrix.out" :
             remove (pr_TM_out + p_filout)
