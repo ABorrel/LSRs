@@ -50,8 +50,11 @@ def writeMatrixTMalign (d_in, p_filout, k):
             if PDB1 == PDB2 : 
                 filout.write ("\t1")
             else : 
+                #print PDB1, PDB2
                 try : filout.write ("\t" + d_in[PDB1][PDB2][k])
-                except : filout.write ("\t" + d_in[PDB2][PDB1][k])
+                except : 
+                    try : filout.write ("\t" + d_in[PDB2][PDB1][k])
+                    except : filout.write ("\tNA")
         filout.write ("\n")
     filout.close ()
                 
@@ -79,7 +82,7 @@ def applyTMAlignList (l_pr_ref, pr_out):
             # folder TM align
             pr_alignement = pr_out + PDB1 + "__" + PDB2 + "/"
             #print pr_alignement
-            print PDB1,i, PDB2,j
+            #print PDB1,i, PDB2,j
             #print l_pr_ref[i]
             # RUN
             out_file = runOtherSoft.runTMalign(l_pr_ref[i], l_pr_ref[j], pr_alignement)

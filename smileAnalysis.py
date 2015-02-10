@@ -4,6 +4,26 @@ import parsePDB
 import writePDBfile
 
 
+def smallLSR (smile, thresold_small = 3) : 
+
+    smile = smile.upper ()
+    smile = smile.replace ("+", "")
+    smile = smile.replace ("-", "")
+    smile = smile.replace ("[", "")
+    smile = smile.replace ("]", "")
+    smile = smile.replace ("(", "")
+    smile = smile.replace (")", "")
+    smile = smile.replace ("=", "")
+
+    l_part = smile.split (".")
+
+    for part in l_part : 
+        if len (part) > thresold_small : 
+            return 0
+
+    return 1
+
+
 
 def searchP (smile):
     
@@ -39,10 +59,9 @@ def searchBe (smile) :
     else : 
         return 0
 
-
-
     
 def searchMetal (smile):
+    """Pb, MAJ on metals and the ionic form is sometimes associated with other groups"""
     l_metal = ["B", "F", "I", "K", "V", "W", "Y","AG", "AL", "AR" ,"AU", "BA", "BE", "BR", "CA","CD","CE","CF","CL","CO","CR","CS","CU","EU","FE","GA","GD","HE","HF","HG","IN","IR","KR","LA","LI","LU" ,"MG","MN" ,"MO" ,"NA","ND","NE","NI","OS","PB","PD","PR","PT","RB","RE","RU","SB","SE","SI","SM","SR","TA","TB","TE","TL","XE","YB","ZN","ZR"]
     
     smile = smile.upper ()
@@ -56,49 +75,48 @@ def searchMetal (smile):
             return metal
         elif search ("\." + metal + "$", smile) : 
             return metal
-        elif search ("^" + metal , smile) : 
+        elif search ("^" + metal + "\." , smile) : 
             return metal
     return 0
 
 def searchRing (smile):
+    """Search only number now"""
     
-    smile = smile.replace ("[", "")
-    smile = smile.replace ("]", "")
-    if search ("c1", smile) or search ("C1", smile) : 
-        return countlenRing (smile)
+    if search ("1", smile) : 
+        return 1 
     else : 
         return 0
     
     
 
-def countlenRing (smile):
-    
-    c = 0
-    size = len (smile)
-    i = 0
-    ring_open = 0
-    
-    while i < size : 
-        if ring_open == 0 : 
-            if smile[i] == "1" and smile[i-1].upper () == "C":
-                c = c + 1
-                ring_open = 1
-        elif ring_open == 1 : 
-            if smile[i] == "(" : 
-                ring_open = 2
-            elif smile[i].upper () == "C" : 
-                c = c + 1
-            elif smile[i] == "1": 
-                return c
-            elif smile[i] != "=" and smile[i] != "[" and smile[i] != "]" and smile[i] != "#" and smile[i] != "@" and smile[i] != "H": 
-                return 99
-        elif ring_open == 2 : 
-            if smile[i] == ")" : 
-                ring_open = 1
-        
-        i = i + 1
-    
-    return 1       
+# def countlenRing (smile):
+#    
+#    c = 0
+#    size = len (smile)
+#    i = 0
+#    ring_open = 0
+#    
+#    while i < size : 
+#        if ring_open == 0 : 
+#            if smile[i] == "1" and smile[i-1].upper () == "C":
+#                c = c + 1
+#                ring_open = 1
+#        elif ring_open == 1 : 
+#            if smile[i] == "(" : 
+#                ring_open = 2
+#            elif smile[i].upper () == "C" : 
+#                c = c + 1
+#            elif smile[i] == "1": 
+#                return c
+#            elif smile[i] != "=" and smile[i] != "[" and smile[i] != "]" and smile[i] != "#" and smile[i] != "@" and smile[i] != "H": 
+#                return 99
+#        elif ring_open == 2 : 
+#            if smile[i] == ")" : 
+#                ring_open = 1
+#        
+#        i = i + 1
+#    
+#    return 1       
 
 
 def searchSulfonyl (smile): 
@@ -110,6 +128,42 @@ def searchSulfonyl (smile):
     else : 
         return 0
 
+
+def searchS (smile):
+    if search ("S", smile) : 
+        return 1
+    return 0
+
+
+def searchCl (smile):
+    if search ("Cl", smile) : 
+        return 1
+    return 0
+
+
+
+def searchF (smile):
+    
+    
+    if not search ("F", smile) : 
+        return 0
+    else : 
+        nb_char = len(smile)
+        i = 0 
+        while (i < nb_char) : 
+            if smile[i] == "F" and (i + 1) != nb_char: 
+                # check if not Fe,..
+                if not smile[i + 1] in ["e", "r", "k", "h", "m", "n"] : 
+                    print smile
+                    return 1
+            i = i + 1
+    return 0
+
+
+def searchBr (smile) : 
+    if search ("Br", smile) : 
+        return 1
+    return 0
 
 def searchNO2 (smile): 
     
@@ -173,7 +227,7 @@ def searchConly (smile) :
     return 1
  
 
-def searchReplacement (smile, PDB_query, PDB_ref, name_ligand) : 
+def searchReplacement (smile, PDB_query, PDB_ref, name_ligand, in_cycle = 0) : 
     
     metal_find  = searchMetal (smile)
     if metal_find != 0 : 
@@ -194,19 +248,30 @@ def searchReplacement (smile, PDB_query, PDB_ref, name_ligand) :
                     writePDBfile.coordinateSection(filout, atom_ion, recorder = "HETATM", header = str(metal_find), connect_matrix = 0)
                 filout.close ()
                 return "metal", metal_find
-            
+    
+
+
+    if in_cycle == 0:
+        if searchRing(smile) == 1 : 
+            return "cycle",""      
     if searchP(smile) == 1 : 
         return "P", ""
     elif searchB(smile) == 1 : 
         return "B",""
+    elif searchF (smile) == 1 :
+        return "F", ""
+    elif searchCl (smile) == 1 :
+        return "Cl", ""
+    elif searchBr (smile) == 1 :
+        return "Br", ""
     elif searchBe (smile) == 1 : 
         return "Be", ""
     elif searchNO2 (smile) == 1 : 
         return "NO2", ""
-    elif searchRing(smile) > 0 : 
-        return "cycle",""
     elif searchSulfonyl(smile) == 1: 
         return "SO2",""
+    elif searchS (smile) == 1 :
+        return "S", ""
     elif searchCON (smile) == 1 : 
         return "CON",""
     elif searchCarboxy (smile) == 1 : 

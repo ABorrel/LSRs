@@ -42,9 +42,30 @@ def globalArrangement (pr_orgin, p_smile, p_family, name_ligand, l_ligand_out):
         
         # search replacement
         smile = line_smile.split ("\t")[0]
-#         print smile, l_PDB_query, l_PDB_ref, l_ligand
+        
+        # search if LSR is small -> thresold < 3
+        small_LSR = smileAnalysis.smallLSR (smile) 
+        if subst == "ribose" :  
+            if small_LSR == 1 : 
+                first_folder == "ribose_small"
+            else : 
+                first_folder = "ribose"
+        else : 
+            if small_LSR == 1 : 
+                first_folder = "Pi_small"
+            else : 
+                first_folder = "Pi"
+        
+        
+        print smile, l_PDB_query, l_PDB_ref, l_ligand, subst, small_LSR
         replacement, metal = smileAnalysis.searchReplacement (smile, l_PDB_query[0], l_PDB_ref[0], name_ligand)
         
+        # case with cycle -> search replacement 2
+        if replacement == "cycle" : 
+            replacement2, metal = smileAnalysis.searchReplacement (smile, l_PDB_query[0], l_PDB_ref[0], name_ligand, in_cycle = 1)
+            replacement = replacement + "/" + replacement2 # new folder
+
+        # case metal
         if replacement == "metal" : 
             print metal, l_PDB_query, l_PDB_ref, name_ligand
         
@@ -112,10 +133,10 @@ def globalArrangement (pr_orgin, p_smile, p_family, name_ligand, l_ligand_out):
 #             print p_BS
 #             print "**************"
             
-            pr_final = pr_orgin + replacement + "/" + l_PDB_ref[i] + "/" 
-            pr_ligand = pr_orgin + replacement + "/" + l_PDB_ref[i] + "/LGD/"
-            pr_BS =  pr_orgin + replacement + "/" + l_PDB_ref[i] + "/BS/"
-            pr_sust = pr_orgin + replacement + "/" + l_PDB_ref[i] + "/" + str (subst) + "/"
+            pr_final = pr_orgin + first_folder + "/" + replacement + "/" + l_PDB_ref[i] + "/" 
+            pr_ligand = pr_orgin + first_folder + "/" + replacement + "/" + l_PDB_ref[i] + "/LGD/"
+            pr_BS =  pr_orgin + first_folder + "/" + replacement + "/" + l_PDB_ref[i] + "/BS/"
+            pr_sust = pr_orgin + first_folder + "/" + replacement + "/" + l_PDB_ref[i] + "/" + str (subst) + "/"
             
             if not path.isdir(pr_final):
                 makedirs (pr_final)

@@ -45,7 +45,9 @@ def runTMalign(path_pr1, path_pr2, path_dir_out, debug = 1) :
     # if exist doesnt run again
     
     #if not os.path.exists(path_dir_out + "align.out") and not  os.path.exists( path_dir_out + "matrix.out")  : 
+    # case multi run 
     if not os.path.exists (path_dir_out) : 
+    # if not os.path.exists (path_dir_out + "RMSD") or not os.path.exists (path_dir_out + "matrix.out"): 
         pathManage.generatePath (path_dir_out)
         p_pr1 = tool.removeChain (path_pr1, path_dir_out)
         p_pr2 = tool.removeChain (path_pr2, path_dir_out)
