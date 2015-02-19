@@ -21,18 +21,18 @@ def embossFile (path_file_water):
 
     for line_carac in list_line_carac : 
         # retrieve similarity and identity
-        if search ("^# Identity:", line_carac) : 
+        if search ("^# Identity:", line_carac) and not 'identity' in locals() : 
+            line_carac = line_carac.replace ("(", "")
+            line_carac = line_carac.replace (")", "")
             line_carac = sub("[ ]{2,}", " ", line_carac)
             list_element = line_carac.split(" ")
             identity = list_element[3]
-            identity = identity.replace("(","")
-            identity = identity.replace(")","")
-        elif search ("^# Similarity:", line_carac) :
+        elif search ("^# Similarity:", line_carac) and not 'similarity' in locals():
+            line_carac = line_carac.replace ("(", "")
+            line_carac = line_carac.replace (")", "")
             line_carac = sub("[ ]{2,}", " ", line_carac)
             list_element = line_carac.split(" ")
             similarity = list_element[3]
-            similarity = similarity.replace("(","")
-            similarity = similarity.replace(")","")
     
     # retrieve 2 sequences aligned + initiale position   
     align = list_in_file[2]

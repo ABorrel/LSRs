@@ -4,6 +4,8 @@ from re import search
 import pathManage
 import runOtherSoft
 import parseTMalign
+import downloadFile
+import parseEMBOSS
 
 
 
@@ -11,29 +13,60 @@ def classifRefProtein (pr_dataset, l_lig):
     
     pr_out = pathManage.result("clasifRef")
     
+    # case fasta file
+    pr_align_seq = pathManage.generatePath(pr_out + "alignSeq/")
+    l_p_fasta = []
+    for lig in l_lig : 
+        pr_dataset = pathManage.dataset(lig)
+        l_file_by_lig = listdir(pr_dataset)
+        l_pr_ref_by_lig =[pr_dataset + x for x in l_file_by_lig]
+        for pr_ref_by_lig in l_pr_ref_by_lig[:5] : 
+            PDB_folder = pr_ref_by_lig.split ("/")[-1]
+            
+            try : l_file = listdir(pr_ref_by_lig)
+            except : continue
+            for file_ref in l_file : 
+                if search("^" + PDB_folder, file_ref) :
+                    PDB_ID = file_ref[0:-4]
+                    PDB_ID = PDB_ID[0:4].lower () + PDB_ID[4:]
+                    # PDB ID with chain associated
+                    p_fasta = downloadFile.importFasta(PDB_folder, pr_align_seq, dir_by_PDB = 0, debug = 1, fastaGlobal = "/home/borrel/Yue_project/pdb_seqres.txt")
+                    l_p_fasta.append (p_fasta)
+                    break
+            
+                
+    d_outNeedle = applyNeedleList (l_p_fasta, pr_align_seq)
+    
+    
+    writeMatrixFromDico (d_outNeedle, pr_out + "matrixSimilarSeq","similarity" )
+    writeMatrixFromDico (d_outNeedle, pr_out + "matrixIDSeq","identity" )    
+                
+    
+    # retrieve list of file -> case PDB file
     l_file_ref = []
     for lig in l_lig : 
         pr_dataset = pathManage.dataset(lig)
         l_file_by_lig = listdir(pr_dataset)
         l_pr_ref_by_lig =[pr_dataset + x for x in l_file_by_lig]
-        for pr_ref_by_lig in l_pr_ref_by_lig : 
+        for pr_ref_by_lig in l_pr_ref_by_lig[:5] : 
             PDB_folder = pr_ref_by_lig.split ("/")[-1]
             try : l_file = listdir(pr_ref_by_lig)
             except : continue
             for file_ref in l_file : 
-                if search("^" +PDB_folder, file_ref) :
+                if search("^" + PDB_folder, file_ref) :
                     l_file_ref.append (pr_ref_by_lig + "/" +file_ref)
                     break
-        
-    d_outTMalign = applyTMAlignList(l_file_ref, pr_out + "align/")
     
-    writeMatrixTMalign (d_outTMalign, pr_out + "matrixRMSD", "RMSD")
-    writeMatrixTMalign (d_outTMalign, pr_out + "matrixIDseq", "IDseq")
-    writeMatrixTMalign (d_outTMalign, pr_out + "matrixTMscore1", "TMscore1")
-    writeMatrixTMalign (d_outTMalign, pr_out + "matrixTMscore2", "TMscore2")
+    
+    d_outTMalign = applyTMAlignList(l_file_ref, pr_out + "align/")
+
+    writeMatrixFromDico (d_outTMalign, pr_out + "matrixRMSD", "RMSD")
+    writeMatrixFromDico (d_outTMalign, pr_out + "matrixIDseqTMalign", "IDseq")
+    writeMatrixFromDico (d_outTMalign, pr_out + "matrixTMscore1", "TMscore1")
+    writeMatrixFromDico (d_outTMalign, pr_out + "matrixTMscore2", "TMscore2")
 
 
-def writeMatrixTMalign (d_in, p_filout, k):
+def writeMatrixFromDico (d_in, p_filout, k):
     
     # list PDB
     l_PDB = d_in.keys ()
@@ -60,7 +93,46 @@ def writeMatrixTMalign (d_in, p_filout, k):
                 
                 
                 
-                
+def applyNeedleList (l_file_fasta, pr_out): 
+    
+    
+    nb_pr_ref = len (l_file_fasta)
+    d_out = {}
+    i = 0
+    while i < nb_pr_ref : 
+        j = i + 1
+        PDB1 = l_file_fasta[i].split ("/")[-1][0:4]
+        # print PDB1
+    
+        while j < nb_pr_ref :
+            PDB2 =  l_file_fasta[j].split ("/")[-1][0:4]
+            # folder TM align
+            
+            p_outfile = runOtherSoft.needle (l_file_fasta[i], l_file_fasta[j], pr_out + PDB1 + "__" + PDB2 + ".needle")
+            
+            out = parseEMBOSS.embossFile(p_outfile)
+            # list 0-> seq1, 1-> seq2, 2-> similarity, 3->identity
+
+            # parse result
+            if not PDB1 in d_out.keys () : 
+                if not PDB2 in d_out.keys () : 
+                    d_out[PDB1] = {}
+                    d_out[PDB1][PDB2] = {}
+                    d_out[PDB1][PDB2]["identity"] = out[3].replace ("%", "")
+                    d_out[PDB1][PDB2]["similarity"] = out[2].replace ("%", "")
+                else : 
+                    d_out[PDB2][PDB1] = {}
+                    d_out[PDB1][PDB2]["identity"] = out[3].replace ("%", "")
+                    d_out[PDB1][PDB2]["similarity"] = out[2].replace ("%", "")
+            else : 
+                d_out[PDB1][PDB2] = {}
+                d_out[PDB1][PDB2]["identity"] = out[3].replace ("%", "")
+                d_out[PDB1][PDB2]["similarity"] = out[2].replace ("%", "")
+            j = j + 1
+        i = i + 1
+    
+    return d_out          
+ 
                 
                  
     

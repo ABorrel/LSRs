@@ -93,12 +93,21 @@ def importFasta ( PDB_ID ,directory, dir_by_PDB = 1, debug=0, fastaGlobal = "" )
             nb_lines = len (l_lines_fasta)
             i = 0
             while i < nb_lines : 
-                if search (">" + PDB_ID.lower(), l_lines_fasta[i]) : 
-                    filout.write (l_lines_fasta[i])
-                    filout.write (l_lines_fasta[i + 1])
-                    i = i + 2
+                if len (PDB_ID) == 4 : 
+                    if search (">" + PDB_ID.lower(), l_lines_fasta[i]) : 
+                        filout.write (l_lines_fasta[i])
+                        filout.write (l_lines_fasta[i + 1])
+                        i = i + 2
+                    else : 
+                        i = i + 1
+                        
                 else : 
-                    i = i + 1
+                    if search (">" + PDB_ID, l_lines_fasta[i]) : 
+                        filout.write (l_lines_fasta[i])
+                        filout.write (l_lines_fasta[i + 1])
+                        i = i + 2
+                    else : 
+                        i = i + 1
                     
             filout.close ()
             return pr_out + name_PDB
