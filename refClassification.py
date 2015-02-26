@@ -20,7 +20,7 @@ def classifRefProtein (pr_dataset, l_lig):
         pr_dataset = pathManage.dataset(lig)
         l_file_by_lig = listdir(pr_dataset)
         l_pr_ref_by_lig =[pr_dataset + x for x in l_file_by_lig]
-        for pr_ref_by_lig in l_pr_ref_by_lig[:5] : 
+        for pr_ref_by_lig in l_pr_ref_by_lig : 
             PDB_folder = pr_ref_by_lig.split ("/")[-1]
             
             try : l_file = listdir(pr_ref_by_lig)
@@ -30,7 +30,7 @@ def classifRefProtein (pr_dataset, l_lig):
                     PDB_ID = file_ref[0:-4]
                     PDB_ID = PDB_ID[0:4].lower () + PDB_ID[4:]
                     # PDB ID with chain associated
-                    p_fasta = downloadFile.importFasta(PDB_folder, pr_align_seq, dir_by_PDB = 0, debug = 1, fastaGlobal = "/home/borrel/Yue_project/pdb_seqres.txt")
+                    p_fasta = downloadFile.importFasta(PDB_ID, pr_align_seq, dir_by_PDB = 0, debug = 1, fastaGlobal = "/home/borrel/Yue_project/pdb_seqres.txt")
                     l_p_fasta.append (p_fasta)
                     break
             
@@ -48,7 +48,7 @@ def classifRefProtein (pr_dataset, l_lig):
         pr_dataset = pathManage.dataset(lig)
         l_file_by_lig = listdir(pr_dataset)
         l_pr_ref_by_lig =[pr_dataset + x for x in l_file_by_lig]
-        for pr_ref_by_lig in l_pr_ref_by_lig[:5] : 
+        for pr_ref_by_lig in l_pr_ref_by_lig : 
             PDB_folder = pr_ref_by_lig.split ("/")[-1]
             try : l_file = listdir(pr_ref_by_lig)
             except : continue
@@ -80,8 +80,13 @@ def writeMatrixFromDico (d_in, p_filout, k):
     for PDB1 in l_PDB : 
         filout.write (PDB1)
         for PDB2 in l_PDB : 
-            if PDB1 == PDB2 : 
-                filout.write ("\t1")
+            if PDB1 == PDB2 :
+                if k == "similarity" or k == "identity" : 
+                    filout.write ("\t100")
+                elif k == "RMSD" : 
+                    filout.write ("\t0")
+                else : 
+                    filout.write ("\t1")
             else : 
                 #print PDB1, PDB2
                 try : filout.write ("\t" + d_in[PDB1][PDB2][k])
@@ -112,7 +117,7 @@ def applyNeedleList (l_file_fasta, pr_out):
             
             out = parseEMBOSS.embossFile(p_outfile)
             # list 0-> seq1, 1-> seq2, 2-> similarity, 3->identity
-
+            # print out[2:]
             # parse result
             if not PDB1 in d_out.keys () : 
                 if not PDB2 in d_out.keys () : 
@@ -122,8 +127,8 @@ def applyNeedleList (l_file_fasta, pr_out):
                     d_out[PDB1][PDB2]["similarity"] = out[2].replace ("%", "")
                 else : 
                     d_out[PDB2][PDB1] = {}
-                    d_out[PDB1][PDB2]["identity"] = out[3].replace ("%", "")
-                    d_out[PDB1][PDB2]["similarity"] = out[2].replace ("%", "")
+                    d_out[PDB2][PDB1]["identity"] = out[3].replace ("%", "")
+                    d_out[PDB2][PDB1]["similarity"] = out[2].replace ("%", "")
             else : 
                 d_out[PDB1][PDB2] = {}
                 d_out[PDB1][PDB2]["identity"] = out[3].replace ("%", "")

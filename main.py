@@ -623,7 +623,7 @@ l_ligand_out = ["AMP", "ADP", "ATP", "TTP", "DCP", "DGT", "DTP", "DUP", "ACP", "
 # 
 #######################
 # arrangeResult.controlResult (["AMP", "ADP", "POP"])
-refClassification.classifRefProtein ("/home/borrel/Yue_project/dataset/", ["AMP"])
+refClassification.classifRefProtein ("/home/borrel/Yue_project/dataset/", ["AMP", "ADP", "ATP", "POP"])
 #
 #
 ################# 
