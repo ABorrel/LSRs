@@ -6,10 +6,11 @@ import runOtherSoft
 import parseTMalign
 import downloadFile
 import parseEMBOSS
+import analysis
 
 
 
-def classifRefProtein (pr_dataset, l_lig):
+def classifRefProtein (pr_dataset, l_lig, thresold_identity = 30.0, thresold_similarity = 30.0):
     
     pr_out = pathManage.result("clasifRef")
     
@@ -37,12 +38,15 @@ def classifRefProtein (pr_dataset, l_lig):
                 
     d_outNeedle = applyNeedleList (l_p_fasta, pr_align_seq)
     
-    
+    # writeMatrix
     writeMatrixFromDico (d_outNeedle, pr_out + "matrixSimilarSeq","similarity" )
-    writeMatrixFromDico (d_outNeedle, pr_out + "matrixIDSeq","identity" )    
-                
+    writeMatrixFromDico (d_outNeedle, pr_out + "matrixIDSeq","identity" )
     
-    # retrieve list of file -> case PDB file
+    #Group reference
+    GroupRef (d_outNeedle, "identity", pr_out + "groupIdentity" +"_" + str (thresold_identity) + ".txt", thresold_identity, l_lig)
+    GroupRef (d_outNeedle, "similarity", pr_out + "groupSimilarity" +"_" + str (thresold_similarity) + ".txt", thresold_similarity, l_lig)
+    
+    # retrieve list of file -> case PDB file -> case TM align
     l_file_ref = []
     for lig in l_lig : 
         pr_dataset = pathManage.dataset(lig)
@@ -64,7 +68,8 @@ def classifRefProtein (pr_dataset, l_lig):
     writeMatrixFromDico (d_outTMalign, pr_out + "matrixIDseqTMalign", "IDseq")
     writeMatrixFromDico (d_outTMalign, pr_out + "matrixTMscore1", "TMscore1")
     writeMatrixFromDico (d_outTMalign, pr_out + "matrixTMscore2", "TMscore2")
-
+    
+    
 
 def writeMatrixFromDico (d_in, p_filout, k):
     
@@ -194,7 +199,65 @@ def CleanResultTMalign (pr_TM_out):
             remove (pr_TM_out + p_filout)
 
 
+def GroupRef (d_matrix, k_in, p_filout, thresold_group, l_lig):
+    
+    d_group = {}
+    d_group[1] = []
+    
+    
+    # l unique PDB
+    l_PDB = d_matrix.keys ()
+    for PDB1 in d_matrix.keys () : 
+        for PDB2 in d_matrix[PDB1].keys ():
+            if not PDB2 in l_PDB : 
+                l_PDB.append (PDB2)
+    
+    
+    for PDB_in in l_PDB : 
+        f = 0
+        for group in d_group.keys () : 
+            # case first requet
+            if group == 1 and d_group[group] == [] : 
+                d_group[group].append (PDB_in)
+                break
+            
+            for PDB_group in d_group[group] :
+                try : 
+                    if float (d_matrix[PDB_group][PDB_in][k_in]) >= thresold_group : 
+                        d_group[group].append (PDB_in)
+                        f = 1
+                        break
+                except : 
+                    if float (d_matrix[PDB_in][PDB_group][k_in]) >= thresold_group : 
+                        d_group[group].append (PDB_in)
+                        f = 1
+                        break
+        
+        # flag -> in dico group    
+        if f == 0 :     
+            d_group[group + 1] = [PDB_in]
+    
+    
+    filout = open (p_filout, "w")
+    filout.write  ("PDB\tGroup\tFamilly\n")
+    for group in d_group : 
+        for pdb in d_group[group] : 
+            for lig in l_lig : 
+                family = analysis.findFamily(pdb, pathManage.findFamilyFile (lig))
+                if family != "not found" : 
+                    filout.write (str (pdb) + "\t" + str (group) + "\t" + str (family) + "\n")
+                    break
+    filout.close ()
+    
+    
+    return p_filout
+                
+                
 
+    
+    
+    
+    
 
 
 

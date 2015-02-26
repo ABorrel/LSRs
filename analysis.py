@@ -249,7 +249,7 @@ def findFamily (PDB_ID, p_file_family):
             else : 
                 return "others"
     
-    return "others"
+    return "no found"
     
     
 

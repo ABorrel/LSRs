@@ -47,7 +47,7 @@ def globalArrangement (pr_orgin, p_smile, p_family, name_ligand, l_ligand_out):
         small_LSR = smileAnalysis.smallLSR (smile) 
         if subst == "ribose" :  
             if small_LSR == 1 : 
-                first_folder == "ribose_small"
+                first_folder = "ribose_small"
             else : 
                 first_folder = "ribose"
         else : 
