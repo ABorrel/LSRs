@@ -244,7 +244,7 @@ def GroupRef (d_matrix, k_in, p_filout, thresold_group, l_lig):
         for pdb in d_group[group] : 
             for lig in l_lig : 
                 family = analysis.findFamily(pdb, pathManage.findFamilyFile (lig))
-                if family != "not found" : 
+                if family != "no found" : 
                     filout.write (str (pdb) + "\t" + str (group) + "\t" + str (family) + "\n")
                     break
     filout.close ()

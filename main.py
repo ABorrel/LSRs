@@ -623,18 +623,20 @@ l_ligand_out = ["AMP", "ADP", "ATP", "TTP", "DCP", "DGT", "DTP", "DUP", "ACP", "
 # 
 #######################
 # arrangeResult.controlResult (["AMP", "ADP", "POP"])
-refClassification.classifRefProtein ("/home/borrel/Yue_project/dataset/", ["AMP", "ADP", "ATP", "POP"])
+# refClassification.classifRefProtein ("/home/borrel/Yue_project/dataset/", ["AMP", "ADP", "ATP", "POP"])
 #
 #
 ################# 
 # RESULT MANAGE #
 #################
 
-# name_folder_final = "test"
+name_folder_final = "withoutLigBis"
 # manageResult (["AMP", "ADP", "POP", "ATP"], name_folder_final, l_ligand_out)
 # arrangeResult.qualityExtraction (["AMP", "ADP", "POP", "ATP"], name_folder_final, p_list_ligand = "/home/borrel/Yue_project/resultLigandInPDB", thresold_sheap = thresold_shaep)
 # arrangeResult.countingSubstituent(name_folder_final)
-# arrangeResult.enantiomer(["AMP", "ADP", "ATP"], name_folder_final)
-# arrangeResult.superpositionAllRef(["AMP", "ADP", "POP", "ATP"], name_folder_final)
+
+# to do new folder !!!
+#arrangeResult.enantiomer(["AMP", "ADP", "ATP"], name_folder_final)
+#arrangeResult.superpositionAllRef(["AMP", "ADP", "POP", "ATP"], name_folder_final)
 
 
