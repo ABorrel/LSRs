@@ -636,7 +636,7 @@ name_folder_final = "withoutLigBis"
 # arrangeResult.countingSubstituent(name_folder_final)
 
 # to do new folder !!!
-#arrangeResult.enantiomer(["AMP", "ADP", "ATP"], name_folder_final)
-#arrangeResult.superpositionAllRef(["AMP", "ADP", "POP", "ATP"], name_folder_final)
+# arrangeResult.enantiomer(["AMP", "ADP", "ATP"], name_folder_final)
+arrangeResult.superpositionAllRef(["AMP", "ADP", "POP", "ATP"], name_folder_final)
 
 

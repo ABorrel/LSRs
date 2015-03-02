@@ -12,7 +12,9 @@ brk = as.integer (args[3])
 # histograms
 
 # open both case with header and without header
-d = read.table (file, header = FALSE)
+d = read.table (file, header = FALSE, sep = "\t")
+print (dim (d))
+
 rownames (d) = d[,1]
 d = d[,-1]
 
