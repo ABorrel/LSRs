@@ -623,7 +623,7 @@ l_ligand_out = ["AMP", "ADP", "ATP", "TTP", "DCP", "DGT", "DTP", "DUP", "ACP", "
 # 
 #######################
 # arrangeResult.controlResult (["AMP", "ADP", "POP"])
-# refClassification.classifRefProtein ("/home/borrel/Yue_project/dataset/", ["AMP", "ADP", "ATP", "POP"])
+refClassification.classifRefProtein ("/home/borrel/Yue_project/dataset/", ["AMP", "ADP", "ATP", "POP"])
 #
 #
 ################# 
@@ -637,6 +637,6 @@ name_folder_final = "withoutLigBis"
 
 # to do new folder !!!
 # arrangeResult.enantiomer(["AMP", "ADP", "ATP"], name_folder_final)
-arrangeResult.superpositionAllRef(["AMP", "ADP", "POP", "ATP"], name_folder_final)
+# arrangeResult.superpositionAllRef(["AMP", "ADP", "POP", "ATP"], name_folder_final)
 
 

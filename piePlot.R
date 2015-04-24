@@ -31,5 +31,5 @@ args <- commandArgs(TRUE)
 p_filin = args[1]
 
 
-d = read.table (p_filin, header = TRUE)
+d = read.table (p_filin, header = TRUE, sep = "\t")
 pieType  (d, p_filin)

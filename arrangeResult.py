@@ -79,7 +79,7 @@ def globalArrangement (pr_orgin, p_smile, p_family, name_ligand, l_ligand_out):
                 continue
             
             
-            family = analysis.findFamily(l_PDB_ref[i], p_family)
+            family, group = analysis.findFamilyAndGroup(l_PDB_ref[i])
             
             # folder reference
             pr_dataset = pathManage.dataset(name_ligand + "/" + l_PDB_ref[i])
@@ -243,11 +243,16 @@ def qualityExtraction (l_ligand, name_folder, p_list_ligand, thresold_sheap) :
         
     # number of query by ref in means and max and min (after blast)
     filout.write ("\n*************\n\nNumber means queries by references:\n")
+    p_family_all = pathManage.result() + "reference_family_all.txt"
+    filout_family_all = open (p_family_all, "w")
+    d_family_all = {}
     for ligand in l_ligand : 
         d_nb_query = {}
         d_family = {}
         p_filout_family = pathManage.result() + "reference_family_" + ligand + ".txt"
+        p_filout_family_count = pathManage.result () + "count_family_" + ligand + ".txt"
         filout_family = open (p_filout_family, "w")
+        filout_family_count = open (p_filout_family_count, "w")
         pr_result_ligand = pathManage.result(ligand)
         nb_ref = 0
         l_file = listdir(pr_result_ligand)
@@ -256,9 +261,14 @@ def qualityExtraction (l_ligand, name_folder, p_list_ligand, thresold_sheap) :
                 
                 # count by family
                 family_ref = analysis.findFamily(f, pathManage.findFamilyFile (ligand))
-                if not family_ref in d_family.keys () : 
-                    d_family[family_ref] = 0
-                d_family[family_ref] = d_family[family_ref] + 1
+                filout_family.write ("\t".join (family_ref) + "\n")
+                if not family_ref[-1] in d_family.keys () : 
+                    d_family[family_ref[-1]] = 0
+                d_family[family_ref[-1]] = d_family[family_ref[-1]] + 1
+                # file all
+                if not family_ref[-1] in d_family_all.keys () : 
+                    d_family_all[family_ref[-1]] = 0
+                d_family_all[family_ref[-1]] = d_family_all[family_ref[-1]] + 1
                 
                 # count number of references
                 nb_ref = nb_ref + 1
@@ -272,12 +282,20 @@ def qualityExtraction (l_ligand, name_folder, p_list_ligand, thresold_sheap) :
         filout.write ("MAX " + str (ligand) + ": " + str (max (d_nb_query.values ())) + " " + str (d_nb_query.keys ()[d_nb_query.values ().index (max (d_nb_query.values ()))]) +"\n")
     
         # family
-        filout_family.write ("\t".join(d_family.keys ()) + "\n")
+        filout_family_count.write ("\t".join(d_family.keys ()) + "\n")
         l_values = [str(x) for x in d_family.values ()]
-        filout_family.write ("\t".join(l_values) + "\n")
+        filout_family_count.write ("\t".join(l_values) + "\n")
         filout_family.close ()
-        runOtherSoft.piePlot(p_filout_family)
-            
+        filout_family_count.close ()
+        runOtherSoft.piePlot(p_filout_family_count)
+
+    # all family
+    filout_family_all.write ("\t".join(d_family_all.keys ()) + "\n")
+    l_values = [str(x) for x in d_family_all.values ()]
+    filout_family_all.write ("\t".join(l_values) + "\n")
+    filout_family_all.close ()    
+    runOtherSoft.piePlot(p_family_all)
+        
     
     # number subref by ligand
     filout.write ("\n*************\n\nNumber of subref considered:\n")

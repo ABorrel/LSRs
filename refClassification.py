@@ -39,13 +39,17 @@ def classifRefProtein (pr_dataset, l_lig, thresold_identity = 30.0, thresold_sim
     d_outNeedle = applyNeedleList (l_p_fasta, pr_align_seq)
     
     # writeMatrix
-    writeMatrixFromDico (d_outNeedle, pr_out + "matrixSimilarSeq","similarity" )
-    writeMatrixFromDico (d_outNeedle, pr_out + "matrixIDSeq","identity" )
+    writeMatrixFromDico (d_outNeedle, pr_out + "matrixSimilarSeq", "similarity" )
+    writeMatrixFromDico (d_outNeedle, pr_out + "matrixIDSeq", "identity" )
     
     #Group reference
-    GroupRef (d_outNeedle, "identity", pr_out + "groupIdentity" +"_" + str (thresold_identity) + ".txt", thresold_identity, l_lig)
-    GroupRef (d_outNeedle, "similarity", pr_out + "groupSimilarity" +"_" + str (thresold_similarity) + ".txt", thresold_similarity, l_lig)
+    p_group_id = GroupRef (d_outNeedle, "identity", pr_out + "groupIdentity" +"_" + str (thresold_identity) + ".txt", thresold_identity, l_lig)
+    p_group_sim = GroupRef (d_outNeedle, "similarity", pr_out + "groupSimilarity" +"_" + str (thresold_similarity) + ".txt", thresold_similarity, l_lig)
     
+    # merge not alone prot
+    MergeGroup (p_group_id)
+    MergeGroup (p_group_sim)
+
     # retrieve list of file -> case PDB file -> case TM align
     l_file_ref = []
     for lig in l_lig : 
@@ -201,6 +205,8 @@ def CleanResultTMalign (pr_TM_out):
 
 def GroupRef (d_matrix, k_in, p_filout, thresold_group, l_lig):
     
+
+    return p_filout
     d_group = {}
     d_group[1] = []
     
@@ -239,12 +245,14 @@ def GroupRef (d_matrix, k_in, p_filout, thresold_group, l_lig):
     
     
     filout = open (p_filout, "w")
-    filout.write  ("PDB\tGroup\tFamilly\n")
+    filout.write  ("PDB\tGroup\tFamily\n")
     for group in d_group : 
         for pdb in d_group[group] : 
             for lig in l_lig : 
+                # print lig, "====="
                 family = analysis.findFamily(pdb, pathManage.findFamilyFile (lig))
-                if family != "no found" : 
+                family = family [-1]
+                if family != "None" : 
                     filout.write (str (pdb) + "\t" + str (group) + "\t" + str (family) + "\n")
                     break
     filout.close ()
@@ -254,7 +262,64 @@ def GroupRef (d_matrix, k_in, p_filout, thresold_group, l_lig):
                 
                 
 
+
+def MergeGroup (p_filin, merge_thresold = 3) : 
     
+    filin = open (p_filin, "r")
+    l_lines_file = filin.readlines ()
+    filin.close ()
+    d_in = {}
+
+    for line_file in l_lines_file : 
+        l_element = line_file.strip ().split ("\t")
+        PDB = l_element [0] 
+        group = l_element [1]
+        family = l_element [2]
+        if not group in d_in.keys ():
+            d_in [group] = {}
+            d_in [group] ["PDB"] = []
+            d_in [group] ["family"] = []
+        d_in [group]["PDB"].append (PDB)
+        d_in [group]["family"].append (family)
+
+    
+    # group other
+    d_merged = {}
+    d_merged["PDB"] = []
+    d_merged["family"] = []
+ 
+    i = 0
+    nb_group = len (d_in.keys ())
+    
+
+    while i < nb_group :
+        g = d_in.keys ()[i] 
+        if len (d_in[g]["PDB"]) <= merge_thresold : 
+            for PDB_merged in d_in[g]["PDB"] : 
+                d_merged["PDB"].append (PDB_merged)
+            for family_merged in d_in[g]["family"] : 
+                d_merged["family"].append (family_merged)
+            del d_in[g]
+            nb_group = nb_group - 1
+            continue
+        else : 
+            i = i + 1
+            
+    filout = open (p_filin + ".filter", "w")
+    
+    for i in range (nb_group) : 
+        for j in range(len(d_in [d_in.keys()[i]] ["PDB"])) :
+            print i,j
+            filout.write (d_in[d_in.keys ()[i]]["PDB"][j] + "\t" + str (i) + "\t" + d_in[d_in.keys ()[i]]["family"][j] + "\n")  
+    
+    for j in range(len(d_merged["PDB"])) :
+        filout.write (d_merged["PDB"][j] + "\tout\t" + d_merged["family"][j] + "\n")  
+    
+    filout.close ()
+
+
+
+ 
     
     
     
