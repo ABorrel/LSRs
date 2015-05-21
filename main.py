@@ -445,7 +445,7 @@ def analysisBS (name_lig, ID_seq = '0.0', debug = 1):
 
     # dictionnar with files
     d_file_BS = {}
-    d_file_BS["global"] = open (pr_out + "ligand_", "w")
+    d_file_BS["global"] = open (pr_out + name_lig + "_", "w")
     d_file_BS["global"].write ("name_bs\tRMSD_prot\tRMSD_BS_ca\tRMSD_BS_all\tD_max\tl_at_BS\tidentic\n")
     d_file_BS["summary"] = open (pr_out + "summary.txt", "w")
     pr_dataset = pathManage.dataset(name_lig)
@@ -487,7 +487,7 @@ def analysisBS (name_lig, ID_seq = '0.0', debug = 1):
                     
                     # write header
                     if not struct_substitued in d_file_BS.keys () : 
-                        d_file_BS[struct_substitued] = open (pr_out + struct_substitued + "_", "w")
+                        d_file_BS[struct_substitued] = open (pr_out + name_lig + "_" + struct_substitued + "_", "w")
                         d_file_BS[struct_substitued].write ("name_bs\tRMSD_prot\tRMSD_BS_ca\tRMSD_BS_all\tD_max\tl_at_BS\tidentic\n")
                         
                     RMSD_bs = analysis.computeRMSDBS (p_pdb_ref, p_query, p_substruct_ref, pr_out)
@@ -516,7 +516,15 @@ def analysisBS (name_lig, ID_seq = '0.0', debug = 1):
     for k_dico in d_file_BS.keys () : 
         p_file = d_file_BS[k_dico].name
         d_file_BS[k_dico].close ()
-        runOtherSoft.RhistogramRMSD(p_file)
+        if name_lig == "ATP" : 
+            runOtherSoft.RhistogramRMSD(p_file, max_RMSD = 5.0)
+        elif name_lig == "ADP" : 
+            runOtherSoft.RhistogramRMSD(p_file, max_RMSD = 4.0)
+        elif name_lig == "AMP" : 
+            runOtherSoft.RhistogramRMSD(p_file, max_RMSD = 4.0)
+        else : 
+            runOtherSoft.RhistogramRMSD(p_file, max_RMSD = 3.5)
+             
 
         
     return 1
@@ -623,17 +631,17 @@ l_ligand_out = ["AMP", "ADP", "ATP", "TTP", "DCP", "DGT", "DTP", "DUP", "ACP", "
 # 
 #######################
 # arrangeResult.controlResult (["AMP", "ADP", "POP"])
-refClassification.classifRefProtein ("/home/borrel/Yue_project/dataset/", ["AMP", "ADP", "ATP", "POP"])
+# refClassification.classifRefProtein ("/home/borrel/Yue_project/dataset/", ["AMP", "ADP", "ATP", "POP"])
 #
 #
 ################# 
 # RESULT MANAGE #
 #################
 
-name_folder_final = "withoutLigBis"
+name_folder_final = "withoutLig"
 # manageResult (["AMP", "ADP", "POP", "ATP"], name_folder_final, l_ligand_out)
 # arrangeResult.qualityExtraction (["AMP", "ADP", "POP", "ATP"], name_folder_final, p_list_ligand = "/home/borrel/Yue_project/resultLigandInPDB", thresold_sheap = thresold_shaep)
-# arrangeResult.countingSubstituent(name_folder_final)
+arrangeResult.countingSubstituent(name_folder_final)
 
 # to do new folder !!!
 # arrangeResult.enantiomer(["AMP", "ADP", "ATP"], name_folder_final)

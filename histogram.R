@@ -18,12 +18,14 @@ print (dim (d))
 rownames (d) = d[,1]
 d = d[,-1]
 
-png (paste (file, ".png", sep = ""), 800, 800)
+png (paste (file, ".png", sep = ""), 600, 600)
 par (mar = c(5,5,5,5))
-hist (d, xlim = c(min(d), max(d)), breaks = brk, main = "", col = "grey", xlab = "Distance (Å)", ylab = "Number of occurences", cex.lab = 2, cex.axis = 2)
+par (oma = c(1,1,1,1))
+hist (d, xlim = c(2,6), breaks = brk, main = "", col = "grey", xlab = "Distance (Å)", ylab = "Number of occurences", cex.lab = 1.6, cex.axis = 1.2)
 dev.off()
 
-svg (paste (file, ".svg", sep = ""), 22, 22)
-par(mar=c(8,8,8,8))
-hist (d, xlim = c(min(d), max(d)), breaks = brk, main = "", col = "grey", xlab = "Distance (Å)", ylab = "Number of occurences", cex.lab = 2.5, cex.axis = 2)
+svg (paste (file, ".svg", sep = ""), 6, 6)
+par(mar=c(4,4.2,1,1))
+par (oma = c(0.5,0.5,0.5,0.5))
+hist (d, xlim = c(2, 6), breaks = brk, main = "", col = "grey", xlab = "Distance (Å)", ylab = "Number of occurences", cex.lab = 1.6, cex.axis = 1.2)
 dev.off()

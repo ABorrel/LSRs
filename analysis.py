@@ -8,6 +8,7 @@ import parseShaep
 import parsePDB
 import writePDBfile
 import runOtherSoft
+import tool
 
 
 def selectSmileCode (p_file_smile, minimal_length_smile = 3):
@@ -277,49 +278,20 @@ def findFamily (PDB_ID, p_file_family):
     return [PDB, name_pr, kwords, family]
 
 
-def findFamilyAndGroup (PDB_ID, Identity = "30.0") :
+def findFamilyAndGroup (PDB_in, Identity = "30.0") :
     
-    p_family_group = "XXXXXXXXXX"
-    filin = open (p_file_family, "r")
+    p_family_group = pathManage.result ("clasifRef") + "groupIdentity_"  +  str (Identity) + ".txt.filter"
+    filin = open (p_family_group, "r")
     l_line_flin = filin.readlines ()
     filin.close ()
     
     for line_filin in l_line_flin [1:]: 
-        name_pr = line_filin.strip ().split ("\t")[-2]
-        kwords = line_filin.strip ().split ("\t")[-1]
-        PDB = line_filin.strip ().split ("\t")[0]
-        family = "other"
-
-        if PDB.upper () == PDB_ID.upper () : 
-            if search("PHOSPHATASE", name_pr.upper ()) or search("PHOSPHATASE", kwords.upper ()) : 
-                family = "phosphatase"
-            elif search("PHOSPHORYLASE", name_pr.upper ()) or search("PHOSPHORYLASE", kwords.upper ()) : 
-                family = "phosphorylase"
-            elif search("KINASE", name_pr.upper ()) or search("KINASE", kwords.upper ()) :
-                family = "kinase"
-            elif search("HELICASE", name_pr.upper ()) or search("HELICASE", kwords.upper ()) :
-                family = "helicase"
-            elif search("MYOSINE", name_pr.upper ()) or search("MYOSINE", kwords.upper ()) :
-                family = "myosine"
-            elif search("TRANSFERASE", name_pr.upper ()) or search("TRANSFERASE", kwords.upper ()) :
-                family = "transferase"
-            elif search("SYNTHETASE", name_pr.upper ()) or search("SYNTHETASE", kwords.upper ()) :
-                family = "synthetase"
-            elif search("HYDROLASE", name_pr.upper ()) or search("HYDROLASE", kwords.upper ()) :
-                family = "hydrolase"
-            elif search("LIGASE", name_pr.upper ()) or search("LIGASE", kwords.upper ()) :
-                family = "ligase"
-            elif search("ATPASE", name_pr.upper ()) or search("ATPASE", kwords.upper ()): 
-                family =  "ATPase"
-            elif search("CARBOXYLASE", name_pr.upper ()) or search("CARBOXYLASE", kwords.upper ()): 
-                family =  "carboxylase"
-            elif search("ACTIN", name_pr.upper ()) or search("ACTIN", kwords.upper ()): 
-                family =  "actin"
-            elif search("HEAT SHOCK PROTEIN", name_pr.upper ()) or search("HEAT SHOCK PROTEIN", kwords.upper ()) or search("CHAPERONE", name_pr.upper ()) or search("CHAPERONE", kwords.upper ()) or search("CHAPERONIN", name_pr.upper ()) or search("CHAPERONIN", kwords.upper ()) or search("HSP", name_pr.upper ()) or search("HSP", kwords.upper ()) : 
-                family =  "HSP"
-
-            
-            return [PDB, name_pr, kwords, family]
+        l_el = line_filin.strip ().split ("\t")
+        PDB_ID = l_el [0]
+        family = tool.NameFamily (l_el[2])
+        group = str (l_el[1])
+        if PDB_in == PDB_ID : 
+            return group, family
 
 
 

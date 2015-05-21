@@ -79,7 +79,7 @@ def globalArrangement (pr_orgin, p_smile, p_family, name_ligand, l_ligand_out):
                 continue
             
             
-            family, group = analysis.findFamilyAndGroup(l_PDB_ref[i])
+            group, family = analysis.findFamilyAndGroup(l_PDB_ref[i])
             
             # folder reference
             pr_dataset = pathManage.dataset(name_ligand + "/" + l_PDB_ref[i])
@@ -132,11 +132,11 @@ def globalArrangement (pr_orgin, p_smile, p_family, name_ligand, l_ligand_out):
 #             print p_lig_substituate
 #             print p_BS
 #             print "**************"
-            
-            pr_final = pr_orgin + first_folder + "/" + replacement + "/" + l_PDB_ref[i] + "/" 
-            pr_ligand = pr_orgin + first_folder + "/" + replacement + "/" + l_PDB_ref[i] + "/LGD/"
-            pr_BS =  pr_orgin + first_folder + "/" + replacement + "/" + l_PDB_ref[i] + "/BS/"
-            pr_sust = pr_orgin + first_folder + "/" + replacement + "/" + l_PDB_ref[i] + "/LSR/"
+            # ajouter group + family 2 lettre
+            pr_final = pr_orgin + first_folder + "/" + replacement + "/" + str (family) + "-"  + str (group) + "_" + l_PDB_ref[i] +  "/" 
+            pr_ligand = pr_orgin + first_folder + "/" + replacement + "/" + str (family) + "-" +  str (group) + "_" + l_PDB_ref[i] + "/LGD/"
+            pr_BS = pr_orgin + first_folder + "/" + replacement + "/" + str (family) + "-" + str (group) + "_" + l_PDB_ref[i] + "/BS/"
+            pr_sust = pr_orgin + first_folder + "/" + replacement + "/" + str (family) + "-"  + str (group) + "_" + l_PDB_ref[i] + "/LSR/"
             
             if not path.isdir(pr_final):
                 makedirs (pr_final)
@@ -161,7 +161,7 @@ def globalArrangement (pr_orgin, p_smile, p_family, name_ligand, l_ligand_out):
             
             # lig de la query
             writePDBfile.coordinateSection(pr_ligand + "LGD_" + p_lig_query.split ("/")[-1], lig_query_parsed, recorder = "HETATM", header = "LCG_" + p_lig_query.split ("/")[-1], connect_matrix = 1)
-            runOtherSoft.babelConvertPDBtoSMILE(pr_ligand + "LGD_" + p_lig_query.split ("/")[-1])
+            runOtherSoft.babelConvertPDBtoSMILE(pr_ligand + "LGD_" + p_lig_query.split ("/")[-1], clean_smi = 1)
             # lig de reference + smile
             copy2(p_ligand_ref, pr_ligand + "LGD_REF_" + p_ligand_ref.split ("/")[-1])
             runOtherSoft.babelConvertPDBtoSMILE(pr_ligand + "LGD_REF_" + p_ligand_ref.split ("/")[-1])
@@ -258,7 +258,6 @@ def qualityExtraction (l_ligand, name_folder, p_list_ligand, thresold_sheap) :
         l_file = listdir(pr_result_ligand)
         for f in l_file : 
             if path.isdir (pr_result_ligand + "/" + f) and len (f) == 4: 
-                
                 # count by family
                 family_ref = analysis.findFamily(f, pathManage.findFamilyFile (ligand))
                 filout_family.write ("\t".join (family_ref) + "\n")
@@ -362,6 +361,9 @@ def countingSubstituent (name_final, debug = 1):
             if debug : print "3", pr_final_folder + pr_type_subref, pr_sub             
 
             for pr_PDBref in l_pr_PDBref :
+                PDB_ref = pr_PDBref.split ("_")[-1]
+                family_ref = pr_PDBref.split ("-")[0]
+                group_ref = pr_PDBref.split ("_")[0].split ("-")[-1]
                 pr_LGD = pr_final_folder + pr_type_subref + "/" + pr_sub + "/" + pr_PDBref + "/LGD/"
                 pr_LSR = pr_final_folder + pr_type_subref + "/" + pr_sub + "/" + pr_PDBref + "/LSR/"
                 pr_BS = pr_final_folder + pr_type_subref + "/" + pr_sub + "/" + pr_PDBref + "/BS/"
@@ -420,9 +422,13 @@ def countingSubstituent (name_final, debug = 1):
                         if ligand == "REF" : 
                             continue
                         if not ligand in d_lig.keys () : 
-                            d_lig[ligand] = 1
-                        else : 
-                            d_lig[ligand] = d_lig[ligand] + 1
+                            d_lig[ligand] = {}
+                            d_lig[ligand]["count"] = 0
+                            d_lig[ligand]["group"] = []
+                            d_lig[ligand]["family"] = []
+                        d_lig[ligand]["count"] = d_lig[ligand]["count"] + 1
+                        d_lig[ligand]["family"].append (str(family_ref))
+                        d_lig[ligand]["group"].append (str(group_ref))
 
             
                 ###############
@@ -478,9 +484,10 @@ def countingSubstituent (name_final, debug = 1):
         runOtherSoft.piePlot(p_filout)
     
     filout_lig = open (pr_result + "count_ligand", "w")
+    filout_lig.write ("Ligand ID\tNumber of occurences in the dataset\tNumber of different clusters\tList of clusters\tList of protein families\n")
     for lig in d_lig.keys () : 
         if d_lig[lig] > 1 : 
-            filout_lig.write (str (lig) + "\t" + str (d_lig[lig]) + "\n")
+            filout_lig.write (str (lig) + "\t" + str (d_lig[lig]["count"]) + "\t" + str(len (list (set(d_lig[lig]["group"]))))  + "\t" + " ".join (d_lig[lig]["group"]) + "\t" + " ".join (d_lig[lig]["family"]) + "\n")
     filout_lig.close ()
     
     filout_LSR_lig = open (pr_result + "CountByLigandRef", "w")
@@ -520,9 +527,9 @@ def enantiomer(l_ligand, name_folder_final, debug = 1) :
     d_filout = {}
     for ligand in l_ligand : 
         d_filout[ligand] = {}
-        d_filout[ligand]["O3OP"]= open (pr_enantiomer + ligand + "_" + "O3OP.txt" , "w")
-        d_filout[ligand]["O4O5"]= open (pr_enantiomer + ligand + "_" + "O4O5.txt" , "w")
-        d_filout[ligand]["OPOP"]= open (pr_enantiomer + ligand + "_" + "OPOP.txt" , "w")
+        d_filout[ligand]["O3OP"]= open (pr_enantiomer + ligand + "_" + "O3OP" , "w")
+        d_filout[ligand]["O4O5"]= open (pr_enantiomer + ligand + "_" + "O4O5" , "w")
+        d_filout[ligand]["OPOP"]= open (pr_enantiomer + ligand + "_" + "OPOP" , "w")
         
     l_pr_type_ref = listdir(pr_final) 
     for pr_type_ref in l_pr_type_ref : 

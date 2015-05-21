@@ -42,7 +42,7 @@ def classifRefProtein (pr_dataset, l_lig, thresold_identity = 30.0, thresold_sim
     writeMatrixFromDico (d_outNeedle, pr_out + "matrixSimilarSeq", "similarity" )
     writeMatrixFromDico (d_outNeedle, pr_out + "matrixIDSeq", "identity" )
     
-    #Group reference
+    #Group reference -> l 209
     p_group_id = GroupRef (d_outNeedle, "identity", pr_out + "groupIdentity" +"_" + str (thresold_identity) + ".txt", thresold_identity, l_lig)
     p_group_sim = GroupRef (d_outNeedle, "similarity", pr_out + "groupSimilarity" +"_" + str (thresold_similarity) + ".txt", thresold_similarity, l_lig)
     
@@ -51,27 +51,27 @@ def classifRefProtein (pr_dataset, l_lig, thresold_identity = 30.0, thresold_sim
     MergeGroup (p_group_sim)
 
     # retrieve list of file -> case PDB file -> case TM align
-    l_file_ref = []
-    for lig in l_lig : 
-        pr_dataset = pathManage.dataset(lig)
-        l_file_by_lig = listdir(pr_dataset)
-        l_pr_ref_by_lig =[pr_dataset + x for x in l_file_by_lig]
-        for pr_ref_by_lig in l_pr_ref_by_lig : 
-            PDB_folder = pr_ref_by_lig.split ("/")[-1]
-            try : l_file = listdir(pr_ref_by_lig)
-            except : continue
-            for file_ref in l_file : 
-                if search("^" + PDB_folder, file_ref) :
-                    l_file_ref.append (pr_ref_by_lig + "/" +file_ref)
-                    break
+    # l_file_ref = []
+    # for lig in l_lig : 
+    #     pr_dataset = pathManage.dataset(lig)
+    #     l_file_by_lig = listdir(pr_dataset)
+    #     l_pr_ref_by_lig =[pr_dataset + x for x in l_file_by_lig]
+    #     for pr_ref_by_lig in l_pr_ref_by_lig : 
+    #         PDB_folder = pr_ref_by_lig.split ("/")[-1]
+    #         try : l_file = listdir(pr_ref_by_lig)
+    #         except : continue
+    #         for file_ref in l_file : 
+    #             if search("^" + PDB_folder, file_ref) :
+    #                 l_file_ref.append (pr_ref_by_lig + "/" +file_ref)
+    #                 break
     
     
-    d_outTMalign = applyTMAlignList(l_file_ref, pr_out + "align/")
+    # d_outTMalign = applyTMAlignList(l_file_ref, pr_out + "align/")
 
-    writeMatrixFromDico (d_outTMalign, pr_out + "matrixRMSD", "RMSD")
-    writeMatrixFromDico (d_outTMalign, pr_out + "matrixIDseqTMalign", "IDseq")
-    writeMatrixFromDico (d_outTMalign, pr_out + "matrixTMscore1", "TMscore1")
-    writeMatrixFromDico (d_outTMalign, pr_out + "matrixTMscore2", "TMscore2")
+    # writeMatrixFromDico (d_outTMalign, pr_out + "matrixRMSD", "RMSD")
+    # writeMatrixFromDico (d_outTMalign, pr_out + "matrixIDseqTMalign", "IDseq")
+    # writeMatrixFromDico (d_outTMalign, pr_out + "matrixTMscore1", "TMscore1")
+    # writeMatrixFromDico (d_outTMalign, pr_out + "matrixTMscore2", "TMscore2")
     
     
 
@@ -206,7 +206,8 @@ def CleanResultTMalign (pr_TM_out):
 def GroupRef (d_matrix, k_in, p_filout, thresold_group, l_lig):
     
 
-    return p_filout
+    # !!!!!!!!!!!!!!
+    # return p_filout
     d_group = {}
     d_group[1] = []
     
@@ -223,22 +224,21 @@ def GroupRef (d_matrix, k_in, p_filout, thresold_group, l_lig):
         f = 0
         for group in d_group.keys () : 
             # case first requet
+            if f == 1 : 
+                break
             if group == 1 and d_group[group] == [] : 
                 d_group[group].append (PDB_in)
                 break
             
-            for PDB_group in d_group[group] :
-                try : 
-                    if float (d_matrix[PDB_group][PDB_in][k_in]) >= thresold_group : 
-                        d_group[group].append (PDB_in)
-                        f = 1
-                        break
-                except : 
-                    if float (d_matrix[PDB_in][PDB_group][k_in]) >= thresold_group : 
-                        d_group[group].append (PDB_in)
-                        f = 1
-                        break
-        
+            for PDB_classed in d_group[group] : 
+                val = 0.0
+                try : val = float (d_matrix[PDB_classed][PDB_in][k_in]) 
+                except : val = float (d_matrix[PDB_in][PDB_classed][k_in])  
+                if val >= thresold_group : 
+                    d_group[group].append (PDB_in)
+                    f = 1
+                    break
+
         # flag -> in dico group    
         if f == 0 :     
             d_group[group + 1] = [PDB_in]
@@ -304,14 +304,25 @@ def MergeGroup (p_filin, merge_thresold = 3) :
             continue
         else : 
             i = i + 1
-            
+    
+    l_nb_PDB = []
+    for g in d_in.keys () : 
+        l_nb_PDB.append (len(d_in[g]["PDB"]))
+
+    l_index_group =  [i[0] for i in sorted(enumerate(l_nb_PDB), key=lambda x:x[1], reverse = True)]
+
+
+      
     filout = open (p_filin + ".filter", "w")
     
-    for i in range (nb_group) : 
-        for j in range(len(d_in [d_in.keys()[i]] ["PDB"])) :
-            print i,j
-            filout.write (d_in[d_in.keys ()[i]]["PDB"][j] + "\t" + str (i) + "\t" + d_in[d_in.keys ()[i]]["family"][j] + "\n")  
-    
+    print d_in.keys ()
+    new_group = 1
+    for group in l_index_group : 
+        for j in range(len(d_in [d_in.keys()[group]] ["PDB"])) :
+            #print group
+            filout.write (d_in[d_in.keys ()[group]]["PDB"][j] + "\t" + str (new_group) + "\t" + d_in[d_in.keys ()[group]]["family"][j] + "\n")  
+        new_group = new_group + 1
+
     for j in range(len(d_merged["PDB"])) :
         filout.write (d_merged["PDB"][j] + "\tout\t" + d_merged["family"][j] + "\n")  
     

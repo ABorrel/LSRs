@@ -59,7 +59,7 @@ def runTMalign(path_pr1, path_pr2, path_dir_out, debug = 1) :
     return [path_dir_out + "align.out", path_dir_out + "align.out_all", path_dir_out + "align.out_atm",path_dir_out + "align.out_all_atm", path_dir_out + "RMSD" ]
 
 
-def babelConvertPDBtoSMILE (p_file_pdb) : 
+def babelConvertPDBtoSMILE (p_file_pdb, clean_smi = 0) : 
     
     path_filout = p_file_pdb[0:-4] + ".smi"
     
@@ -75,6 +75,12 @@ def babelConvertPDBtoSMILE (p_file_pdb) :
     filin.close ()
     try : smile = l_Fline[0].split ("\t")[0]
     except : return "0"
+
+    # rm path in filout
+    if clean_smi == 1 : 
+        filout = open (path_filout, "w")
+        filout.write (str (smile))
+        filout.close ()
     
     return smile
 
@@ -112,9 +118,9 @@ def RhistogramMultiple (p_filin, brk = 20) :
     os.system (cmd_run)
 
 
-def RhistogramRMSD (p_filin, brk = 20) : 
+def RhistogramRMSD (p_filin, brk = 20, max_RMSD = 5.0) : 
     
-    cmd_run = "./histogramsRMSD.R " + p_filin + " " + str (brk) 
+    cmd_run = "./histogramsRMSD.R " + p_filin + " " + str (brk) + " " + str (max_RMSD) 
     print cmd_run
     os.system (cmd_run)
 
