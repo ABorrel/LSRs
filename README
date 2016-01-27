@@ -1,49 +1,69 @@
-### Dependancies  ###
-#####################
+### Dependencies  ###
+###################
 
 TM align -> path l.13 script RunOtherSoft.py // http://zhanglab.ccmb.med.umich.edu/TM-align/
 ShaEP -> path l.14 script RunOtherSoft.py // http://users.abo.fi/mivainio/shaep/
+- blastp
 
-requirement (developed Ubuntu 12.04): 
+Requirements (Ubuntu 12.04): 
 - openbabel
 - EMBOSS
-- R > realese 3.2.2 (2015-08-14)
+- R > release 3.2.2 (2015-08-14)
 
-Python modules:
+Python (2.7) modules:
+- os
+- copy
+- re
+- subprocess
+- numpy
+- biopython (Bio.blast)
+- shutil
+- urllib
+- math
 
-### Scripts py descriptions ###
-###############################
 
-- RunBlast.py: run query Blast
-- analysis.py: automated statisitcal analysis and drawn R plots
-- arrangeResult.py: manage folder countaning LSR
-- buildData.py: extract interest pdb files from the PDB
+
+### Scripts py descriptions  ###
+###########################
+
+- RunBlast.py: run Blast queries
+- analysis.py: automated statistical analysis and draw R plots
+- arrangeResult.py: manage folders containing LSR
+- buildData.py: extract files from the PDB
 - cleanResult.py: clean folder result, remove temp files
 - downloadFile.py: Import fasta file and pdb file using urlretrieve protocol
-- ionSearch.py: search and analysis ion in the binding site
+- ionSearch.py: search and analysis metals in the binding site
 - managePDB.py: clean and decompress PDB extracted
 - neighborSearch.py: define binding site
 - parseEMBOSS.py: parsing EMBOSS output
 - parsePDB.py: parsing pdb file
 - parseShaep.py: parsing ShaEP output
 - parseTMalign.py: parsing TMalign ouput
-- pathManage.py: path file manager
-- refClassification.py: build pdb file classification
-- runOtherSoft.py: command run external tool
-- smileAnalysis.py: extract substructure from SMILES files
+- pathManage.py: path manager
+- refClassification.py: build pdb classification
+- runOtherSoft.py: run external tools
+- smileAnalysis.py: assign SMILES categories
 - substructTools.py: build reference substructure
-- superimpose.py: superimposition ligand from Kash algorithm
-- superposeStructure.py: superimposed protein
-- tool.py: tool box function
+- superimpose.py: superimpose ligand using Kabsh's algorithm
+- superposeStructure.py: superimpose protein
+- tool.py: tool box functions
 - writePDBfile.py: write pdb files
 
-- main.py: MAIN
+- main.py: MAIN with parameters l.574
+
+thresold_RX = 2.7: minimal structure resolution
+thresold_BS = 4.5: distance threshold to define the binding site from ligand
+thresold_blast = 1e-100: threshold blast
+thresold_superimposed_pi = 2.5: distance threshold to extract LSR from ligand
+thresold_IDseq = 100: threshold identity sequence for similar PDB
+thresold_shaep = 0.2: threshold of shaep overlap
+l_ligand_out = ["AMP", "ADP", "ATP", "TTP", "DCP", "DGT", "DTP", "DUP", "ACP", "AD9", "NAD", "AGS", "UDP", "POP", "APC", "CTP", "AOV", "ANP", "GDP", "GTP", "ANP"]: list of ligand not considered
 
 ### other scripts ###
-####################
+##################
 -downloadPDB.sh: download PDB database
 
-# R script for plots
+# R scripts for plots
 - histogram.R
 - histograms.R
 - histogramsRMSD.R
@@ -51,15 +71,13 @@ Python modules:
 - piePlot.R
 
 
-
-
 ### Paths management ###
 ########################
 
-BLAST local for the PDB
+BLAST in local using PDB sequences ftp://ftp.wwpdb.org/pub/pdb/derived_data/pdb_seqres.txt.gz
 
-# 1. creat db for blast #
-#########################
+# 1. create db for blast #
+#####################
 
 # format ncbi format
 seqret pdb.fasta pdb_ncbi.fasta -osf ncbi
