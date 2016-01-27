@@ -1,9 +1,65 @@
-#! pb export for database for blast and clustal
+### Dependancies  ###
+#####################
+
+TM align -> path l.13 script RunOtherSoft.py // http://zhanglab.ccmb.med.umich.edu/TM-align/
+ShaEP -> path l.14 script RunOtherSoft.py // http://users.abo.fi/mivainio/shaep/
+
+requirement (developed Ubuntu 12.04): 
+- openbabel
+- EMBOSS
+- R > realese 3.2.2 (2015-08-14)
+
+Python modules:
+
+### Scripts py descriptions ###
+###############################
+
+- RunBlast.py: run query Blast
+- analysis.py: automated statisitcal analysis and drawn R plots
+- arrangeResult.py: manage folder countaning LSR
+- buildData.py: extract interest pdb files from the PDB
+- cleanResult.py: clean folder result, remove temp files
+- downloadFile.py: Import fasta file and pdb file using urlretrieve protocol
+- ionSearch.py: search and analysis ion in the binding site
+- managePDB.py: clean and decompress PDB extracted
+- neighborSearch.py: define binding site
+- parseEMBOSS.py
+- parsePDB.py
+- parseShaep.py
+- parseTMalign.py
+- pathManage.py
+- refClassification.py
+- runOtherSoft.py
+- barplotQuantity.R	Improve plot -> done	8 months ago
+- smileAnalysis.py	New search in smile	a year ago
+- substructTools.py	Superimposition + fix figures + histogram in svg	a year ago
+- superimpose.py	Superimposition + fix figures + histogram in svg	a year ago
+- superposeStructure.py	BS analysis ok	2 years ago
+- tool.py	Improve plot -> done	8 months ago
+- writePDBfile.py	Fix alignment global + fix shaep tresold + fix managnment of results
 
 
-######################
-# creat db for blast #
-######################
+
+
+downloadPDB.sh	Append function for PDB update	a year ago
+histogram.R	Improve plot -> done	8 months ago
+histograms.R	fix enantiomer and proportion	a year ago
+histogramsRMSD.R	Improve plot -> done	8 months ago
+
+
+main.py	Improve plot -> done	8 months ago
+piePlot.R	Improve plot -> done	8 months ago
+
+
+
+
+### Path management ###
+#######################
+
+BLAST local for the PDB
+
+# 1. creat db for blast #
+#########################
 
 # format ncbi format
 seqret pdb.fasta pdb_ncbi.fasta -osf ncbi
@@ -11,10 +67,11 @@ seqret pdb.fasta pdb_ncbi.fasta -osf ncbi
 # make db
 makeblastdb -in pdb_ncbi.fasta -out pdb -dbtype prot
 
-# test
+# 2. run query blast for test fasta
+###################################
 blastp -query test.fasta -db pdb -out result.txt
 
-
-
-export BLASTDB=/home/borrel/blast/db/
-export PATH=$PATH:/home/borrel/softwares/clustal
+# 3. export path #
+##################
+export BLASTDB=/home/user/blast/db/
+export PATH=$PATH:/home/user/softwares/clustal
