@@ -23,38 +23,38 @@ Python modules:
 - ionSearch.py: search and analysis ion in the binding site
 - managePDB.py: clean and decompress PDB extracted
 - neighborSearch.py: define binding site
-- parseEMBOSS.py
-- parsePDB.py
-- parseShaep.py
-- parseTMalign.py
-- pathManage.py
-- refClassification.py
-- runOtherSoft.py
-- barplotQuantity.R	Improve plot -> done	8 months ago
-- smileAnalysis.py	New search in smile	a year ago
-- substructTools.py	Superimposition + fix figures + histogram in svg	a year ago
-- superimpose.py	Superimposition + fix figures + histogram in svg	a year ago
-- superposeStructure.py	BS analysis ok	2 years ago
-- tool.py	Improve plot -> done	8 months ago
-- writePDBfile.py	Fix alignment global + fix shaep tresold + fix managnment of results
+- parseEMBOSS.py: parsing EMBOSS output
+- parsePDB.py: parsing pdb file
+- parseShaep.py: parsing ShaEP output
+- parseTMalign.py: parsing TMalign ouput
+- pathManage.py: path file manager
+- refClassification.py: build pdb file classification
+- runOtherSoft.py: command run external tool
+- smileAnalysis.py: extract substructure from SMILES files
+- substructTools.py: build reference substructure
+- superimpose.py: superimposition ligand from Kash algorithm
+- superposeStructure.py: superimposed protein
+- tool.py: tool box function
+- writePDBfile.py: write pdb files
+
+- main.py: MAIN
+
+### other scripts ###
+####################
+-downloadPDB.sh: download PDB database
+
+# R script for plots
+- histogram.R
+- histograms.R
+- histogramsRMSD.R
+- barplotQuantity.R
+- piePlot.R
 
 
 
 
-downloadPDB.sh	Append function for PDB update	a year ago
-histogram.R	Improve plot -> done	8 months ago
-histograms.R	fix enantiomer and proportion	a year ago
-histogramsRMSD.R	Improve plot -> done	8 months ago
-
-
-main.py	Improve plot -> done	8 months ago
-piePlot.R	Improve plot -> done	8 months ago
-
-
-
-
-### Path management ###
-#######################
+### Paths management ###
+########################
 
 BLAST local for the PDB
 
