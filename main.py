@@ -563,13 +563,18 @@ def manageResult (l_ligand, name_final, l_out = []):
 # RUN MAIN !!!! #
 #################
 
-
+#######
 # PDB #
 #######
 
-# update 19-01-2014
-# downloadPDB ("/home/borrel/PDB/")
-# managePDB.searchLigands("/home/borrel/Yue_project/", "/home/borrel/PDB/")
+# Folder including the PDB
+pPDB = "/home/borrel/PDB/" # need to change
+# Folder including results
+presult = "/home/borrel/Yue_project/"
+
+# to download the all PDB database
+# downloadPDB (pPDB)
+# managePDB.searchLigands(presult, pPDB)
 
 # constante
 thresold_RX = 2.7
@@ -634,9 +639,9 @@ l_ligand_out = ["AMP", "ADP", "ATP", "TTP", "DCP", "DGT", "DTP", "DUP", "ACP", "
 # refClassification.classifRefProtein ("/home/borrel/Yue_project/dataset/", ["AMP", "ADP", "ATP", "POP"])
 #
 #
-################# 
-# RESULT MANAGE #
-#################
+#####################
+# RESULT MANAGEMENT #
+#####################
 
 name_folder_final = "withoutLig"
 # manageResult (["AMP", "ADP", "POP", "ATP"], name_folder_final, l_ligand_out)
