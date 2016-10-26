@@ -570,11 +570,11 @@ def manageResult (l_ligand, name_final, l_out = []):
 # Folder including the PDB
 pPDB = "/home/borrel/PDB/" # need to change
 # Folder including results
-presult = "/home/borrel/Yue_project/"
+presult = "/home/borrel/Yue_project/" # need to change
 
 # to download the all PDB database
 # downloadPDB (pPDB)
-# managePDB.searchLigands(presult, pPDB)
+managePDB.searchLigands(pPDB, presult)
 
 # constante
 thresold_RX = 2.7
@@ -586,9 +586,10 @@ thresold_IDseq = 100
 thresold_shaep = 0.2
 l_ligand_out = ["AMP", "ADP", "ATP", "TTP", "DCP", "DGT", "DTP", "DUP", "ACP", "AD9", "NAD", "AGS", "UDP", "POP", "APC", "CTP", "AOV", "ANP", "GDP", "GTP", "ANP"]
 
-### AMP ###
-###########
 
+###########
+#   AMP   #
+###########
   
 # buildData.builtDatasetGlobal(p_list_ligand = "/home/borrel/Yue_project/resultLigandInPDB" , ligand_ID = "AMP", thresold_RX = thresold_RX, thresold_blast = thresold_blast, verbose = 1)
 # datasetPreparation ("AMP")
@@ -598,8 +599,8 @@ l_ligand_out = ["AMP", "ADP", "ATP", "TTP", "DCP", "DGT", "DTP", "DUP", "ACP", "
 # analysisSmile ("AMP")
 # analysisBS ("AMP")
 
-
-### ADP ###
+###########
+#   ADP   #
 ###########
 
 # buildData.builtDatasetGlobal(p_list_ligand = "/home/borrel/Yue_project/resultLigandInPDB" , ligand_ID = "ADP", thresold_RX = thresold_RX, thresold_blast = thresold_blast, verbose = 1)
@@ -610,10 +611,11 @@ l_ligand_out = ["AMP", "ADP", "ATP", "TTP", "DCP", "DGT", "DTP", "DUP", "ACP", "
 # analysisBS ("ADP")
 # analysisSmile ("ADP")
 # 
-# 
-# ### POP ###
-# ###########
-# # # 
+
+##########
+#  POP   #
+##########
+#
 # buildData.builtDatasetGlobal(p_list_ligand = "/home/borrel/Yue_project/resultLigandInPDB" , ligand_ID = "POP", thresold_RX = thresold_RX, thresold_blast = thresold_blast, verbose = 1)
 # datasetPreparation ("POP")
 # applyTMAlign ("POP")
@@ -622,9 +624,10 @@ l_ligand_out = ["AMP", "ADP", "ATP", "TTP", "DCP", "DGT", "DTP", "DUP", "ACP", "
 # analysisBS ("POP")
 # analysisSmile ("POP")
 # 
-# 
-# ### ATP ###
-# ###########
+
+###########
+#   ATP   #
+###########
 # 
 # buildData.builtDatasetGlobal(p_list_ligand = "/home/borrel/Yue_project/resultLigandInPDB" , ligand_ID = "ATP", thresold_RX = thresold_RX, thresold_blast = thresold_blast, verbose = 1)
 # datasetPreparation ("ATP")
@@ -634,22 +637,35 @@ l_ligand_out = ["AMP", "ADP", "ATP", "TTP", "DCP", "DGT", "DTP", "DUP", "ACP", "
 # analysisBS ("ATP")
 # analysisSmile ("ATP")
 # 
-#######################
+#######################################
+# classification of reference protein #
+#######################################
+prdataset = "/home/borrel/Yue_project/dataset/"
 # arrangeResult.controlResult (["AMP", "ADP", "POP"])
-# refClassification.classifRefProtein ("/home/borrel/Yue_project/dataset/", ["AMP", "ADP", "ATP", "POP"])
+# refClassification.classifRefProtein (prdataset, ["AMP", "ADP", "ATP", "POP"])
 #
 #
-#####################
-# RESULT MANAGEMENT #
-#####################
+#######################
+# CLASSIFICATION LSRs #
+#######################
 
 name_folder_final = "withoutLig"
 # manageResult (["AMP", "ADP", "POP", "ATP"], name_folder_final, l_ligand_out)
 # arrangeResult.qualityExtraction (["AMP", "ADP", "POP", "ATP"], name_folder_final, p_list_ligand = "/home/borrel/Yue_project/resultLigandInPDB", thresold_sheap = thresold_shaep)
 arrangeResult.countingSubstituent(name_folder_final)
 
-# to do new folder !!!
+
+###################################################
+# AFFINITY AND INTERACTIONS BY PROTEIN REFERENCE  #
+###################################################
+
+
+
+######################
+# ANALYSE REFERENCE  #
+######################
+
+# analyse enantiomer
 # arrangeResult.enantiomer(["AMP", "ADP", "ATP"], name_folder_final)
+# analyse the superimposition of ligand references
 # arrangeResult.superpositionAllRef(["AMP", "ADP", "POP", "ATP"], name_folder_final)
-
-

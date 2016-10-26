@@ -1,5 +1,5 @@
-from os import system, listdir
-
+from os import system, listdir, path
+import parsePDB
 
 
 def formatPDBDatabase(pr_PDB):
@@ -39,3 +39,26 @@ def retriveListPDB (pr_PDB):
     return l_p_pdb
 
 
+def searchLigands(prPDB, prresult):
+    '''search ligands in PDB database
+    out : list of ligands with PDB files associated'''
+
+    print "Start Search Ligand In PDB file"
+    pfilout = prresult + "resultLigandInPDB"
+    # control file exist
+    if path.exists(pfilout) and path.getsize(pfilout) != 0:
+        return pfilout
+
+    l_PDB = retriveListPDB(prPDB)
+
+    filout = open(pfilout, "w")
+
+    for PDBid in l_PDB:
+        llig = parsePDB.retrieveListLigand(prPDB + PDBid.lower() + ".pdb")
+        if llig != []:
+            filout.write(PDBid + "\t" + " ".join(llig) + "\n")
+        else:
+            continue
+
+    filout.close()
+    return pfilout

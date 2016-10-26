@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 from nams import nams
 from rdkit import Chem
 import openbabel

@@ -98,31 +98,31 @@ def closeDicoFile (d_filout_lig) :
 
 def NameFamily (name_family) : 
 
-    if name_family == "phosphatase" : 
+    if name_family == "phosphatase":
         return "PT"
-    elif name_family == "phosphorylase" : 
+    elif name_family == "phosphorylase":
         return "PL"
-    elif name_family == "kinase" :
+    elif name_family == "kinase":
         return "KS" 
-    elif name_family == "helicase" :
+    elif name_family == "helicase":
         return "HL" 
-    elif name_family == "myosine" :
+    elif name_family == "myosine":
         return "MY" 
-    elif name_family == "transferase" :
+    elif name_family == "transferase":
         return "TF" 
-    elif name_family == "synthetase" :
+    elif name_family == "synthetase":
         return "SY" 
-    elif name_family == "hydrolase" :
+    elif name_family == "hydrolase":
         return "HD" 
-    elif name_family == "ligase" :
+    elif name_family == "ligase":
         return "LG"
-    elif name_family == "ATPase" :
+    elif name_family == "ATPase":
         return "AT" 
-    elif name_family == "carboxylase" :
+    elif name_family == "carboxylase":
         return "CB" 
-    elif name_family == "actin" :
+    elif name_family == "actin":
         return "AC" 
-    elif name_family == "HSP" :
+    elif name_family == "HSP":
         return "HP" 
 
     return "OT"    
