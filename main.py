@@ -659,6 +659,9 @@ arrangeResult.countingSubstituent(name_folder_final)
 # AFFINITY AND INTERACTIONS BY PROTEIN REFERENCE  #
 ###################################################
 
+# folder final
+pr_classif = pathManage.result("final_" + name_folder_final)
+
 
 
 ######################
