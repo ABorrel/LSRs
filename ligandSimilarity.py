@@ -1,5 +1,5 @@
 from os import listdir
-from copy import copy
+from shutil import copyfile
 import pathManage
 
 
@@ -19,16 +19,31 @@ def analyseLGDProximity(prclassif):
 def extractLGDfile(prclassif, prresult):
     """Extract from folder classification """
 
-    loutref = []
+    lprref = []
     lfoldergroups = listdir(prclassif)
     for foldergroup in lfoldergroups:
-        lrefprots = listdir(prclassif + "/" + foldergroup + "/")
-        for refprot in lrefprots:
-            if not refprot in loutref:
-                pathManage.generatePath(prout + refprot)
-            lfileLGD = listdir(prclassif + "/" + foldergroup + "/" + refprot + "/LGD/")
-            for fileLGD in lfileLGD:
-                copy(prclassif + "/" + foldergroup + "/" + refprot + "/LGD/" + fileLGD, prresult + refprot + "/" + fileLGD)
+        if foldergroup == "cycle":
+            lsubtypes = listdir(prclassif + "/cycle/")
+            for subtype in lsubtypes:
+                lrefprot = listdir(prclassif + "/cycle/" + subtype)
+                for refprot in lrefprot:
+                    lprref.append(prclassif + "/cycle/" + subtype + "/" + refprot)
+        else:
+            lrefprot = listdir(prclassif + "/" +  foldergroup + "/")
+            for refprot in lrefprot:
+                lprref.append(prclassif + "/" + foldergroup + "/" + refprot)
+
+
+    lout = []
+    for prefprot in lprref:
+        refprot = prefprot.split("/")[-1]
+        if not refprot in lout:
+            pathManage.generatePath(prresult + refprot)
+            lout.append(refprot)
+        # copy file LGD
+        lfileLGD = listdir(prefprot + "/LGD/")
+        for fileLGD in lfileLGD:
+            copyfile(prefprot + "/LGD/" + fileLGD, prresult + refprot + "/" + fileLGD)
 
 
     return prresult

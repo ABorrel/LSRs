@@ -14,6 +14,7 @@ import tool
 import arrangeResult
 import managePDB
 import refClassification
+import ligandSimilarity
 
 from os import listdir, path, remove, rename, system
 from re import search
@@ -27,7 +28,7 @@ from copy import deepcopy, copy
 
 # PDB extraction
 def downloadPDB (pr_in):
-    
+
     pathManage.generatePath(pr_in)
     managePDB.formatPDBDatabase(pr_in)
 
@@ -39,30 +40,27 @@ def downloadPDB (pr_in):
 
 
 def datasetPreparation (ligand_ID, clean = 1):
-    
-    
+
     p_dir_dataset = pathManage.dataset(ligand_ID)
-    
     l_folder = listdir(p_dir_dataset)
     indent = 0
-    
+
     for ref_folder in l_folder  :
         # file include in dataset folder
-        if len (ref_folder) != 4 : 
+        if len (ref_folder) != 4:
             continue
         l_pdbfile = listdir(p_dir_dataset + ref_folder + "/")
         indent = indent + 1
         print ref_folder, indent
-        
-        
-        # clean repertory -> only PDB ref and PDB 
+
+        # clean repertory -> only PDB ref and PDB
         l_pdbfile = listdir(p_dir_dataset + ref_folder + "/")
         if clean == 1 : 
             for pdbfile in l_pdbfile : 
                 p_file_pdb = p_dir_dataset + ref_folder + "/" + pdbfile
                 if not search (".pdb", pdbfile ) or search ("subref", pdbfile) or len (pdbfile.split("_")[0]) == 3: 
                     remove (p_file_pdb)
-        
+
         l_pdbfile = listdir(p_dir_dataset + ref_folder + "/")
         for pdbfile in l_pdbfile : 
             p_file_pdb = p_dir_dataset + ref_folder + "/" + pdbfile
@@ -652,7 +650,7 @@ prdataset = "/home/borrel/Yue_project/dataset/"
 name_folder_final = "withoutLig"
 # manageResult (["AMP", "ADP", "POP", "ATP"], name_folder_final, l_ligand_out)
 # arrangeResult.qualityExtraction (["AMP", "ADP", "POP", "ATP"], name_folder_final, p_list_ligand = "/home/borrel/Yue_project/resultLigandInPDB", thresold_sheap = thresold_shaep)
-arrangeResult.countingSubstituent(name_folder_final)
+#arrangeResult.countingSubstituent(name_folder_final)
 
 
 ###################################################
@@ -660,8 +658,8 @@ arrangeResult.countingSubstituent(name_folder_final)
 ###################################################
 
 # folder final
-pr_classif = pathManage.result("final_" + name_folder_final)
-
+pr_classif = pathManage.result("final_" + name_folder_final) + "Pi_LSR"
+ligandSimilarity.analyseLGDProximity(pr_classif)
 
 
 ######################
