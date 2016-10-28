@@ -1,7 +1,8 @@
 from os import listdir
 from shutil import copyfile
-import pathManage
 
+import pathManage
+import generateMCS
 
 def analyseLGDProximity(prclassif):
 
@@ -14,10 +15,16 @@ def analyseLGDProximity(prclassif):
 
     # extract for each reference LGD
     extractLGDfile(prclassif, prout)
+    buildMatrixMCS(prout)
 
 
 def extractLGDfile(prclassif, prresult):
     """Extract from folder classification """
+
+        # test if file in folder result
+    if len(listdir(prresult)) > 1:
+        return prresult
+
 
     lprref = []
     lfoldergroups = listdir(prclassif)
@@ -47,3 +54,35 @@ def extractLGDfile(prclassif, prresult):
 
 
     return prresult
+
+
+
+
+
+def buildMatrixMCS(prin):
+
+    lrefprot = listdir(prin)
+    for refprot in lrefprot:
+        print(refprot)
+        lpsmile = []
+        lfileref = listdir(prin + refprot)
+        # extract smile
+        for fileref in lfileref:
+            print(fileref[-3:])
+            if fileref[-3:] == "smi":
+                lpsmile.append (prin + refprot + "/" + fileref)
+
+        i = 0
+        nbsmile = len(lpsmile)
+        while i < nbsmile - 1:
+            j = i + 1
+            while j < nbsmile:
+                tanimotoMCS = generateMCS.get_Tanimoto(lpsmile[i], lpsmile[j])
+                print(tanimotoMCS)
+                # stock
+                j = j + 1
+            i = i + 1
+
+
+
+    return
