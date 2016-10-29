@@ -17,7 +17,7 @@ def analyseLGDProximity(prclassif):
 
     # extract for each reference LGD
     extractLGDfile(prclassif, prout)
-    buildMatrixMCS(prout)
+    buildMatrixSimilarity(prout)
 
 
 def extractLGDfile(prclassif, prresult):
@@ -83,16 +83,21 @@ def buildMatrixSimilarity(prin, MCS=1, Sheap=1, pfileaffinity=1):
             return
 
         dresult={}
+        lligname = []
         i = 0
         nbsmile = len(lpsmile)
         while i < nbsmile - 1:
             j = i + 1
             while j < nbsmile:
-                name1 = lpsmile[i][:-4]
-                name2 = lpsmile[j][:-4]
+                name1 = lpsmile[i][:-4].split("LGD_")[-1]
+                name2 = lpsmile[j][:-4].split("LGD_")[-1]
+                if not name1 in lligname:
+                    lligname.append(name1)
+                if not name2 in lligname:
+                    lligname.append(name2)
                 print(name1, name2)
                 if not name1 in dresult.keys():
-                    dresult[name1] == {}
+                    dresult[name1] = {}
                 if not name2 in dresult[name1].keys():
                     dresult[name1][name2] = {}
                 if MCS == 1:
@@ -101,16 +106,52 @@ def buildMatrixSimilarity(prin, MCS=1, Sheap=1, pfileaffinity=1):
                     print(tanimotoMCS)
                 if Sheap == 1:
                     pshaep = prin + refprot + "/outsheap.txt"
-                    runOtherSoft.runShaep(lppdb[i], lppdb[j], pshaep)
+                    runOtherSoft.runShaep(lppdb[i], lppdb[j], pshaep, clean=1)
                     dsheap = parseShaep.parseOutputShaep(pshaep)
                     print(dsheap)
+                    dresult[name1][name2]["ESP"] = dsheap["ESP_similarity"]
 
-                    runOtherSoft.runShaep(lppdb[j], lppdb[i], pshaep, clean=1)
-                    dsheap = parseShaep.parseOutputShaep(pshaep)
-                    print(dsheap)
-                    dddd
-                # stock
+                    #control same value
+                    #runOtherSoft.runShaep(lppdb[j], lppdb[i], pshaep, clean=1)
+                    #dsheap = parseShaep.parseOutputShaep(pshaep)
+                    #print(dsheap)
                 j = j + 1
             i = i + 1
 
+        if MCS == 1:
+            filoutMCS = open(prin + refprot + "/matriceMCS", "w")
+            filoutMCS.write("\t".join(lligname) + "\n")
+        if Sheap == 1:
+            filoutSheap = open(prin + refprot + "/matriceSheap", "w")
+            filoutSheap.write("\t".join(lligname) + "\n")
+
+        for namelig in lligname:
+            if MCS == 1:
+                filoutMCS.write(namelig)
+            if Sheap == 1:
+                filoutSheap.write(namelig)
+
+            for nameligcol in lligname:
+                if MCS == 1:
+                    if nameligcol == namelig:
+                        filoutMCS.write("\t1.0")
+                    else:
+                        try: filoutMCS.write("\t" + str(dresult[namelig][nameligcol]["MCS"]))
+                        except: filoutMCS.write("\t" + str(dresult[nameligcol][namelig]["MCS"]))
+                if Sheap == 1:
+                    if nameligcol == namelig:
+                        filoutSheap.write("\t1.0")
+                    else:
+                        try: filoutSheap.write("\t" + str(dresult[namelig][nameligcol]["ESP"]))
+                        except: filoutSheap.write("\t" + str(dresult[nameligcol][namelig]["ESP"]))
+            if MCS == 1:
+                filoutMCS.write("\n")
+            if Sheap == 1:
+                filoutSheap.write("\n")
+        if MCS == 1:
+            filoutMCS.close()
+        if Sheap == 1:
+            filoutSheap.close()
+
+        dddd
     return

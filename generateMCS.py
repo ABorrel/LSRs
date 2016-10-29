@@ -14,7 +14,7 @@ def get_Tanimoto(psmile1, psmile2):
     fsmile2.close()
 
 
-    print(smile1, smile2)
+    #print(smile1, smile2)
     mol_t1 = ("smi", smile1)
     mol_t2 = ("smi", smile2)
     mol1, mol_info1 = ms.get_mol_info(mol_t1[0], mol_t1[1])
@@ -30,4 +30,4 @@ def get_Tanimoto(psmile1, psmile2):
     score12 = sim12 / (sim11 + sim22 - sim12)
     score21 = sim21 / (sim11 + sim22 - sim21)
 
-    return [score12, score21]
+    return score12

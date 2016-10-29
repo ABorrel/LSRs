@@ -67,9 +67,9 @@ def datasetPreparation (ligand_ID, clean = 1):
             # extract ligand in PDB
             l_ligand = parsePDB.retrieveListLigand(p_file_pdb)
 #             print l_ligand
-            if l_ligand == []  : 
+            if l_ligand == []:
                 continue
-            else : 
+            else:
                 l_atom_pdb_parsed = parsePDB.loadCoordSectionPDB(p_file_pdb)
                 for name_ligand in l_ligand : 
                     l_lig_parsed = parsePDB.retrieveLigand(l_atom_pdb_parsed, name_ligand)
@@ -77,25 +77,24 @@ def datasetPreparation (ligand_ID, clean = 1):
                         continue
                     p_filout_ligand = p_dir_dataset + ref_folder + "/" + name_ligand + "_" + path.split(p_file_pdb)[1]
                     writePDBfile.coordinateSection(p_filout_ligand , l_lig_parsed[0], "HETATM", header=0 , connect_matrix = 1)
-                    
-        
+
         # ligand_ID write for shaep
 #         print p_dir_dataset + ref_folder + "/"
         p_lig_ref = pathManage.findligandRef(p_dir_dataset + ref_folder + "/", ligand_ID)
-        if p_lig_ref == 0 : 
-            
+        if p_lig_ref == 0:
+
             continue
 #         print p_lig_ref
         lig_ref_parsed = parsePDB.loadCoordSectionPDB(p_lig_ref)
         d_l_atom_substruct = substructTools.retrieveSubstruct(lig_ref_parsed, ligand_ID)
         # case with AMP without phosphate
-        if d_l_atom_substruct == {}: 
+        if d_l_atom_substruct == {}:
             continue
         # write ligand_ID
-        for subs in d_l_atom_substruct.keys (): 
+        for subs in d_l_atom_substruct.keys ():
             p_filout_substruct = p_dir_dataset + ref_folder + "/subref_" +  subs + "_" + ref_folder + ".pdb"
             writePDBfile.coordinateSection(p_filout_substruct , d_l_atom_substruct [subs], "HETATM", header=0 , connect_matrix = 1)
-        
+
     return 1
 
 
@@ -106,30 +105,29 @@ def datasetPreparation (ligand_ID, clean = 1):
 
 
 def applyTMAlign (substruct):
-    
+
     p_dir_dataset = pathManage.dataset(substruct)
     l_folder = listdir(p_dir_dataset)
-    
-    
-    for ref_folder in l_folder  :
-        if len (ref_folder) != 4 : 
+
+    for ref_folder in l_folder:
+        if len (ref_folder) != 4:
             continue
         l_pdbfile = listdir(p_dir_dataset + ref_folder + "/")
         p_pdb_ref = pathManage.findPDBRef(p_dir_dataset + ref_folder + "/")
-        
-        
-        for pdbfile in l_pdbfile : 
+
+
+        for pdbfile in l_pdbfile:
             # try if PDB not ligand
-            if len(pdbfile.split ("_")[0]) != 4 or not search (".pdb", pdbfile): 
+            if len(pdbfile.split ("_")[0]) != 4 or not search (".pdb", pdbfile):
                 continue
             # same alignment
-            elif p_dir_dataset + ref_folder + "/" + pdbfile == p_pdb_ref : 
+            elif p_dir_dataset + ref_folder + "/" + pdbfile == p_pdb_ref:
                 continue
-            else : 
+            else:
                 p_file_pdb = p_dir_dataset + ref_folder + "/" + pdbfile
                 p_dir_align = pathManage.alignmentOutput(substruct + "/" + p_pdb_ref.split ("/")[-1][:-4] + "__" + p_file_pdb.split ("/")[-1][:-4])
-                
-                # superimpose 
+
+                # superimpose
                 runOtherSoft.runTMalign(p_file_pdb, p_pdb_ref, p_dir_align)
     return 1
 
@@ -144,16 +142,15 @@ def applyTMAlign (substruct):
 
 
 def retrieveSubstructSuperimposed (name_lig, thresold_BS = 4.5, thresold_superimposed_ribose = 2.5, thresold_superimposed_pi = 3, thresold_shaep = 0.4):
-    
-    
+
     # ouput
     p_dir_dataset = pathManage.dataset(name_lig)
     p_dir_result = pathManage.result(name_lig )
     l_folder_ref = listdir(p_dir_dataset)
-    
+
     # log control
     p_log = open(p_dir_result + "log_superimposed.txt", "w")
-    
+
     # control extraction
     d_control = {}
     d_control["pr ref"] = 0
@@ -162,34 +159,34 @@ def retrieveSubstructSuperimposed (name_lig, thresold_BS = 4.5, thresold_superim
     d_control["subref empty"] = {}
     d_control["out sheap"] = {}
     filout_control = open (p_dir_result + "quality_extraction.txt", "w")
-    
+
     # stock smile code
     d_smile = {}
-    
+
     # sheap control
     d_filout_sheap = {}
     d_filout_sheap ["list"] = [p_dir_result + "shaep_global.txt"]
     d_filout_sheap["global"] = open (p_dir_result + "shaep_global.txt", "w") 
     d_filout_sheap["global"].write ("name\tbest_similarity\tshape_similarity\tESP_similarity\n")
-    
+
     for ref_folder in l_folder_ref :
         # control folder reference name
         if len (ref_folder) != 4 : 
             p_log.write ("[ERROR folder] -> " + ref_folder + "\n")
             continue
-        
+
         # reference
         p_lig_ref = pathManage.findligandRef(p_dir_dataset + ref_folder + "/", name_lig)
-        try : 
+        try:
             lig_ref_parsed = parsePDB.loadCoordSectionPDB(p_lig_ref, "HETATM")
 #             print len (lig_ref_parsed)
-        except : 
+        except:
             p_log.write ("[ERROR ligand ref] -> " + p_lig_ref + "\n")
             continue
-        
+
         #control
         d_control["pr ref"] = d_control["pr ref"] + 1
-        
+
         # output by reference
         p_dir_result_ref = pathManage.result(name_lig + "/" + ref_folder)
         d_filout_superimposed = {}
@@ -348,16 +345,15 @@ def retrieveSubstructSuperimposed (name_lig, thresold_BS = 4.5, thresold_superim
                                         d_smile[struct_type][smile_find]["PDB"].append (pdbfile.split ("_")[1])
                                         d_smile[struct_type][smile_find]["ligand"].append (pdbfile.split ("_")[0])
                                         d_smile[struct_type][smile_find]["ref"].append (ref_folder)
-            
+
                             else : 
                                 if not struct_type in d_control["out sheap"].keys () : 
                                     d_control["out sheap"][struct_type] = 1
                                 else : 
                                     d_control["out sheap"][struct_type] = d_control["out sheap"][struct_type] + 1
-            
-            
+
         tool.closeDicoFile (d_filout_superimposed)
-    
+
     # sheap control    
     tool.closeDicoFile (d_filout_sheap)
     for p_file_sheap in d_filout_sheap["list"] : 
@@ -588,7 +584,7 @@ l_ligand_out = ["AMP", "ADP", "ATP", "TTP", "DCP", "DGT", "DTP", "DUP", "ACP", "
 ###########
 #   AMP   #
 ###########
-  
+
 # buildData.builtDatasetGlobal(p_list_ligand = "/home/borrel/Yue_project/resultLigandInPDB" , ligand_ID = "AMP", thresold_RX = thresold_RX, thresold_blast = thresold_blast, verbose = 1)
 # datasetPreparation ("AMP")
 # applyTMAlign ("AMP")
@@ -608,7 +604,7 @@ l_ligand_out = ["AMP", "ADP", "ATP", "TTP", "DCP", "DGT", "DTP", "DUP", "ACP", "
 # retrieveSubstructSuperimposed ("ADP", thresold_BS = thresold_BS, thresold_superimposed_ribose = thresold_superimposed_ribose, thresold_superimposed_pi = thresold_superimposed_pi, thresold_shaep = thresold_shaep)
 # analysisBS ("ADP")
 # analysisSmile ("ADP")
-# 
+
 
 ##########
 #  POP   #
@@ -621,12 +617,12 @@ l_ligand_out = ["AMP", "ADP", "ATP", "TTP", "DCP", "DGT", "DTP", "DUP", "ACP", "
 # retrieveSubstructSuperimposed ("POP", thresold_BS = thresold_BS, thresold_superimposed_ribose = thresold_superimposed_ribose, thresold_superimposed_pi = thresold_superimposed_pi, thresold_shaep = thresold_shaep)
 # analysisBS ("POP")
 # analysisSmile ("POP")
-# 
+
 
 ###########
 #   ATP   #
 ###########
-# 
+
 # buildData.builtDatasetGlobal(p_list_ligand = "/home/borrel/Yue_project/resultLigandInPDB" , ligand_ID = "ATP", thresold_RX = thresold_RX, thresold_blast = thresold_blast, verbose = 1)
 # datasetPreparation ("ATP")
 # applyTMAlign ("ATP")
@@ -634,7 +630,8 @@ l_ligand_out = ["AMP", "ADP", "ATP", "TTP", "DCP", "DGT", "DTP", "DUP", "ACP", "
 # retrieveSubstructSuperimposed ("ATP", thresold_BS = thresold_BS, thresold_superimposed_ribose = thresold_superimposed_ribose, thresold_superimposed_pi = thresold_superimposed_pi, thresold_shaep = thresold_shaep)
 # analysisBS ("ATP")
 # analysisSmile ("ATP")
-# 
+
+
 #######################################
 # classification of reference protein #
 #######################################
