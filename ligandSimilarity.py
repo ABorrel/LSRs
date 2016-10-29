@@ -59,7 +59,7 @@ def extractLGDfile(prclassif, prresult):
 
 
 
-def buildMatrixMCS(prin):
+def buildMatrixSimilarity(prin, MCS=1, Shaep=1, pfileaffinity=1):
 
     lrefprot = listdir(prin)
     for refprot in lrefprot:
@@ -70,7 +70,7 @@ def buildMatrixMCS(prin):
         for fileref in lfileref:
             print(fileref[-3:])
             if fileref[-3:] == "smi":
-                lpsmile.append (prin + refprot + "/" + fileref)
+                lpsmile.append(prin + refprot + "/" + fileref)
 
         i = 0
         nbsmile = len(lpsmile)
