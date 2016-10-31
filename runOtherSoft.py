@@ -33,20 +33,18 @@ def subprocessTimeControl(command, time_out=60):
         # and fill the return code with some error value
         returncode = -1  # (comment 2)
 
-    else:                 
+    else:
         # in the case the process completed normally
         returncode = c.poll()
 
-    return returncode 
+    return returncode
 
 
-def runTMalign(path_pr1, path_pr2, path_dir_out, debug = 1) : 
-    
+def runTMalign(path_pr1, path_pr2, path_dir_out, debug = 1):
     # if exist doesnt run again
-    
     #if not os.path.exists(path_dir_out + "align.out") and not  os.path.exists( path_dir_out + "matrix.out")  : 
-    # case multi run 
-    if not os.path.exists (path_dir_out) : 
+    # case multi run
+    if not os.path.exists (path_dir_out):
     # if not os.path.exists (path_dir_out + "RMSD") or not os.path.exists (path_dir_out + "matrix.out"): 
         pathManage.generatePath (path_dir_out)
         p_pr1 = tool.removeChain (path_pr1, path_dir_out)
@@ -195,3 +193,12 @@ def piePlot (p_filin):
     print cmd
     os.system (cmd)
  
+
+
+def plotMatrice(pfilin):
+
+    cmd = "./matrixPlot.R " + pfilin
+    print(cmd)
+    os.system(cmd)
+
+

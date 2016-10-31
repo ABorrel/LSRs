@@ -1,10 +1,14 @@
-from os import listdir
+from os import listdir, remove
 from shutil import copyfile
+from re import search
 
 import pathManage
 import generateMCS
 import runOtherSoft
 import parseShaep
+import parseTSV
+
+PBINDINGDB = "/home/borrel/BindingDB_All.tsv"
 
 def analyseLGDProximity(prclassif):
 
@@ -15,9 +19,16 @@ def analyseLGDProximity(prclassif):
     prout = pathManage.result(nameREF + "_LGDsimilarity")
     print(prout)
 
+    # extract IC550 for PDB and ligand
+    pbindingDBfiltered = prout + "bindingDBfiltered.txt"
+    lkeep = [ "PDB ID(s) for Ligand-Target Complex", "Ligand HET ID in PDB", "Kd (nM)", "Ki (nM)", "IC50 (nM)"]
+    parseTSV.TSVFiltered(PBINDINGDB, lkeep, pfilout=pbindingDBfiltered)
+
     # extract for each reference LGD
     extractLGDfile(prclassif, prout)
-    buildMatrixSimilarity(prout)
+    buildMatrixSimilarity(prout, pfileaffinity=pbindingDBfiltered, MCS=1, Sheap=1)
+
+
 
 
 def extractLGDfile(prclassif, prresult):
@@ -61,7 +72,7 @@ def extractLGDfile(prclassif, prresult):
 
 
 
-def buildMatrixSimilarity(prin, MCS=1, Sheap=1, pfileaffinity=1):
+def buildMatrixSimilarity(prin, MCS=1, Sheap=1, pfileaffinity=""):
 
     lrefprot = listdir(prin)
     for refprot in lrefprot:
@@ -118,6 +129,36 @@ def buildMatrixSimilarity(prin, MCS=1, Sheap=1, pfileaffinity=1):
                 j = j + 1
             i = i + 1
 
+        # remove sheap txt
+        remove(pshaep)
+
+        # load affinity if available
+        if pfileaffinity != "":
+            print "ffff"
+            laffinity = parseTSV.fileFiltered(pfileaffinity)
+            filoutaff = open(prin + refprot + "/affinity", "w")
+            for namelig in lligname:
+                if search("^REF", namelig):
+                    ligID = namelig.split("_")[1]
+                    PDBid = namelig.split("_")[2]
+                else:
+                    ligID = namelig.split("_")[0]
+                    PDBid = namelig.split("_")[1]
+
+                # parse list known
+                aff = 0
+                for affinity in laffinity:
+                    if affinity["Ligand HET ID in PDB"] == ligID:
+                        if search(PDBid, affinity["PDB ID(s) for Ligand-Target Complex"]):
+                            filoutaff.write(str(namelig) + "\t" + str(affinity["IC50 (nM)"]) + "\n")
+                            aff = 1
+                            break
+                if aff == 0:
+                    filoutaff.write(str(namelig) + "\t-\n")
+            filoutaff.close()
+
+
+        # write matrice
         if MCS == 1:
             filoutMCS = open(prin + refprot + "/matriceMCS", "w")
             filoutMCS.write("\t".join(lligname) + "\n")
@@ -153,5 +194,12 @@ def buildMatrixSimilarity(prin, MCS=1, Sheap=1, pfileaffinity=1):
         if Sheap == 1:
             filoutSheap.close()
 
-        dddd
-    return
+        # plot matice
+        if MCS == 1:
+            runOtherSoft.plotMatrice(prin + refprot + "/matriceMCS")
+        if Sheap == 1:
+            runOtherSoft.plotMatrice(prin + refprot + "/matriceSheap")
+
+
+
+
