@@ -195,9 +195,9 @@ def piePlot (p_filin):
  
 
 
-def plotMatrice(pfilin):
+def plotMatrice(pfilin, paff):
 
-    cmd = "./matrixPlot.R " + pfilin
+    cmd = "./matrixPlot.R " + pfilin + " " + paff
     print(cmd)
     os.system(cmd)
 

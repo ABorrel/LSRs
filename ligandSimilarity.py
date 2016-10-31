@@ -63,9 +63,18 @@ def extractLGDfile(prclassif, prresult):
         # copy file LGD
         lfileLGD = listdir(prefprot + "/LGD/")
         for fileLGD in lfileLGD:
-            copyfile(prefprot + "/LGD/" + fileLGD, prresult + refprot + "/" + fileLGD)
-
-
+            ligid = fileLGD.split("_")[1]
+            if ligid == "REF":
+                ligid = fileLGD.split("_")[2]
+                pdbid = refprot.split("_")[-1]
+                LSR = "REF"
+            else:
+                pdbid = fileLGD.split("_")[2]
+                LSR = prefprot.split("/")[-2].replace("_", "")
+                if prefprot.split("/")[-3] == "cycle":
+                    LSR = "cycle-" + str(LSR)
+            nameout = str(LSR) + "_" + str(ligid) + "_" + str(pdbid) + str(fileLGD[-4:])
+            copyfile(prefprot + "/LGD/" + fileLGD, prresult + refprot + "/" + nameout)
     return prresult
 
 
@@ -76,13 +85,11 @@ def buildMatrixSimilarity(prin, MCS=1, Sheap=1, pfileaffinity=""):
 
     lrefprot = listdir(prin)
     for refprot in lrefprot:
-        print(refprot)
         lpsmile = []
         lppdb = []
         lfileref = listdir(prin + refprot)
         # extract smile
         for fileref in lfileref:
-            print(fileref[-3:])
             if fileref[-3:] == "smi":
                 lpsmile.append(prin + refprot + "/" + fileref)
             elif fileref[-3:] == "pdb":
@@ -100,8 +107,8 @@ def buildMatrixSimilarity(prin, MCS=1, Sheap=1, pfileaffinity=""):
         while i < nbsmile - 1:
             j = i + 1
             while j < nbsmile:
-                name1 = lpsmile[i][:-4].split("LGD_")[-1]
-                name2 = lpsmile[j][:-4].split("LGD_")[-1]
+                name1 = lpsmile[i][:-4].split("/")[-1]
+                name2 = lpsmile[j][:-4].split("/")[-1]
                 if not name1 in lligname:
                     lligname.append(name1)
                 if not name2 in lligname:
@@ -114,12 +121,12 @@ def buildMatrixSimilarity(prin, MCS=1, Sheap=1, pfileaffinity=""):
                 if MCS == 1:
                     tanimotoMCS = generateMCS.get_Tanimoto(lpsmile[i], lpsmile[j])
                     dresult[name1][name2]["MCS"] = tanimotoMCS
-                    print(tanimotoMCS)
+                    #print(tanimotoMCS)
                 if Sheap == 1:
                     pshaep = prin + refprot + "/outsheap.txt"
                     runOtherSoft.runShaep(lppdb[i], lppdb[j], pshaep, clean=1)
                     dsheap = parseShaep.parseOutputShaep(pshaep)
-                    print(dsheap)
+                    #print(dsheap)
                     dresult[name1][name2]["ESP"] = dsheap["ESP_similarity"]
 
                     #control same value
@@ -134,16 +141,16 @@ def buildMatrixSimilarity(prin, MCS=1, Sheap=1, pfileaffinity=""):
 
         # load affinity if available
         if pfileaffinity != "":
-            print "ffff"
             laffinity = parseTSV.fileFiltered(pfileaffinity)
-            filoutaff = open(prin + refprot + "/affinity", "w")
+            pfiloutaff = prin + refprot + "/affinity"
+            filoutaff = open(pfiloutaff, "w")
             for namelig in lligname:
-                if search("^REF", namelig):
-                    ligID = namelig.split("_")[1]
-                    PDBid = namelig.split("_")[2]
-                else:
-                    ligID = namelig.split("_")[0]
-                    PDBid = namelig.split("_")[1]
+                #if search("^REF", namelig):
+                #    ligID = namelig.split("_")[1]
+                #    PDBid = namelig.split("_")[2]
+                #else:
+                ligID = namelig.split("_")[1]
+                PDBid = namelig.split("_")[2]
 
                 # parse list known
                 aff = 0
@@ -196,10 +203,6 @@ def buildMatrixSimilarity(prin, MCS=1, Sheap=1, pfileaffinity=""):
 
         # plot matice
         if MCS == 1:
-            runOtherSoft.plotMatrice(prin + refprot + "/matriceMCS")
+            runOtherSoft.plotMatrice(prin + refprot + "/matriceMCS", pfiloutaff)
         if Sheap == 1:
-            runOtherSoft.plotMatrice(prin + refprot + "/matriceSheap")
-
-
-
-
+            runOtherSoft.plotMatrice(prin + refprot + "/matriceSheap", pfiloutaff)

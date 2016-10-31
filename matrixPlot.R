@@ -128,7 +128,7 @@ cardAffinity = function(matrixIN, daff, name_file){
   bk = c(0,0.20,0.40,0.60,0.80,1) 
   
   png (file = paste (name_file, ".png", sep = ""), dim_x * 30, dim_y * 30)
-  par( mar=c(15,15,0.5,10))
+  par( mar=c(20,20,0.5,10))
   image(as.matrix(matrixIN), yaxt = "n", xaxt = "n", breaks = bk, col = c("#FFFFFF", "#FFBFBF","#FF8080", "#FF4040", "#FF0000"))
   grid(nx = nb_line, ny = nb_col, col = "black", lwd = 1, lty = 1)
   box()
@@ -151,7 +151,6 @@ cardAffinity = function(matrixIN, daff, name_file){
   axis(1,seq(0,1,(1/(nb_line-1))),rownames (matrixIN), cex.axis = 2, las = 2)
   axis(2,seq(0,1,(1/(nb_col-1))),rownames (matrixIN), cex.axis = 2, las = 2)
 
-  print(daff)
   axis(4,seq(0,1,(1/(nb_col-1))),daff[rownames(matrixIN),2], cex.axis = 2, las = 2)
 
   
@@ -174,9 +173,9 @@ if(paffinity == "0"){
   cardMatrix(d, pmatrix)
 }else{
   daff = read.table(paffinity, header = F, sep = "\t")
-  print(daff)
+  #print(daff)
   rownames(daff) = daff[,1]
   #daff = daff[,-1]
-  print(daff)
+  #print(daff)
   cardAffinity(d, daff, pmatrix)
 }
