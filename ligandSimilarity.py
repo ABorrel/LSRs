@@ -26,7 +26,7 @@ def analyseLGDProximity(prclassif):
 
     # extract for each reference LGD
     extractLGDfile(prclassif, prout)
-    buildMatrixSimilarity(prout, pfileaffinity=pbindingDBfiltered, MCS=1, Sheap=1)
+    buildMatrixSimilarity(prout, pfileaffinity=pbindingDBfiltered, MCS=1, Sheap=0)
 
 
 
@@ -119,8 +119,9 @@ def buildMatrixSimilarity(prin, MCS=1, Sheap=1, pfileaffinity=""):
                 if not name2 in dresult[name1].keys():
                     dresult[name1][name2] = {}
                 if MCS == 1:
-                    tanimotoMCS = generateMCS.get_Tanimoto(lpsmile[i], lpsmile[j])
-                    dresult[name1][name2]["MCS"] = tanimotoMCS
+                    lMCS = generateMCS.get_Tanimoto(lpsmile[i], lpsmile[j])
+                    dresult[name1][name2]["MCS"] = lMCS[0]
+                    dresult[name1][name2]["MAXdiff"] = lMCS[1]
                     #print(tanimotoMCS)
                 if Sheap == 1:
                     pshaep = prin + refprot + "/outsheap.txt"
@@ -137,7 +138,8 @@ def buildMatrixSimilarity(prin, MCS=1, Sheap=1, pfileaffinity=""):
             i = i + 1
 
         # remove sheap txt
-        remove(pshaep)
+        if Sheap == 1:
+            remove(pshaep)
 
         # load affinity if available
         if pfileaffinity != "":
@@ -167,25 +169,36 @@ def buildMatrixSimilarity(prin, MCS=1, Sheap=1, pfileaffinity=""):
 
         # write matrice
         if MCS == 1:
-            filoutMCS = open(prin + refprot + "/matriceMCS", "w")
-            filoutMCS.write("\t".join(lligname) + "\n")
+            ptanimoto = prin + refprot + "/matriceMCSTanimoto"
+            pnbatomdiff = prin + refprot + "/matriceMCSNbAtomDiff"
+            filouttanimoto = open(ptanimoto, "w")
+            filoutNbatom = open(pnbatomdiff, "w")
+            filouttanimoto.write("\t".join(lligname) + "\n")
+            filoutNbatom.write("\t".join(lligname) + "\n")
+
         if Sheap == 1:
             filoutSheap = open(prin + refprot + "/matriceSheap", "w")
             filoutSheap.write("\t".join(lligname) + "\n")
 
         for namelig in lligname:
             if MCS == 1:
-                filoutMCS.write(namelig)
+                filouttanimoto.write(namelig)
+                filoutNbatom.write(namelig)
             if Sheap == 1:
                 filoutSheap.write(namelig)
 
             for nameligcol in lligname:
                 if MCS == 1:
                     if nameligcol == namelig:
-                        filoutMCS.write("\t1.0")
+                        filouttanimoto.write("\t1.0")
+                        filoutNbatom.write("\t0")
                     else:
-                        try: filoutMCS.write("\t" + str(dresult[namelig][nameligcol]["MCS"]))
-                        except: filoutMCS.write("\t" + str(dresult[nameligcol][namelig]["MCS"]))
+                        try: filouttanimoto.write("\t" + str(dresult[namelig][nameligcol]["MCS"]))
+                        except: filouttanimoto.write("\t" + str(dresult[nameligcol][namelig]["MCS"]))
+
+                        try: filoutNbatom.write("\t" + str(dresult[namelig][nameligcol]["MAXdiff"]))
+                        except: filoutNbatom.write("\t" + str(dresult[nameligcol][namelig]["MAXdiff"]))
+
                 if Sheap == 1:
                     if nameligcol == namelig:
                         filoutSheap.write("\t1.0")
@@ -193,16 +206,18 @@ def buildMatrixSimilarity(prin, MCS=1, Sheap=1, pfileaffinity=""):
                         try: filoutSheap.write("\t" + str(dresult[namelig][nameligcol]["ESP"]))
                         except: filoutSheap.write("\t" + str(dresult[nameligcol][namelig]["ESP"]))
             if MCS == 1:
-                filoutMCS.write("\n")
+                filouttanimoto.write("\n")
+                filoutNbatom.write("\n")
             if Sheap == 1:
                 filoutSheap.write("\n")
         if MCS == 1:
-            filoutMCS.close()
+            filouttanimoto.close()
+            filoutNbatom.close()
         if Sheap == 1:
             filoutSheap.close()
 
         # plot matice
         if MCS == 1:
-            runOtherSoft.plotMatrice(prin + refprot + "/matriceMCS", pfiloutaff)
+            runOtherSoft.plotMatrice(ptanimoto, pfiloutaff, pnbatomdiff)
         if Sheap == 1:
             runOtherSoft.plotMatrice(prin + refprot + "/matriceSheap", pfiloutaff)
