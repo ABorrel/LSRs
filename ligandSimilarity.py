@@ -26,8 +26,9 @@ def analyseLGDProximity(prclassif):
 
     # extract for each reference LGD
     extractLGDfile(prclassif, prout)
-    buildMatrixSimilarity(prout, pfileaffinity=pbindingDBfiltered, MCS=1, Sheap=0)
+    dMCS = buildMatrixSimilarity(prout, pfileaffinity=pbindingDBfiltered, MCS=1, Sheap=0)
 
+    # extract MCS
 
 
 
@@ -104,8 +105,8 @@ def buildMatrixSimilarity(prin, MCS=1, Sheap=1, pfileaffinity=""):
         lligname = []
         i = 0
         nbsmile = len(lpsmile)
-        while i < nbsmile - 1:
-            j = i + 1
+        while i < nbsmile:
+            j = i
             while j < nbsmile:
                 name1 = lpsmile[i][:-4].split("/")[-1]
                 name2 = lpsmile[j][:-4].split("/")[-1]
@@ -189,15 +190,15 @@ def buildMatrixSimilarity(prin, MCS=1, Sheap=1, pfileaffinity=""):
 
             for nameligcol in lligname:
                 if MCS == 1:
-                    if nameligcol == namelig:
-                        filouttanimoto.write("\t1.0")
-                        filoutNbatom.write("\t0")
-                    else:
-                        try: filouttanimoto.write("\t" + str(dresult[namelig][nameligcol]["MCS"]))
-                        except: filouttanimoto.write("\t" + str(dresult[nameligcol][namelig]["MCS"]))
+                    #if nameligcol == namelig:
+                    #    filouttanimoto.write("\t1.0")
+                    #    filoutNbatom.write("\t-")
+                    #else:
+                    try: filouttanimoto.write("\t" + str(dresult[namelig][nameligcol]["MCS"]))
+                    except: filouttanimoto.write("\t" + str(dresult[nameligcol][namelig]["MCS"]))
 
-                        try: filoutNbatom.write("\t" + str(dresult[namelig][nameligcol]["MAXdiff"]))
-                        except: filoutNbatom.write("\t" + str(dresult[nameligcol][namelig]["MAXdiff"]))
+                    try: filoutNbatom.write("\t" + str(dresult[namelig][nameligcol]["MAXdiff"]))
+                    except: filoutNbatom.write("\t" + str(dresult[nameligcol][namelig]["MAXdiff"]))
 
                 if Sheap == 1:
                     if nameligcol == namelig:

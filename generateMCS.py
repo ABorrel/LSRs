@@ -27,7 +27,9 @@ def get_Tanimoto(psmile1, psmile2):
     sim22, d_atoms22 = ms.get_similarity(mol_info2, mol_info2)
 
     #test similarity
+    sizeMCS = len(d_atoms12.keys())
     nbatomdiff = max([len(d_atoms11.keys()), len(d_atoms22.keys())]) - len(d_atoms12.keys())
+    text = str(sizeMCS) + "-" + str(nbatomdiff)
     print nbatomdiff
 
     ##### TEST FOR NAMS SCORE #######
@@ -65,4 +67,4 @@ def get_Tanimoto(psmile1, psmile2):
     score21 = sim21 / (sim11 + sim22 - sim21)
     #print score12
 
-    return [score12, nbatomdiff]
+    return [score12, text]

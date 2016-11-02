@@ -213,7 +213,7 @@ cardAffinityText = function(matrixIN, daff,dtext ,name_file){
   nbline = dim(matrixIN)[1]
   for (i in seq(0,nbline-1)){
     for (j in seq(0, nbcol-1)){
-      text((1/(nbline-1))*i,(1/(nbcol-1))*j, labels = paste(round(matrixIN[i+1,j+1],2), "\n", dtext[i+1,j+1], sep = ""), cex = 1.5)
+      text((1/(nbline-1))*i,(1/(nbcol-1))*j, labels = dtext[i+1,j+1], cex = 1.5)
     }
   }
   
