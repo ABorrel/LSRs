@@ -127,7 +127,7 @@ cardAffinity = function(matrixIN, daff, name_file){
   
   bk = c(0,0.20,0.40,0.60,0.80,1) 
   
-  png (file = paste (name_file, ".png", sep = ""), dim_x * 30, dim_y * 30)
+  png (file = paste (name_file, ".png", sep = ""), dim_x * 35, dim_y * 30)
   par(mar=c(20,20,0.5,10))
   image(as.matrix(matrixIN), yaxt = "n", xaxt = "n", breaks = bk, col = c("#FFFFFF", "#FFBFBF","#FF8080", "#FF4040", "#FF0000"))
   grid(nx = nb_line, ny = nb_col, col = "black", lwd = 1, lty = 1)
@@ -144,7 +144,14 @@ cardAffinity = function(matrixIN, daff, name_file){
   list_L1 = generateLegend (nb_line,1)
   list_L2 = generateLegend (nb_col,1)
   
-
+  nbcol = dim(matrixIN)[2]
+  nbline = dim(matrixIN)[1]
+  for (i in seq(0,nbline-1)){
+    for (j in seq(0, nbcol-1)){
+      text((1/(nbline-1))*i,(1/(nbcol-1))*j, labels = round(matrixIN[i+1,j+1],2), cex = 1.5)
+    }
+  }
+  
   # place les legendes
   posX = generatePosition(list_L1, ecart1)
   posY = generatePosition(list_L2, ecart2)
@@ -164,8 +171,11 @@ cardAffinity = function(matrixIN, daff, name_file){
 ###########
 
 args = commandArgs(TRUE)
-pmatrix = args[1]
-paffinity = args[2]
+#pmatrix = args[1]
+#paffinity = args[2]
+
+pmatrix = "C://Users/Alexandre\ Borrel/Desktop/LSR/HD-53_3AR4/matriceMCS"
+paffinity = "C://Users/Alexandre\ Borrel/Desktop/LSR/HD-53_3AR4/affinity"
 
 d = read.table (pmatrix, header = T, sep = "\t")
 
