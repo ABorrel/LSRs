@@ -128,7 +128,7 @@ cardAffinity = function(matrixIN, daff, name_file){
   bk = c(0,0.20,0.40,0.60,0.80,1) 
   
   png (file = paste (name_file, ".png", sep = ""), dim_x * 30, dim_y * 30)
-  par( mar=c(20,20,0.5,10))
+  par(mar=c(20,20,0.5,10))
   image(as.matrix(matrixIN), yaxt = "n", xaxt = "n", breaks = bk, col = c("#FFFFFF", "#FFBFBF","#FF8080", "#FF4040", "#FF0000"))
   grid(nx = nb_line, ny = nb_col, col = "black", lwd = 1, lty = 1)
   box()
