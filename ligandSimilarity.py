@@ -26,6 +26,7 @@ def analyseLGDProximity(prclassif):
 
     # extract for each reference LGD
     extractLGDfile(prclassif, prout)
+    fffff
     dMCS = buildMatrixSimilarity(prout, pfileaffinity=pbindingDBfiltered, MCS=1, Sheap=0)
 
     # extract MCS
@@ -76,6 +77,42 @@ def extractLGDfile(prclassif, prresult):
                     LSR = "cycle-" + str(LSR)
             nameout = str(LSR) + "_" + str(ligid) + "_" + str(pdbid) + str(fileLGD[-4:])
             copyfile(prefprot + "/LGD/" + fileLGD, prresult + refprot + "/" + nameout)
+
+        # extract SMILES LSR
+        dLSR = {}
+        pfileLSR = prresult + refprot + "/listLSRsmiles"
+        filoutLSR = open(pfileLSR, "w")
+        # header
+        ltypeLSR = ["pi1", "pi2", "pi3"]
+        filoutLSR.write("\t".join(ltypeLSR) + "\n")
+
+        prLSRin = prefprot + "/LSR/"
+        lfileLSR = listdir(prLSRin)
+        for fileLSR in lfileLSR:
+            if search("^LSR", fileLSR) and search("pdb", fileLSR):
+                lelemname = fileLSR.split("_")
+                nameLSR = lelemname[1]
+                if nameLSR == "REF":
+                    continue
+                else:
+                    lig = lelemname[2]
+                    PDBid = lelemname[3]
+                    smiles =  runOtherSoft.babelConvertPDBtoSMILE (prLSRin + fileLSR, rm_smi = 1)
+                    #print(smiles, "l101 - ligandSimilarity")
+                    kin = str(lig) + "-" + PDBid
+                    if not kin in dLSR.keys():
+                        dLSR[kin] = {}
+                        for typeLSR in ltypeLSR:
+                            dLSR[kin][typeLSR] = "-"
+                    dLSR[kin][nameLSR] = smiles
+
+        # write filout
+        for kin in dLSR.keys():
+            lsmiles = [dLSR[kin][i] for i in ltypeLSR]
+            filoutLSR.write(kin + "\t" + "\t".join(lsmiles) + "\n")
+        filoutLSR.close()
+
+
     return prresult
 
 

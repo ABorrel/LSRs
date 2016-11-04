@@ -57,7 +57,7 @@ def runTMalign(path_pr1, path_pr2, path_dir_out, debug = 1):
     return [path_dir_out + "align.out", path_dir_out + "align.out_all", path_dir_out + "align.out_atm",path_dir_out + "align.out_all_atm", path_dir_out + "RMSD" ]
 
 
-def babelConvertPDBtoSMILE (p_file_pdb, clean_smi = 0) : 
+def babelConvertPDBtoSMILE (p_file_pdb, clean_smi = 0, rm_smi = 0) : 
     
     path_filout = p_file_pdb[0:-4] + ".smi"
     
@@ -74,12 +74,16 @@ def babelConvertPDBtoSMILE (p_file_pdb, clean_smi = 0) :
     try : smile = l_Fline[0].split ("\t")[0]
     except : return "0"
 
-    # rm path in filout
-    if clean_smi == 1 : 
+    # rewrite path in filout
+    if clean_smi == 1:
         filout = open (path_filout, "w")
         filout.write (str (smile))
         filout.close ()
-    
+
+    if rm_smi == 1:
+        os.system("rm " + path_filout)
+
+
     return smile
 
 
