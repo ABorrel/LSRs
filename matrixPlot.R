@@ -290,9 +290,9 @@ cardAffinityTextLSR = function(matrixIN, daff, dtext, dLSR, name_file){
   lLSR = rownames (dLSR)
   llegend = NULL
   for(lgd in llgd){
-    print (lgd)
     lelem = strsplit(lgd, "_")[[1]]
     lgdID = lelem[2]
+    lgdPDBID = lelem[3]
     classif = lelem[1]
     print(lgdID)
     
@@ -300,17 +300,18 @@ cardAffinityTextLSR = function(matrixIN, daff, dtext, dLSR, name_file){
       llegend = append(llegend, "pi1:-\npi2:-\npi3:-\n")
     }else{
       for(LSR in lLSR){
-        lgdLSR = strsplit(LSR, "-")[[1]]
-        lgdLSR = lgdLSR[1]
-        print(paste(lgdID, lgdLSR, sep = "_"))
+        #print (paste(lgd, LSR))
+        lelemLSR = strsplit(LSR, "-")[[1]]
+        lgdLSR = lelemLSR[1]
+        PDBLSR = lelemLSR[2]
       
-        if (is.integer0 (grep(lgdID, lgdLSR))== FALSE ){
-          print("ddd")
+        if (is.integer0 (grep(lgdID, lgdLSR))== FALSE && is.integer0 (grep(PDBLSR, lgdPDBID))== FALSE){
           addleg = ""
           for(pi in colnames(dLSR)){
             addleg = paste(addleg, pi, ":", dLSR[LSR, pi], "\n", sep = "")
             }
           llegend = append(llegend, addleg)
+          #break
         }
       }
     } 

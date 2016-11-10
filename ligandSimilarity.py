@@ -26,10 +26,9 @@ def analyseLGDProximity(prclassif):
 
     # extract for each reference LGD
     extractLGDfile(prclassif, prout)
-    fffff
     dMCS = buildMatrixSimilarity(prout, pfileaffinity=pbindingDBfiltered, MCS=1, Sheap=0)
 
-    # extract MCS
+    # extract MMP -> to do
 
 
 
@@ -111,11 +110,7 @@ def extractLGDfile(prclassif, prresult):
             lsmiles = [dLSR[kin][i] for i in ltypeLSR]
             filoutLSR.write(kin + "\t" + "\t".join(lsmiles) + "\n")
         filoutLSR.close()
-
-
     return prresult
-
-
 
 
 
@@ -256,6 +251,6 @@ def buildMatrixSimilarity(prin, MCS=1, Sheap=1, pfileaffinity=""):
 
         # plot matice
         if MCS == 1:
-            runOtherSoft.plotMatrice(ptanimoto, pfiloutaff, pnbatomdiff)
+            runOtherSoft.plotMatrice(ptanimoto, pfiloutaff, pnbatomdiff, prin + refprot + "/listLSRsmiles" )
         if Sheap == 1:
             runOtherSoft.plotMatrice(prin + refprot + "/matriceSheap", pfiloutaff)
