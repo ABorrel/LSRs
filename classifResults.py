@@ -1,7 +1,7 @@
 import pathManage
 import parseShaep
 
-from os import listdir
+from os import listdir, path
 from re import search
 
 def SheapScoreToClass(prclassif):
@@ -26,12 +26,13 @@ def SheapScoreToClass(prclassif):
             for refprot in lrefprot:
                 lprref.append(prclassif + "/" + foldergroup + "/" + refprot)
 
-    for reffolder in lrefprot:
+    for reffolder in lprref:
+        #print reffolder
         classcycle = reffolder.split("/")[-3]
         if classcycle == "cycle":
             classif = classcycle + "-" + reffolder.split("/")[-2]
         else:
-            classif = classcycle + "-" + reffolder.split("/")[-2]
+            classif = reffolder.split("/")[-2]
 
         # PDB reference
         PDBref = reffolder.split("/")[-1]
@@ -55,10 +56,12 @@ def SheapScoreToClass(prclassif):
                     continue
                 lgd = lelemsplit[2]
                 PDBLSR = lelemsplit[3]
-                print classif, PDBref, typeLSR, lgd, PDBLSR
+                #print classif, PDBref, typeLSR, lgd, PDBLSR
                 # file sheap in result folder
                 psheap = pathManage.result() + lgdREF + "/" + PDBref + "/substituent_" + lgd + "_" + PDBLSR + "_" + typeLSR + ".hit"
-                print psheap
+                #print psheap
+                if not path.exists(psheap):
+                    continue
                 dsheap = parseShaep.parseOutputShaep(psheap)
                 filout.write(classif + "\t" + str(dsheap["ESP_similarity"]) + "\t" + str(dsheap["shape_similarity"]) + "\t" + lgd + "_" + PDBLSR + "_" + typeLSR + "\n")
     filout.close()
