@@ -27,7 +27,7 @@ def analyseLGDProximity(prclassif):
 
     # extract for each reference LGD
     extractLGDfile(prclassif, prout)
-    #buildMatrixSimilarity(prout, pfileaffinity=pbindingDBfiltered, MCS=1, Sheap=0)
+    buildMatrixSimilarity(prout, pfileaffinity=pbindingDBfiltered, MCS=1, Sheap=0)
 
     # extract MMP
     extractMMP(prout)
@@ -43,7 +43,7 @@ def extractLGDfile(prclassif, prresult):
 
 
     lprref = []
-    lfoldergroups = listdir(prclassif)
+    lfoldergroups = listdir(prclassif)[:5]
     for foldergroup in lfoldergroups:
         if foldergroup == "cycle":
             lsubtypes = listdir(prclassif + "/cycle/")
@@ -58,7 +58,7 @@ def extractLGDfile(prclassif, prresult):
 
 
     lout = []
-    for prefprot in lprref:
+    for prefprot in lprref:#########################################to reduce
         refprot = prefprot.split("/")[-1]
         if not refprot in lout:
             pathManage.generatePath(prresult + refprot)
@@ -120,6 +120,8 @@ def buildMatrixSimilarity(prin, MCS=1, Sheap=1, pfileaffinity=""):
 
     lrefprot = listdir(prin)
     for refprot in lrefprot:
+        if not path.isdir(prin + refprot):
+            continue
         lpsmile = []
         lppdb = []
         lfileref = listdir(prin + refprot)
@@ -181,7 +183,7 @@ def buildMatrixSimilarity(prin, MCS=1, Sheap=1, pfileaffinity=""):
             laffinity = parseTSV.fileFiltered(pfileaffinity)
             pfiloutaff = prin + refprot + "/affinity"
             filoutaff = open(pfiloutaff, "w")
-            filoutaff.write("class_LGD_PDB\tIC50(nM)\n")
+            filoutaff.write("IC50(nM)\n")
             for namelig in lligname:
                 #if search("^REF", namelig):
                 #    ligID = namelig.split("_")[1]
@@ -268,21 +270,24 @@ def extractMMP(prin, maxNbatom = 3):
 
     lrefprot = listdir(prin)
     for refprot in lrefprot:
+        if not path.isdir(prin + refprot):
+            continue
         pfileMSCatomdiff = prin + refprot + "/matriceMCSNbAtomDiff"
         if not path.exists(pfileMSCatomdiff):
             print "Error: " + pfileMSCatomdiff
             dddd
         else:
             dMSCatomdiff = tool.matrriceFileTODict(pfileMSCatomdiff)
-            print pfileMSCatomdiff
-            print dMSCatomdiff
+            #print pfileMSCatomdiff
+            #print dMSCatomdiff
 
         paffinity = prin + refprot + "/affinity"
         if not path.exists(paffinity):
             print "Error: " + paffinity
             ddd
         else:
-            daff = tool.matrriceFileTODict()
+            daff = tool.matrriceFileTODict(paffinity)
+            print daff
 
         plistSMILES = prin + refprot + "/listLSRsmiles"
         if not path.exists(plistSMILES):
@@ -290,6 +295,16 @@ def extractMMP(prin, maxNbatom = 3):
             dddd
         else:
             dLSR = tool.matrriceFileTODict(plistSMILES)
+
+        # extract smile LGD
+        lfileref = listdir(prin + refprot + "/")
+        dlig = {}
+        for fileref in lfileref:
+            if search(".smi", fileref):
+                fsmile = open(prin + refprot + "/" + fileref, "r")
+                smile = fsmile.readlines()[0]
+                fsmile.close()
+                dlig[fileref.split(".")[0]] = smile
 
     # find MMP
     for k1 in dMSCatomdiff.keys():
@@ -307,9 +322,9 @@ def extractMMP(prin, maxNbatom = 3):
                     # affinity
                     for kaff in daff.keys():
                         if kaff == k1:
-                            aff1 = daff[kaff]
+                            aff1 = daff[kaff]["IC50(nM)"]
                         elif kaff == k2:
-                            aff2 = daff[kaff]
+                            aff2 = daff[kaff]["IC50(nM)"]
 
                     # LSR
                     LSR1 = ""
@@ -322,5 +337,5 @@ def extractMMP(prin, maxNbatom = 3):
                             for klsr2 in dLSR[klsr].keys():
                                 LSR2 = str(LSR2) + " " + str(dLSR[klsr][klsr2])
 
-                    filout.write(LGD1 + "-" + PDB1 + "\t" + LGD2 + "-" + PDB2 + "\t" + LSR1 + "\t" + LSR2 + "\t" + str(aff1) + "\t" + str(aff2) + "\n")
+                    filout.write(LGD1 + "-" + PDB1 + "\t" + LGD2 + "-" + PDB2 + "\t" + dlig[k1] + "\t" + dlig[k2] + "\t" + LSR1 + "\t" + LSR2 + "\t" + str(aff1) + "\t" + str(aff2) + "\n")
     filout.close()
