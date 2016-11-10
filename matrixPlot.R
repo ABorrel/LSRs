@@ -22,6 +22,11 @@ generatePosition = function (list_legend, value_ecart){
 }
 
 
+is.integer0 <- function(x)
+{
+  is.integer(x) && length(x) == 0L
+}
+
 
 addTrans <- function(color,trans)
 {
@@ -230,6 +235,99 @@ cardAffinityText = function(matrixIN, daff,dtext ,name_file){
   dev.off()
 }
 
+cardAffinityTextLSR = function(matrixIN, daff, dtext, dLSR, name_file){
+  
+  nb_col = dim(matrixIN)[2]
+  nb_line = dim(matrixIN)[1]
+  
+  dim_x = nb_line
+  dim_y = nb_col
+  
+  if (nb_col == 1){
+    return ()
+  }
+  if (nb_line == 1){
+    return ()
+  }
+  
+  if (nb_col < 30){
+    dim_x = 30
+  }
+  
+  if (nb_line < 30){
+    dim_y = 30
+  }
+  
+  bk = c(0,0.20,0.40,0.60,0.80,1) 
+  
+  png (file = paste (name_file, "_LSR.png", sep = ""), dim_x * 35, dim_y * 35)
+  par(mar=c(20,20,10,20))
+  image(as.matrix(matrixIN), yaxt = "n", xaxt = "n", breaks = bk, col = c("#FFFFFF", "#FFBFBF","#FF8080", "#FF4040", "#FF0000"))
+  grid(nx = nb_line, ny = nb_col, col = "black", lwd = 1, lty = 1)
+  box()
+  # place les petites barres 
+  axis(1,seq(0,1,(1/(nb_line-1))), labels = FALSE)
+  axis(2,seq(0,1,(1/(nb_col-1))), labels = FALSE)
+  axis(3,seq(0,1,(1/(nb_line-1))), labels = FALSE)
+  axis(4,seq(0,1,(1/(nb_col-1))), labels = FALSE)
+  
+  # place les positions en fonction du cut
+  ecart1 = 1/(nb_line-1)	
+  ecart2 = 1/(nb_col-1)
+  list_L1 = generateLegend (nb_line,1)
+  list_L2 = generateLegend (nb_col,1)
+  
+  nbcol = dim(matrixIN)[2]
+  nbline = dim(matrixIN)[1]
+  for (i in seq(0,nbline-1)){
+    for (j in seq(0, nbcol-1)){
+      text((1/(nbline-1))*i,(1/(nbcol-1))*j, labels = dtext[i+1,j+1], cex = 1.5)
+    }
+  }
+  
+  # define legend LSR
+  llgd = rownames (matrixIN)
+  lLSR = rownames (dLSR)
+  llegend = NULL
+  for(lgd in llgd){
+    print (lgd)
+    lelem = strsplit(lgd, "_")[[1]]
+    lgdID = lelem[2]
+    classif = lelem[1]
+    print(lgdID)
+    
+    if(classif == "REF"){
+      llegend = append(llegend, "pi1:-\npi2:-\npi3:-\n")
+    }else{
+      for(LSR in lLSR){
+        lgdLSR = strsplit(LSR, "-")[[1]]
+        lgdLSR = lgdLSR[1]
+        print(paste(lgdID, lgdLSR, sep = "_"))
+      
+        if (is.integer0 (grep(lgdID, lgdLSR))== FALSE ){
+          print("ddd")
+          addleg = ""
+          for(pi in colnames(dLSR)){
+            addleg = paste(addleg, pi, ":", dLSR[LSR, pi], "\n", sep = "")
+            }
+          llegend = append(llegend, addleg)
+        }
+      }
+    } 
+  }
+  print(llegend)
+  
+  # place les legendes
+  posX = generatePosition(list_L1, ecart1)
+  posY = generatePosition(list_L2, ecart2)
+  axis(1,seq(0,1,(1/(nb_line-1))),rownames (matrixIN), cex.axis = 2, las = 2)
+  axis(2,seq(0,1,(1/(nb_col-1))),rownames (matrixIN), cex.axis = 2, las = 2)
+  axis(3,seq(0,1,(1/(nb_col-1))),daff[rownames(matrixIN),2], cex.axis = 2, las = 1)
+  axis(4,seq(0,1,(1/(nb_line-1))),llegend, cex.axis = 2, las = 2)
+  
+  #legend ("right", fill = c("black", "darkred", "red", "darkmagenta", "darkorchid","deepskyblue", "cyan", "white"), legend = c("0-2", "2-3", "3-4", "4-5", "5-6","6-7", "7-8", "> 10"), bg = addTrans ("#FFFFFF", 120) )
+  dev.off()
+}
 
 
 
@@ -238,26 +336,29 @@ cardAffinityText = function(matrixIN, daff,dtext ,name_file){
 ###########
 
 args = commandArgs(TRUE)
-#pmatrix = args[1]
-#paffinity = args[2]
-#ptext = args[3]
+pmatrix = args[1]
+paffinity = args[2]
+ptext = args[3]
+pLSR = args[4]
 
-paffinity = "C://Users/Alexandre\ Borrel/Desktop/LSR/HD-53_3AR4/affinity"
-pmatrix = "C://Users/Alexandre\ Borrel/Desktop/LSR/HD-53_3AR4/matriceMCSTanimoto"
-ptext = "C://Users/Alexandre\ Borrel/Desktop/LSR/HD-53_3AR4/matriceMCSNbAtomDiff"
+# for test
+#paffinity = "C://Users/Alexandre\ Borrel/Desktop/LSR/OT-55_1PTW/affinity"
+#pmatrix = "C://Users/Alexandre\ Borrel/Desktop/LSR/OT-55_1PTW/matriceMCSTanimoto"
+#ptext = "C://Users/Alexandre\ Borrel/Desktop/LSR/OT-55_1PTW/matriceMCSNbAtomDiff"
+#pLSR = "C://Users/Alexandre\ Borrel/Desktop/LSR/OT-55_1PTW/listLSRsmiles"
 
 d = read.table (pmatrix, header = T, sep = "\t")
 
-if(paffinity == "0" && ptext == "0"){
+if(paffinity == "0" && ptext == "0" && pLSR == "0"){
   cardMatrix(d, pmatrix)
-}else if(paffinity == "0"){
+}else if(paffinity == "0" && ptext != "0" && pLSR != "0"){
   cardMatrix(d, pmatrix)
-}else if(ptext == "0"){
+}else if(ptext == "0" && paffinity != "0" && pLSR == "0"){
   # d affinity
   daff = read.table(paffinity, header = F, sep = "\t")
   rownames(daff) = daff[,1]
   cardAffinity(d, daff, pmatrix)
-}else{
+}else if (ptext != "0" && paffinity != "0" && pLSR == "0"){
   # d affinity
   daff = read.table(paffinity, header = F, sep = "\t")
   rownames(daff) = daff[,1]
@@ -265,4 +366,15 @@ if(paffinity == "0" && ptext == "0"){
   dtext = read.table(ptext, header = T, sep = "\t")
   # card with texte
   cardAffinityText(d, daff, dtext, pmatrix)
+}else if(ptext != "0" && paffinity != "0" && pLSR != "0"){
+  # d affinity
+  daff = read.table(paffinity, header = F, sep = "\t")
+  rownames(daff) = daff[,1]
+  # d texte
+  dtext = read.table(ptext, header = T, sep = "\t")
+  # d LSR
+  dLSR = read.table(pLSR, header = T, sep = "\t")
+  print (dLSR)
+  cardAffinityTextLSR(d, daff, dtext, dLSR, pmatrix)
+  
 }
