@@ -43,7 +43,7 @@ def extractLGDfile(prclassif, prresult):
 
 
     lprref = []
-    lfoldergroups = listdir(prclassif)[:5]
+    lfoldergroups = listdir(prclassif)
     for foldergroup in lfoldergroups:
         if foldergroup == "cycle":
             lsubtypes = listdir(prclassif + "/cycle/")
