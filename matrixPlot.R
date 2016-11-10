@@ -356,12 +356,12 @@ if(paffinity == "0" && ptext == "0" && pLSR == "0"){
   cardMatrix(d, pmatrix)
 }else if(ptext == "0" && paffinity != "0" && pLSR == "0"){
   # d affinity
-  daff = read.table(paffinity, header = F, sep = "\t")
+  daff = read.table(paffinity, header = T, sep = "\t")
   rownames(daff) = daff[,1]
   cardAffinity(d, daff, pmatrix)
 }else if (ptext != "0" && paffinity != "0" && pLSR == "0"){
   # d affinity
-  daff = read.table(paffinity, header = F, sep = "\t")
+  daff = read.table(paffinity, header = T, sep = "\t")
   rownames(daff) = daff[,1]
   # d texte
   dtext = read.table(ptext, header = T, sep = "\t")
@@ -369,7 +369,7 @@ if(paffinity == "0" && ptext == "0" && pLSR == "0"){
   cardAffinityText(d, daff, dtext, pmatrix)
 }else if(ptext != "0" && paffinity != "0" && pLSR != "0"){
   # d affinity
-  daff = read.table(paffinity, header = F, sep = "\t")
+  daff = read.table(paffinity, header = T, sep = "\t")
   rownames(daff) = daff[,1]
   # d texte
   dtext = read.table(ptext, header = T, sep = "\t")

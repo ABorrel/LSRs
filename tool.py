@@ -126,11 +126,34 @@ def NameFamily (name_family) :
         return "HP" 
 
     return "OT"    
-    
-    
-    
-    
-    
-    
-    
+
+
+
+def matrriceFileTODict(pfilin):
+
+    if not path.exists(pfilin):
+        print "ERROR: file", pfilin, "Not exist (l.136 tool.py)"
+        return {}
+    filin = open(pfilin, "r")
+    llinesfilin = filin.readlines()
+    filin.close()
+
+    dout = {}
+    # primary key
+    lheader = llinesfilin[0].strip().split("\t")
+
+    nbline = len(llinesfilin)
+    i = 1
+    while i < nbline:
+        linesplit = llinesfilin[i].strip().split("\t")
+        kdict = linesplit[0]
+        dout[kdict] = {}
+        j = 1
+        while j < len(linesplit):
+            dout[kdict][lheader[j-1]] = linesplit[j]
+            j = j + 1
+        i = i + 1
+
+    return dout
+
 

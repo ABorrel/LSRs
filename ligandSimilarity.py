@@ -1,4 +1,4 @@
-from os import listdir, remove
+from os import listdir, remove, path
 from shutil import copyfile
 from re import search
 
@@ -7,6 +7,7 @@ import generateMCS
 import runOtherSoft
 import parseShaep
 import parseTSV
+import tool
 
 PBINDINGDB = "/home/borrel/BindingDB_All.tsv"
 
@@ -26,9 +27,10 @@ def analyseLGDProximity(prclassif):
 
     # extract for each reference LGD
     extractLGDfile(prclassif, prout)
-    dMCS = buildMatrixSimilarity(prout, pfileaffinity=pbindingDBfiltered, MCS=1, Sheap=0)
+    #buildMatrixSimilarity(prout, pfileaffinity=pbindingDBfiltered, MCS=1, Sheap=0)
 
-    # extract MMP -> to do
+    # extract MMP
+    extractMMP(prout)
 
 
 
@@ -179,6 +181,7 @@ def buildMatrixSimilarity(prin, MCS=1, Sheap=1, pfileaffinity=""):
             laffinity = parseTSV.fileFiltered(pfileaffinity)
             pfiloutaff = prin + refprot + "/affinity"
             filoutaff = open(pfiloutaff, "w")
+            filoutaff.write("class_LGD_PDB\tIC50(nM)\n")
             for namelig in lligname:
                 #if search("^REF", namelig):
                 #    ligID = namelig.split("_")[1]
@@ -254,3 +257,70 @@ def buildMatrixSimilarity(prin, MCS=1, Sheap=1, pfileaffinity=""):
             runOtherSoft.plotMatrice(ptanimoto, pfiloutaff, pnbatomdiff, prin + refprot + "/listLSRsmiles" )
         if Sheap == 1:
             runOtherSoft.plotMatrice(prin + refprot + "/matriceSheap", pfiloutaff)
+
+
+def extractMMP(prin, maxNbatom = 3):
+
+    pfilout = prin + "MMP.txt"
+    filout = open(pfilout, "w")
+    header = "LGD1-PDB1\tLGD2-PDB2\tLGDsmile1\tLGDsmile2\tLSRsLGD1\tLSRLGD2\tIC50(nM) LGD1\tIC50(nM) LGD2\n"
+    filout.write(header)
+
+    lrefprot = listdir(prin)
+    for refprot in lrefprot:
+        pfileMSCatomdiff = prin + refprot + "/matriceMCSNbAtomDiff"
+        if not path.exists(pfileMSCatomdiff):
+            print "Error: " + pfileMSCatomdiff
+            dddd
+        else:
+            dMSCatomdiff = tool.matrriceFileTODict(pfileMSCatomdiff)
+            print pfileMSCatomdiff
+            print dMSCatomdiff
+
+        paffinity = prin + refprot + "/affinity"
+        if not path.exists(paffinity):
+            print "Error: " + paffinity
+            ddd
+        else:
+            daff = tool.matrriceFileTODict()
+
+        plistSMILES = prin + refprot + "/listLSRsmiles"
+        if not path.exists(plistSMILES):
+            print "Error: " + plistSMILES
+            dddd
+        else:
+            dLSR = tool.matrriceFileTODict(plistSMILES)
+
+    # find MMP
+    for k1 in dMSCatomdiff.keys():
+        for k2 in dMSCatomdiff[k1].keys():
+            if k1 == k2:
+                continue
+            else:
+                nbatomdiff = int(dMSCatomdiff[k1][k2].split("-")[-1])
+                if nbatomdiff <= maxNbatom:
+                    LGD1 = k1.split("_")[1]
+                    PDB1 = k1.split("_")[2]
+                    LGD2 = k2.split("_")[1]
+                    PDB2 = k2.split("_")[2]
+
+                    # affinity
+                    for kaff in daff.keys():
+                        if kaff == k1:
+                            aff1 = daff[kaff]
+                        elif kaff == k2:
+                            aff2 = daff[kaff]
+
+                    # LSR
+                    LSR1 = ""
+                    LSR2 = ""
+                    for klsr in dLSR.keys():
+                        if klsr == str(LGD1 + "-" + PDB1):
+                            for klsr2 in dLSR[klsr].keys():
+                                LSR1 = str(LSR1) + " " + str(dLSR[klsr][klsr2])
+                        elif klsr == str(LGD2 + "-" + PDB2):
+                            for klsr2 in dLSR[klsr].keys():
+                                LSR2 = str(LSR2) + " " + str(dLSR[klsr][klsr2])
+
+                    filout.write(LGD1 + "-" + PDB1 + "\t" + LGD2 + "-" + PDB2 + "\t" + LSR1 + "\t" + LSR2 + "\t" + str(aff1) + "\t" + str(aff2) + "\n")
+    filout.close()
