@@ -20,17 +20,21 @@ def get_Tanimoto(psmile1, psmile2):
     mol1, mol_info1 = ms.get_mol_info(mol_t1[0], mol_t1[1])
     mol2, mol_info2 = ms.get_mol_info(mol_t2[0], mol_t2[1])
 
+    #print mol_info1.keys()
+    #print mol_info2.keys()
     # similarity combination
     sim12, d_atoms12 = ms.get_similarity(mol_info1, mol_info2)
     sim21, d_atoms21 = ms.get_similarity(mol_info2, mol_info1)
     sim11, d_atoms11 = ms.get_similarity(mol_info1, mol_info1)
     sim22, d_atoms22 = ms.get_similarity(mol_info2, mol_info2)
 
+    #print sim11, d_atoms11
+
     #test similarity
     sizeMCS = len(d_atoms12.keys())
     nbatomdiff = max([len(d_atoms11.keys()), len(d_atoms22.keys())]) - len(d_atoms12.keys())
     text = str(sizeMCS) + "-" + str(nbatomdiff)
-    print nbatomdiff
+    #print nbatomdiff
 
     ##### TEST FOR NAMS SCORE #######
     #################################
@@ -68,3 +72,10 @@ def get_Tanimoto(psmile1, psmile2):
     #print score12
 
     return [score12, text]
+
+
+#a = "/home/borrel/Yue_project/result/Pi_LSR_LGDsimilarity/KS-5_1B38/cycle-CON_1N3_3ULI.smi"
+#b = "/home/borrel/Yue_project/result/Pi_LSR_LGDsimilarity/KS-5_1B38/onlyC_PM1_1PYE.smi"
+
+#get_Tanimoto(a,b)
+

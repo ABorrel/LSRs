@@ -23,11 +23,11 @@ def analyseLGDProximity(prclassif):
     # extract IC550 for PDB and ligand
     pbindingDBfiltered = prout + "bindingDBfiltered.txt"
     lkeep = [ "PDB ID(s) for Ligand-Target Complex", "Ligand HET ID in PDB", "Kd (nM)", "Ki (nM)", "IC50 (nM)"]
-    parseTSV.TSVFiltered(PBINDINGDB, lkeep, pfilout=pbindingDBfiltered)
+    #parseTSV.TSVFiltered(PBINDINGDB, lkeep, pfilout=pbindingDBfiltered)
 
     # extract for each reference LGD
-    extractLGDfile(prclassif, prout)
-    buildMatrixSimilarity(prout, pfileaffinity=pbindingDBfiltered, MCS=1, Sheap=0)
+    #extractLGDfile(prclassif, prout)
+    #buildMatrixSimilarity(prout, pfileaffinity=pbindingDBfiltered, MCS=1, Sheap=0)
 
     # extract MMP
     extractMMP(prout)
@@ -37,9 +37,9 @@ def analyseLGDProximity(prclassif):
 def extractLGDfile(prclassif, prresult):
     """Extract from folder classification """
 
-        # test if file in folder result
-    if len(listdir(prresult)) > 1:
-        return prresult
+    # test if file in folder result
+    #if len(listdir(prresult)) > 1:
+    #    return prresult
 
 
     lprref = []
@@ -58,6 +58,8 @@ def extractLGDfile(prclassif, prresult):
 
 
     lout = []
+    dLSR = {}
+    ltypeLSR = ["pi1", "pi2", "pi3"]
     for prefprot in lprref:#########################################to reduce
         refprot = prefprot.split("/")[-1]
         if not refprot in lout:
@@ -80,16 +82,14 @@ def extractLGDfile(prclassif, prresult):
             copyfile(prefprot + "/LGD/" + fileLGD, prresult + refprot + "/" + nameout)
 
         # extract SMILES LSR
-        dLSR = {}
-        pfileLSR = prresult + refprot + "/listLSRsmiles"
-        filoutLSR = open(pfileLSR, "w")
-        # header
-        ltypeLSR = ["pi1", "pi2", "pi3"]
-        filoutLSR.write("\t".join(ltypeLSR) + "\n")
+        folderresult = prresult + refprot + "/"
+        if not folderresult in dLSR.keys():
+            dLSR[folderresult] = {}
 
         prLSRin = prefprot + "/LSR/"
         lfileLSR = listdir(prLSRin)
         for fileLSR in lfileLSR:
+            #print prefprot + "/LSR/" + fileLSR,"l93===ligandSimilarity"
             if search("^LSR", fileLSR) and search("pdb", fileLSR):
                 lelemname = fileLSR.split("_")
                 nameLSR = lelemname[1]
@@ -101,15 +101,25 @@ def extractLGDfile(prclassif, prresult):
                     smiles =  runOtherSoft.babelConvertPDBtoSMILE (prLSRin + fileLSR, rm_smi = 1)
                     #print(smiles, "l101 - ligandSimilarity")
                     kin = str(lig) + "-" + PDBid
-                    if not kin in dLSR.keys():
-                        dLSR[kin] = {}
+                    if not kin in dLSR[folderresult].keys():
+                        dLSR[folderresult][kin] = {}
                         for typeLSR in ltypeLSR:
-                            dLSR[kin][typeLSR] = "-"
-                    dLSR[kin][nameLSR] = smiles
+                            dLSR[folderresult][kin][typeLSR] = "-"
+                    dLSR[folderresult][kin][nameLSR] = smiles
+    #print dLSR
+    # write filout
+    for folderresult in dLSR.keys():
+        pfileLSR = folderresult + "listLSRsmiles"
 
-        # write filout
-        for kin in dLSR.keys():
-            lsmiles = [dLSR[kin][i] for i in ltypeLSR]
+        if path.exists(pfileLSR):
+            filoutLSR = open(pfileLSR, "a")
+        else:
+            filoutLSR = open(pfileLSR, "w")
+            filoutLSR.write("\t".join(ltypeLSR) + "\n")
+
+        for kin in dLSR[folderresult].keys():
+            lsmiles = [dLSR[folderresult][kin][i] for i in ltypeLSR]
+            print lsmiles, "l.122 ligandSimilarity.py"
             filoutLSR.write(kin + "\t" + "\t".join(lsmiles) + "\n")
         filoutLSR.close()
     return prresult
@@ -261,40 +271,53 @@ def buildMatrixSimilarity(prin, MCS=1, Sheap=1, pfileaffinity=""):
             runOtherSoft.plotMatrice(prin + refprot + "/matriceSheap", pfiloutaff)
 
 
-def extractMMP(prin, maxNbatom = 3):
+def extractMMP(prin, maxNbatom = 3, verbose = 0):
 
     pfilout = prin + "MMP.txt"
     filout = open(pfilout, "w")
-    header = "LGD1-PDB1\tLGD2-PDB2\tLGDsmile1\tLGDsmile2\tLSRsLGD1\tLSRLGD2\tIC50(nM) LGD1\tIC50(nM) LGD2\n"
+    header = "LGD1-PDB1\tLGD2-PDB2\tLGDsmile1\tLGDsmile2\tLSRsLGD1\tLSRLGD2\tIC50(nM) LGD1\tIC50(nM) LGD2\tNb diff atom\tNAMS-Tanimoto\n"
     filout.write(header)
 
     lrefprot = listdir(prin)
+    print len(lrefprot)
     for refprot in lrefprot:
+        print prin + refprot
         if not path.isdir(prin + refprot):
+            print "AAAAaA"
             continue
         pfileMSCatomdiff = prin + refprot + "/matriceMCSNbAtomDiff"
         if not path.exists(pfileMSCatomdiff):
             print "Error: " + pfileMSCatomdiff
-            dddd
         else:
             dMSCatomdiff = tool.matrriceFileTODict(pfileMSCatomdiff)
             #print pfileMSCatomdiff
             #print dMSCatomdiff
+            #print "###############"
+
+        pfileMSCTanimoto = prin + refprot + "/matriceMCSTanimoto"
+        if not path.exists(pfileMSCTanimoto):
+            print "Error: " + pfileMSCTanimoto
+        else:
+            dMCSTanimoto = tool.matrriceFileTODict(pfileMSCTanimoto)
+            #print pfileMSCatomdiff
+            #print dMSCatomdiff
+            #print "###############"
+
+
+
 
         paffinity = prin + refprot + "/affinity"
         if not path.exists(paffinity):
             print "Error: " + paffinity
-            ddd
         else:
             daff = tool.matrriceFileTODict(paffinity)
-            print daff
 
         plistSMILES = prin + refprot + "/listLSRsmiles"
         if not path.exists(plistSMILES):
             print "Error: " + plistSMILES
-            dddd
         else:
             dLSR = tool.matrriceFileTODict(plistSMILES)
+            #print dLSR
 
         # extract smile LGD
         lfileref = listdir(prin + refprot + "/")
@@ -302,40 +325,76 @@ def extractMMP(prin, maxNbatom = 3):
         for fileref in lfileref:
             if search(".smi", fileref):
                 fsmile = open(prin + refprot + "/" + fileref, "r")
-                smile = fsmile.readlines()[0]
+                smile = fsmile.readlines()[0].strip()
                 fsmile.close()
+                smile = smile.split("\t")[0]
                 dlig[fileref.split(".")[0]] = smile
 
-    # find MMP
-    for k1 in dMSCatomdiff.keys():
-        for k2 in dMSCatomdiff[k1].keys():
-            if k1 == k2:
-                continue
-            else:
-                nbatomdiff = int(dMSCatomdiff[k1][k2].split("-")[-1])
-                if nbatomdiff <= maxNbatom:
-                    LGD1 = k1.split("_")[1]
-                    PDB1 = k1.split("_")[2]
-                    LGD2 = k2.split("_")[1]
-                    PDB2 = k2.split("_")[2]
+        #print len(dMSCatomdiff)
+        # find MMP
+        #print dMSCatomdiff
+        ltemp = []# control repetition
+        for k1 in dMSCatomdiff.keys():
+            for k2 in dMSCatomdiff[k1].keys():
+                if k1 == k2:
+                    continue
+                else:
+                    #print dMSCatomdiff[k1][k2], "===="
+                    nbatomdiff = int(dMSCatomdiff[k1][k2].split("-")[-1])
+                    scoreMCS = float(dMCSTanimoto[k1][k2])
+                    if nbatomdiff <= maxNbatom and scoreMCS >= 0.9:
+                        LGD1 = k1.split("_")[1]
+                        PDB1 = k1.split("_")[2]
+                        LGD2 = k2.split("_")[1]
+                        PDB2 = k2.split("_")[2]
+                        # if same ligand continue
+                        if LGD1 == LGD2:
+                            continue
+                        # affinity
+                        for kaff in daff.keys():
+                            if kaff == k1:
+                                aff1 = daff[kaff]["IC50(nM)"]
+                            elif kaff == k2:
+                                aff2 = daff[kaff]["IC50(nM)"]
 
-                    # affinity
-                    for kaff in daff.keys():
-                        if kaff == k1:
-                            aff1 = daff[kaff]["IC50(nM)"]
-                        elif kaff == k2:
-                            aff2 = daff[kaff]["IC50(nM)"]
+                        # LSR
+                        LSR1 = ""
+                        LSR2 = ""
+                        for klsr in dLSR.keys():
+                            if klsr == str(LGD1 + "-" + PDB1):
+                                for klsr2 in dLSR[klsr].keys():
+                                    LSR1 = str(LSR1) + " " + str(dLSR[klsr][klsr2])
+                            elif klsr == str(LGD2 + "-" + PDB2):
+                                for klsr2 in dLSR[klsr].keys():
+                                    LSR2 = str(LSR2) + " " + str(dLSR[klsr][klsr2])
+                        if LSR1 == "":
+                            LSR1 = "- - - "
+                        if LSR2 == "":
+                            LSR2 = "- - - "
 
-                    # LSR
-                    LSR1 = ""
-                    LSR2 = ""
-                    for klsr in dLSR.keys():
-                        if klsr == str(LGD1 + "-" + PDB1):
-                            for klsr2 in dLSR[klsr].keys():
-                                LSR1 = str(LSR1) + " " + str(dLSR[klsr][klsr2])
-                        elif klsr == str(LGD2 + "-" + PDB2):
-                            for klsr2 in dLSR[klsr].keys():
-                                LSR2 = str(LSR2) + " " + str(dLSR[klsr][klsr2])
 
-                    filout.write(LGD1 + "-" + PDB1 + "\t" + LGD2 + "-" + PDB2 + "\t" + dlig[k1] + "\t" + dlig[k2] + "\t" + LSR1 + "\t" + LSR2 + "\t" + str(aff1) + "\t" + str(aff2) + "\n")
+                        if verbose ==1:
+                            print "#########################"
+                            print prin + refprot
+                            print LGD1, "LGD1"
+                            print LGD2, "LGD2"
+                            print dlig[k1], "SMI1"
+                            print dlig[k2], "SMI2"
+                            print PDB1, "PDB1"
+                            print PDB2, "PDB2"
+                            print LSR1, "LSR1"
+                            print LSR2, "LSR2"
+                            print aff1, "aff1"
+                            print aff2, "aff2"
+                            print nbatomdiff, "diff"
+                            print "$$$$$$$$$$$$$$$$$$$$$$$$$"
+                        ktemp = PDB1 + "-" + PDB2
+                        if ktemp in ltemp:
+                            continue
+                        if str(PDB2 + "-" + PDB1) in ltemp:
+                            continue
+                        else:
+                            ltemp.append(ktemp)
+
+                        filout.write(LGD1 + "-" + PDB1 + "\t" + LGD2 + "-" + PDB2 + "\t" + dlig[k1] + "\t" + dlig[k2] + "\t" + LSR1 + "\t" + LSR2 + "\t" + str(aff1) + "\t" + str(aff2) + "\t" + str(nbatomdiff) + "\t" + str(scoreMCS) + "\n")
     filout.close()
