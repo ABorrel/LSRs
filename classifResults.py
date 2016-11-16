@@ -10,7 +10,7 @@ def SheapScoreToClass(prclassif):
     prout = pathManage.result(nameREF + "_SheapClassif")
     pfilout = prout + "PiLSRType"
     filout = open(pfilout, "w")
-    filout.write("ClassLSR\tShape\tESP\tshape\tName\n")
+    filout.write("ClassLSR\tESP\tshape\tName\n")
 
     lprref = []
     lfoldergroups = listdir(prclassif)
