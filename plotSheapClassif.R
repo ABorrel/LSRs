@@ -1,3 +1,5 @@
+#!/usr/bin/env Rscript
+
 
 
 vectCol = function(vin){
@@ -25,7 +27,7 @@ vectCol = function(vin){
 args = commandArgs(TRUE)
 ptable = args[1]
 
-ptable = "C://Users/Alexandre\ Borrel/Desktop/LSR/PiLSRType"
+#ptable = "C://Users/Alexandre\ Borrel/Desktop/LSR/PiLSRType"
 
 dsheap = read.table(ptable, header = TRUE, sep = "\t")
 print(colnames(dsheap))

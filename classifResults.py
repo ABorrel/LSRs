@@ -1,5 +1,6 @@
 import pathManage
 import parseShaep
+import runOtherSoft
 
 from os import listdir, path
 from re import search
@@ -68,4 +69,4 @@ def SheapScoreToClass(prclassif):
 
     # plot R to do
 
-
+    runOtherSoft.plotClassifSheap(pfilout)

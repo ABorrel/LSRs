@@ -206,3 +206,7 @@ def plotMatrice(pfilin, paff, ptext = "0", pLSR = "0"):
     os.system(cmd)
 
 
+def plotClassifSheap(pfilin):
+    cmd = "./plotSheapClassif.R " + pfilin
+    print cmd
+    os.system(cmd)

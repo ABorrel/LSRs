@@ -657,14 +657,14 @@ name_folder_final = "withoutLig"
 
 # folder final
 pr_classif = pathManage.result("final_" + name_folder_final) + "Pi_LSR"
-ligandSimilarity.analyseLGDProximity(pr_classif)
+#ligandSimilarity.analyseLGDProximity(pr_classif)
 
 
 #########################################
 # ANALYSE CLASSIFICATION BASED ON SHEAP #
 #########################################
 
-#classifResults.SheapScoreToClass(pr_classif)
+classifResults.SheapScoreToClass(pr_classif)
 
 
 

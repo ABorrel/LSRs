@@ -23,11 +23,11 @@ def analyseLGDProximity(prclassif):
     # extract IC550 for PDB and ligand
     pbindingDBfiltered = prout + "bindingDBfiltered.txt"
     lkeep = [ "PDB ID(s) for Ligand-Target Complex", "Ligand HET ID in PDB", "Kd (nM)", "Ki (nM)", "IC50 (nM)"]
-    #parseTSV.TSVFiltered(PBINDINGDB, lkeep, pfilout=pbindingDBfiltered)
+    parseTSV.TSVFiltered(PBINDINGDB, lkeep, pfilout=pbindingDBfiltered)
 
     # extract for each reference LGD
-    #extractLGDfile(prclassif, prout)
-    #buildMatrixSimilarity(prout, pfileaffinity=pbindingDBfiltered, MCS=1, Sheap=0)
+    extractLGDfile(prclassif, prout)
+    buildMatrixSimilarity(prout, pfileaffinity=pbindingDBfiltered, MCS=1, Sheap=0)
 
     # extract MMP
     extractMMP(prout)
@@ -280,6 +280,7 @@ def extractMMP(prin, maxNbatom = 3, verbose = 0):
 
     lrefprot = listdir(prin)
     print len(lrefprot)
+    ltemp = []# control repetition
     for refprot in lrefprot:
         print prin + refprot
         if not path.isdir(prin + refprot):
@@ -333,7 +334,6 @@ def extractMMP(prin, maxNbatom = 3, verbose = 0):
         #print len(dMSCatomdiff)
         # find MMP
         #print dMSCatomdiff
-        ltemp = []# control repetition
         for k1 in dMSCatomdiff.keys():
             for k2 in dMSCatomdiff[k1].keys():
                 if k1 == k2:
@@ -388,10 +388,10 @@ def extractMMP(prin, maxNbatom = 3, verbose = 0):
                             print aff2, "aff2"
                             print nbatomdiff, "diff"
                             print "$$$$$$$$$$$$$$$$$$$$$$$$$"
-                        ktemp = PDB1 + "-" + PDB2
+                        ktemp = PDB1 + "-" + LGD1 + "_" + PDB2 + "-" + LGD2
                         if ktemp in ltemp:
                             continue
-                        if str(PDB2 + "-" + PDB1) in ltemp:
+                        if str(PDB2 + "-" + LGD2 + "_" + PDB1 + "-" + LGD1) in ltemp:
                             continue
                         else:
                             ltemp.append(ktemp)
